@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adriteyo Das</title>
+    <link rel="icon" href="assets/img/razorbill.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="header-left">
+                    <h1 class="name">Adriteyo Das</h1>
+                    <p class="tagline">Computer Vision. Low Level Systems. Forensics.</p>
+                </div>
+                <div class="links">
+                    <a href="https://github.com/Addy-Da-Baddy" target="_blank"><i class="fab fa-github"></i> github</a>
+                    <a href="https://www.linkedin.com/in/adriteyo-das/" target="_blank"><i class="fab fa-linkedin"></i> linkedin</a>
+                    <a href="mailto:das.adriteyo@gmail.com"><i class="fas fa-envelope"></i> email</a>
+                </div>
+            </div>
+            <nav class="terminal-nav">
+                <span class="nav-prompt">~/tryhard $</span>
+                <div class="nav-links">
+                    <a href="#about" data-index="00">about</a>
+                    <a href="#experience" data-index="01">exp</a>
+                    <a href="#publications" data-index="02">pubs</a>
+                    <a href="#education" data-index="03">edu</a>
+                    <a href="#skills" data-index="04">skills</a>
+                    <a href="#achievements" data-index="05">wins</a>
+                    <a href="#volunteering" data-index="06">vol</a>
+                    <a href="#projects" data-index="07">proj</a>
+                    <a href="#contact" data-index="08">ping</a>
+                </div>
+                <span class="nav-cursor"></span>
+            </nav>
+        </header>
+
+        <!-- About -->
+        <section id="about">
+            <h2 class="section-title">About</h2>
+            <div class="two-col">
+                <div>
+                    <p class="about-text">
+                        Undergraduate in Computer and Communication Engineering at MIT Manipal. I enjoy low-level coding and understanding how systems work at their core. My work lies at the intersection of AI and cybersecurity.
+                    </p>
+                    <p class="about-text">
+                        I play CTF for <a href="https://cryptonitemit.in/" target="_blank">Cryptonite</a>.
+                    </p>
+                </div>
+                <div>
+                    <div class="fact-widget">
+                        <p class="fact-label">$ random_fact</p>
+                        <p class="fact-text" id="random-fact">loading...</p>
+                        <button class="fact-refresh" id="refresh-fact" title="New fact">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience -->
+        <section id="experience">
+            <h2 class="section-title">Experience</h2>
+            
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">Upcoming SEP Intern</span>
+                    <span class="item-date">Jun 2026 – Aug 2026</span>
+                </div>
+                <p class="item-sub">JPMorgan & Chase, Bangalore</p>
+                <ul class="item-list">
+                    <li>Selected for the Software Engineer Program (SEP) Internship at JPMorgan & Chase</li>
+                    <li>Will be working in the Bangalore office, Summer 2026</li>
+                </ul>
+            </div>
+            
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">Undergraduate Research Assistant</span>
+                    <span class="item-date">Aug 2025 – Present</span>
+                </div>
+                <p class="item-sub">Carnegie Mellon University · Xu Lab</p>
+                <p class="item-detail">Research in biomedical AI under Dr Xingjian Li and Dr Min Xu, focusing on computational biology and deep learning applications.</p>
+            </div>
+            
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">Head of Research & Development</span>
+                    <span class="item-date">Apr 2024 – Present</span>
+                </div>
+                <p class="item-sub">Cryptonite · MIT Manipal's Official Cybersecurity Team</p>
+                <ul class="item-list">
+                    <li>Leading R&D initiatives for one of the best academic CTF teams in Asia</li>
+                    <li>Specialize in Digital Forensics, Incident Response (DFIR), and AI Security challenges</li>
+                    <li>Developed and deployed challenges for niteCTF 2024 and 2025 — 3rd highest rated Indian CTF globally</li>
+                    <li>Mentoring junior members in forensics, reverse engineering, and ML-based security research</li>
+                    <li>Part of core research team exploring intersection of AI and cybersecurity</li>
+                </ul>
+            </div>
+            
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">Research Intern</span>
+                    <span class="item-date">Jan 2025 – Aug 2025</span>
+                </div>
+                <p class="item-sub">Indian Statistical Institute, Kolkata · CVPR Research Group</p>
+                <ul class="item-list">
+                    <li>Worked under Dr Umapada Pal with collaboration from University of Salford and Chinese Institute of Information Science</li>
+                    <li>Implemented novel Deepfake Detection algorithm that outperformed SOTA methods</li>
+                    <li>Paper accepted at ACPR-2025 (Asian Conference on Pattern Recognition)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Publications -->
+        <section id="publications">
+            <h2 class="section-title">Publications</h2>
+            
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">Non-correlative Feature Interaction for Classification of Real and Fake Scene Images</span>
+                    <span class="item-date">Nov 2025</span>
+                </div>
+                <p class="item-sub">8th Asian Conference on Pattern Recognition (ACPR), Gold Coast</p>
+                <p class="item-detail"><a href="https://link.springer.com/chapter/10.1007/978-981-95-4398-4_17" target="_blank">Springer ↗</a></p>
+            </div>
+            
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">Comparative Analysis of Multimodal Architectures for Effective Skin Lesion Detection</span>
+                    <span class="item-date">Aug 2025</span>
+                </div>
+                <p class="item-sub">Frontiers in Artificial Intelligence</p>
+                <p class="item-detail"><a href="https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2025.1608837/full" target="_blank">Frontiers ↗</a></p>
+            </div>
+        </section>
+
+        <!-- Education -->
+        <section id="education">
+            <h2 class="section-title">Education</h2>
+            <div class="two-col">
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">Manipal Institute of Technology</span>
+                        <span class="item-date">2023 – 2027</span>
+                    </div>
+                    <p class="item-sub">B.Tech — Computer and Communication Engineering</p>
+                    <p class="item-detail">CGPA: 9.3</p>
+                    <p class="item-detail">Top 0.01 percentile in the ICT Department</p>
+                </div>
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">DPS Ruby Park</span>
+                        <span class="item-date">2021 – 2023</span>
+                    </div>
+                    <p class="item-sub">Class 12 — PCMCS Stream</p>
+                    <p class="item-detail">95.2% CBSE · House Prefect · Tech Club Core</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills -->
+        <section id="skills">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-row">
+                <div class="skill-group">
+                    <p class="skill-label">Languages</p>
+                    <div class="tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">C/C++</span>
+                        <span class="tag">Rust</span>
+                        <span class="tag">Bash</span>
+                        <span class="tag">JS</span>
+                        <span class="tag">SQL</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <p class="skill-label">Frameworks</p>
+                    <div class="tags">
+                        <span class="tag">PyTorch</span>
+                        <span class="tag">Flask</span>
+                        <span class="tag">React</span>
+                        <span class="tag">Electron</span>
+                        <span class="tag">Three.js</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <p class="skill-label">AI/ML</p>
+                    <div class="tags">
+                        <span class="tag">CV</span>
+                        <span class="tag">XGBoost</span>
+                        <span class="tag">GANs</span>
+                        <span class="tag">Ollama</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <p class="skill-label">Security</p>
+                    <div class="tags">
+                        <span class="tag">IDA</span>
+                        <span class="tag">Ghidra</span>
+                        <span class="tag">Volatility</span>
+                        <span class="tag">DFIR</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <p class="skill-label">Tools</p>
+                    <div class="tags">
+                        <span class="tag">Docker</span>
+                        <span class="tag">MariaDB</span>
+                        <span class="tag">SDL2</span>
+                        <span class="tag">Socket.IO</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievements -->
+        <section id="achievements">
+            <h2 class="section-title">Achievements</h2>
+            <div class="achievements-grid">
+                <div class="achievement-box">
+                    <h4>1st Place</h4>
+                    <ul>
+                        <li>EnigmaXplore 2024 — IIIT Naya Raipur</li>
+                        <li>BITSCTF 2024 — BITS Goa</li>
+                        <li>CruXipher 2024 — BITS Hyderabad</li>
+                        <li>KashiCTF 2025 — IIT BHU Varanasi</li>
+                    </ul>
+                </div>
+                <div class="achievement-box">
+                    <h4>2nd Place</h4>
+                    <ul>
+                        <li>TexSAW CTF 2025 — UT Dallas</li>
+                        <li>BITSCTF 2025 — BITS Goa</li>
+                        <li>CapturePoint CTF 2025 — IIIT Vadodara</li>
+                        <li>ExploitX CTF 2025 — Top Individual</li>
+                    </ul>
+                </div>
+                <div class="achievement-box">
+                    <h4>3rd Place</h4>
+                    <ul>
+                        <li>Codefest CTF 2025 — IIT BHU</li>
+                        <li>eHax CTF 2025 — DTU Delhi</li>
+                        <li>FooBar CTF 2025 — NIT Durgapur</li>
+                    </ul>
+                </div>
+                <div class="achievement-box">
+                    <h4>Academic</h4>
+                    <ul>
+                        <li>Achiever's Scholarship — MIT Manipal</li>
+                        <li>Finalist — JPMorgan Code for Good</li>
+                        <li>Paper accepted — ACPR 2025</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Volunteering -->
+        <section id="volunteering">
+            <h2 class="section-title">Volunteering</h2>
+            <div class="three-col">
+                <div class="item">
+                    <span class="item-title">Head of Deep Learning</span>
+                    <p class="item-sub">The Data Alchemists</p>
+                    <p class="item-detail">Official Data Science Club, MIT Manipal</p>
+                </div>
+                <div class="item">
+                    <span class="item-title">Head of Cybersecurity</span>
+                    <p class="item-sub">Research Society Manipal</p>
+                    <p class="item-detail">MIT Manipal</p>
+                </div>
+                <div class="item">
+                    <span class="item-title">Member</span>
+                    <p class="item-sub">Rotaract Club of Manipal</p>
+                    <p class="item-detail">Community Service</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects -->
+        <section id="projects">
+            <h2 class="section-title">Projects</h2>
+            <div class="projects-grid">
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">ChiefWarden</span>
+                        <a href="https://github.com/Addy-Da-Baddy/Cryptonite-Research-and-Development/tree/main/ChiefWarden" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">Hybrid malware detection — PE analysis + ML (98.89% accuracy)</p>
+                    <div class="tags">
+                        <span class="tag">PyTorch</span>
+                        <span class="tag">XGBoost</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">SimuTrade</span>
+                        <div>
+                            <a href="https://github.com/Addy-Da-Baddy/Stocksim" target="_blank" class="project-link">github ↗</a>
+                            <a href="https://stocksim-dusky.vercel.app/" target="_blank" class="project-link">live ↗</a>
+                        </div>
+                    </div>
+                    <p class="project-desc">Real-time stock trading simulator with Prophet forecasting</p>
+                    <div class="tags">
+                        <span class="tag">React</span>
+                        <span class="tag">Flask</span>
+                        <span class="tag">Docker</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">GAN_RepairNet</span>
+                        <a href="https://github.com/Addy-Da-Baddy/Inpainting-GAN" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">GAN for restoring corrupted dashcam images</p>
+                    <div class="tags">
+                        <span class="tag">PyTorch</span>
+                        <span class="tag">U-Net</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">DropLAN</span>
+                        <a href="https://github.com/Addy-Da-Baddy/DropLAN" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">Real-time local network file sharing with QR connectivity</p>
+                    <div class="tags">
+                        <span class="tag">Flask</span>
+                        <span class="tag">Socket.IO</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">Irones</span>
+                        <a href="https://github.com/Addy-Da-Baddy/Irones" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">Cycle-accurate NES emulator with SDL2 rendering</p>
+                    <div class="tags">
+                        <span class="tag">Rust</span>
+                        <span class="tag">SDL2</span>
+                        <span class="tag">6502</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">FermiURL</span>
+                        <a href="https://github.com/Addy-Da-Baddy/FermiURL" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">Minimalistic URL shortener with click tracking & analytics</p>
+                    <div class="tags">
+                        <span class="tag">React</span>
+                        <span class="tag">Flask</span>
+                        <span class="tag">MariaDB</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">MemHawk</span>
+                        <a href="https://github.com/Addy-Da-Baddy/Memhawk" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">AI-powered memory forensics platform for comprehensive dump analysis</p>
+                    <div class="tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">Ollama</span>
+                        <span class="tag">Electron</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">Astraeus</span>
+                        <a href="https://github.com/Addy-Da-Baddy/Astraeus" target="_blank" class="project-link">github ↗</a>
+                    </div>
+                    <p class="project-desc">Real-time orbital collision risk prediction with ML ensemble (94.2% accuracy)</p>
+                    <div class="tags">
+                        <span class="tag">Three.js</span>
+                        <span class="tag">XGBoost</span>
+                        <span class="tag">Flask</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="github-contrib">
+                <img src="https://ghchart.rshah.org/c45a1a/Addy-Da-Baddy" alt="GitHub Contributions" />
+            </div>
+        </section>
+
+        <!-- Hobbies & Resume -->
+        <section id="hobbies">
+            <div class="two-col">
+                <div>
+                    <h2 class="section-title">Hobbies</h2>
+                    <div class="hobbies-grid">
+                        <div class="hobby"><span class="hobby-icon"><i class="fas fa-book"></i></span><p>Sci-Fi</p></div>
+                        <div class="hobby"><span class="hobby-icon"><i class="fas fa-gamepad"></i></span><p>RPGs</p></div>
+                        <div class="hobby"><span class="hobby-icon"><i class="fas fa-futbol"></i></span><p>Barça</p></div>
+                        <div class="hobby"><span class="hobby-icon"><i class="fas fa-flag-checkered"></i></span><p>McLaren</p></div>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="section-title">Resume</h2>
+                    <div class="resume-links">
+                        <a href="assets/docs/Adriteyo_Das_Resume_JT.pdf" target="_blank" download class="btn">download ↓</a>
+                        <a href="assets/docs/Adriteyo_Das_Resume_JT.pdf" target="_blank" class="btn">view ↗</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact">
+            <h2 class="section-title">Contact</h2>
+            <p class="about-text">Open to research opportunities and internships.</p>
+            <form id="contact-form" class="contact-form" action="https://formsubmit.co/das.adriteyo@gmail.com" method="POST">
+                <input type="text" name="name" placeholder="name" required>
+                <input type="email" name="email" placeholder="email" required>
+                <textarea name="message" placeholder="message" rows="3" required></textarea>
+                <input type="hidden" name="_subject" value="New message from portfolio">
+                <input type="hidden" name="_template" value="table">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_next" value="https://adriteyo-das.vercel.app/?success=true">
+                <button type="submit" class="btn">send →</button>
+            </form>
+            <p class="contact-alt">or email <a href="mailto:das.adriteyo@gmail.com">das.adriteyo@gmail.com</a></p>
+        </section>
+
+        <footer>
+            <p class="footer-text">~/adriteyo<span class="cursor"></span></p>
+        </footer>
+    </div>
+
+    <!-- Music Player -->
+    <div id="music-player">
+        <audio id="bg-music" loop>
+            <source src="assets/music/sos.mp3" type="audio/mpeg">
+        </audio>
+        <button id="music-toggle" title="Toggle Music">
+            <i class="fas fa-volume-up" id="music-icon"></i>
+        </button>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        const audio = document.getElementById('bg-music');
+        const toggle = document.getElementById('music-toggle');
+        const icon = document.getElementById('music-icon');
+        
+        audio.volume = 0.3;
+        
+        // Try to autoplay
+        document.addEventListener('DOMContentLoaded', () => {
+            audio.play().catch(() => {
+                // Autoplay blocked, wait for user interaction
+                document.body.addEventListener('click', () => {
+                    if (audio.paused) audio.play();
+                }, { once: true });
+            });
+        });
+        
+        toggle.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-volume-up';
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-volume-mute';
+            }
+        });
+
+        // Random Fact API
+        async function fetchRandomFact() {
+            const factEl = document.getElementById('random-fact');
+            factEl.textContent = 'loading...';
+            try {
+                const response = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en');
+                const data = await response.json();
+                factEl.textContent = data.text;
+            } catch (err) {
+                factEl.textContent = 'Failed to fetch fact. Try again.';
+            }
+        }
+        
+        document.getElementById('refresh-fact').addEventListener('click', fetchRandomFact);
+        fetchRandomFact();
+    </script>
+</body>
+</html>

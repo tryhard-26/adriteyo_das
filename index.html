@@ -16,17 +16,17 @@
         <header>
             <div class="header-top">
                 <div class="header-left">
-                    <h1 class="name">Adriteyo Das</h1>
+                    <h1 class="name">Adriteyo Das<span class="tryhard-reveal">tryhard</span></h1>
                     <p class="tagline">Computer Vision. Low Level Systems. Forensics.</p>
                 </div>
                 <div class="links">
-                    <a href="https://github.com/Addy-Da-Baddy" target="_blank"><i class="fab fa-github"></i> github</a>
+                    <a href="https://github.com/tryh4rd-26/adriteyo_das" target="_blank"><i class="fab fa-github"></i> github</a>
                     <a href="https://www.linkedin.com/in/adriteyo-das/" target="_blank"><i class="fab fa-linkedin"></i> linkedin</a>
                     <a href="mailto:das.adriteyo@gmail.com"><i class="fas fa-envelope"></i> email</a>
                 </div>
             </div>
             <nav class="terminal-nav">
-                <span class="nav-prompt">~/tryhard $</span>
+                <span class="nav-prompt">$</span>
                 <div class="nav-links">
                     <a href="#about" data-index="00">about</a>
                     <a href="#experience" data-index="01">exp</a>
@@ -36,7 +36,9 @@
                     <a href="#achievements" data-index="05">wins</a>
                     <a href="#volunteering" data-index="06">vol</a>
                     <a href="#projects" data-index="07">proj</a>
-                    <a href="#contact" data-index="08">ping</a>
+                    <a href="#opensource" data-index="08">oss</a>
+                    <a href="#blogs" data-index="09">blogs</a>
+                    <a href="#contact" data-index="10">ping</a>
                 </div>
                 <span class="nav-cursor"></span>
             </nav>
@@ -51,7 +53,7 @@
                         Undergraduate in Computer and Communication Engineering at MIT Manipal. I enjoy low-level coding and understanding how systems work at their core. My work lies at the intersection of AI and cybersecurity.
                     </p>
                     <p class="about-text">
-                        I play CTF for <a href="https://cryptonitemit.in/" target="_blank">Cryptonite</a>.
+                        I play CTF for <a href="https://cryptonitemit.in/" target="_blank" class="cryptonite-link">Cryptonite<img src="assets/img/nite.png" alt="" class="cryptonite-logo"></a>.
                     </p>
                 </div>
                 <div>
@@ -101,7 +103,7 @@
                     <li>Leading R&D initiatives for one of the best academic CTF teams in Asia</li>
                     <li>Specialize in Digital Forensics, Incident Response (DFIR), and AI Security challenges</li>
                     <li>Developed and deployed challenges for niteCTF 2024 and 2025 — 3rd highest rated Indian CTF globally</li>
-                    <li>Mentoring junior members in forensics, reverse engineering, and ML-based security research</li>
+                    <li>Mentoring junior members in forensics, research, ML/DL, and malware analysis</li>
                     <li>Part of core research team exploring intersection of AI and cybersecurity</li>
                 </ul>
             </div>
@@ -170,53 +172,99 @@
         <!-- Skills -->
         <section id="skills">
             <h2 class="section-title">Skills</h2>
-            <div class="skills-row">
-                <div class="skill-group">
-                    <p class="skill-label">Languages</p>
-                    <div class="tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">C/C++</span>
-                        <span class="tag">Rust</span>
-                        <span class="tag">Bash</span>
-                        <span class="tag">JS</span>
-                        <span class="tag">SQL</span>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h3 class="category-title">languages</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="used for low-level web stuff, experimenting with WASM compilation">AssemblyScript</span>
+                        <span class="skill-tag" data-tooltip="embedded systems work and when i need raw speed - used in CTF challenges">C</span>
+                        <span class="skill-tag" data-tooltip="built Irones (NES emulator) with this, love the control it gives">C++</span>
+                        <span class="skill-tag" data-tooltip="windows dev when needed, used for some .NET integrations">C#</span>
+                        <span class="skill-tag" data-tooltip="IoT projects and microcontroller programming for fun">Embedded C</span>
+                        <span class="skill-tag" data-tooltip="go-to for everything - ML research, forensics tools like MemHawk, automation scripts">Python</span>
+                        <span class="skill-tag" data-tooltip="full-stack web dev, built SimuTrade and FermiURL backends with Node">JavaScript</span>
+                        <span class="skill-tag" data-tooltip="used in android dev and some backend services, not my fav but gets job done">Java</span>
+                        <span class="skill-tag" data-tooltip="LOVE this - Irones emulator, security tools, and Google's macos-UnifiedLogs PR">Rust</span>
+                        <span class="skill-tag" data-tooltip="backend microservices and CLI tools, super clean concurrency model">Go</span>
                     </div>
                 </div>
-                <div class="skill-group">
-                    <p class="skill-label">Frameworks</p>
-                    <div class="tags">
-                        <span class="tag">PyTorch</span>
-                        <span class="tag">Flask</span>
-                        <span class="tag">React</span>
-                        <span class="tag">Electron</span>
-                        <span class="tag">Three.js</span>
+                <div class="skill-category">
+                    <h3 class="category-title">web & frontend</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="this portfolio, all my web projects - semantic HTML all the way">HTML5</span>
+                        <span class="skill-tag" data-tooltip="custom animations and styling for portfolio, love making things look good">CSS3</span>
+                        <span class="skill-tag" data-tooltip="used for organizing CSS in larger projects, modular architecture">SASS</span>
+                        <span class="skill-tag" data-tooltip="SimuTrade, FermiURL dashboards, campus-dining PR - component-based ftw">React</span>
+                        <span class="skill-tag" data-tooltip="backend APIs for all my web apps, real-time servers with Socket.IO">NodeJS</span>
+                        <span class="skill-tag" data-tooltip="fast as hell for dev builds, using it for all new React projects">Vite</span>
                     </div>
                 </div>
-                <div class="skill-group">
-                    <p class="skill-label">AI/ML</p>
-                    <div class="tags">
-                        <span class="tag">CV</span>
-                        <span class="tag">XGBoost</span>
-                        <span class="tag">GANs</span>
-                        <span class="tag">Ollama</span>
+                <div class="skill-category">
+                    <h3 class="category-title">ai/ml & computer vision</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="main framework - deepfake detection at ISI, GAN_RepairNet, ChiefWarden malware ML">PyTorch</span>
+                        <span class="skill-tag" data-tooltip="used for some neural net architectures, but prefer PyTorch tbh">TensorFlow</span>
+                        <span class="skill-tag" data-tooltip="image processing for forensics, video analysis in CV research at CMU">OpenCV</span>
+                        <span class="skill-tag" data-tooltip="GPU acceleration for training models, massive speedup for CNN training">CUDA</span>
+                        <span class="skill-tag" data-tooltip="classical ML when deep learning is overkill, feature engineering">scikit-learn</span>
+                        <span class="skill-tag" data-tooltip="ChiefWarden got 98.89% with this, also used in Astraeus collision prediction">XGBoost</span>
+                        <span class="skill-tag" data-tooltip="GAN_RepairNet for dashcam restoration, also research at ISI Kolkata">GANs</span>
+                        <span class="skill-tag" data-tooltip="image classification, deepfake detection paper - bread and butter of CV">CNNs</span>
+                        <span class="skill-tag" data-tooltip="vision transformers for ISI research, attention mechanisms in CV">Transformers</span>
+                        <span class="skill-tag" data-tooltip="real-time object detection, used in some CV projects for speed">YOLO</span>
                     </div>
                 </div>
-                <div class="skill-group">
-                    <p class="skill-label">Security</p>
-                    <div class="tags">
-                        <span class="tag">IDA</span>
-                        <span class="tag">Ghidra</span>
-                        <span class="tag">Volatility</span>
-                        <span class="tag">DFIR</span>
+                <div class="skill-category">
+                    <h3 class="category-title">dfir & security</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="CTF reversing, malware analysis for challenges - ChiefWarden used this for PE analysis">IDA Pro</span>
+                        <span class="skill-tag" data-tooltip="free alternative to IDA, binary analysis for CTF forensics challenges">Ghidra</span>
+                        <span class="skill-tag" data-tooltip="MemHawk is built on this, memory forensics for niteCTF challenges">Volatility</span>
+                        <span class="skill-tag" data-tooltip="network forensics in CTFs, packet analysis for DFIR challenges">Wireshark</span>
+                        <span class="skill-tag" data-tooltip="disk forensics and file carving, used in forensics investigations">Autopsy</span>
+                        <span class="skill-tag" data-tooltip="imaging drives for evidence preservation in DFIR work">FTK Imager</span>
+                        <span class="skill-tag" data-tooltip="file system forensics, timeline analysis for incident response">Sleuth Kit</span>
+                        <span class="skill-tag" data-tooltip="modern disassembler, nice UI - using more lately for reverse engineering">Binary Ninja</span>
                     </div>
                 </div>
-                <div class="skill-group">
-                    <p class="skill-label">Tools</p>
-                    <div class="tags">
-                        <span class="tag">Docker</span>
-                        <span class="tag">MariaDB</span>
-                        <span class="tag">SDL2</span>
-                        <span class="tag">Socket.IO</span>
+                <div class="skill-category">
+                    <h3 class="category-title">databases</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="relational DB for FermiURL analytics and web app backends">MySQL</span>
+                        <span class="skill-tag" data-tooltip="NoSQL when i need flexible schemas, used in some rapid prototypes">MongoDB</span>
+                        <span class="skill-tag" data-tooltip="log analysis and full-text search, exploring for SIEM stuff">Elasticsearch</span>
+                        <span class="skill-tag" data-tooltip="caching layer for web apps, real-time leaderboards">Redis</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">devops & sre</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="SimuTrade is containerized, also CTF infra deployment - use it everywhere now">Docker</span>
+                        <span class="skill-tag" data-tooltip="learning k8s for orchestration, deployed some CTF challenges with it">Kubernetes</span>
+                        <span class="skill-tag" data-tooltip="cloud-native platform, used in some enterprise-style deployments">Cloud Foundry</span>
+                        <span class="skill-tag" data-tooltip="infrastructure automation playbooks, config management">Ansible</span>
+                        <span class="skill-tag" data-tooltip="server configuration management, not my first choice but used it">Puppet</span>
+                        <span class="skill-tag" data-tooltip="IaC for cloud resources, declarative infra setup">Terraform</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">observability</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="metrics collection and alerting for monitoring services">Prometheus</span>
+                        <span class="skill-tag" data-tooltip="dashboards for visualizing metrics, pairs well with Prometheus">Grafana</span>
+                        <span class="skill-tag" data-tooltip="log aggregation for enterprise monitoring, powerful search">Splunk</span>
+                        <span class="skill-tag" data-tooltip="distributed tracing for microservices, debugging request flows">Jaeger</span>
+                        <span class="skill-tag" data-tooltip="full logging stack - Elasticsearch, Logstash, Kibana for log analysis">ELK Stack</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">tools & testing</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag" data-tooltip="version control for literally everything, can't imagine working without it">Git</span>
+                        <span class="skill-tag" data-tooltip="campus-dining, macos-UnifiedLogs, superhuman PRs - open source contributions">GitHub</span>
+                        <span class="skill-tag" data-tooltip="event streaming and message queues, used for async processing">Kafka</span>
+                        <span class="skill-tag" data-tooltip="web automation and E2E testing for web projects">Selenium</span>
+                        <span class="skill-tag" data-tooltip="python testing - unit tests, fixtures, coverage reports">pytest</span>
                     </div>
                 </div>
             </div>
@@ -395,7 +443,99 @@
             </div>
             
             <div class="github-contrib">
-                <img src="https://ghchart.rshah.org/c45a1a/Addy-Da-Baddy" alt="GitHub Contributions" />
+                <img src="https://ghchart.rshah.org/c45a1a/tryh4rd-26" alt="GitHub Contributions" />
+            </div>
+        </section>
+
+        <!-- Open Source Contributions -->
+        <section id="opensource">
+            <h2 class="section-title">Open Source Contributions</h2>
+            <div class="projects-grid">
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">dfir-gita</span>
+                        <a href="https://github.com/Cryptonite-MIT/dfir-gita" target="_blank" class="project-link">repo ↗</a>
+                    </div>
+                    <p class="project-desc">Major contributor to Cryptonite's comprehensive forensics training repository covering steganography, network analysis, and digital forensics. Living resource for CTF challenges and incident response training material.</p>
+                    <p class="item-detail">Cryptonite-MIT/dfir-gita · Training Resources</p>
+                    <div class="tags">
+                        <span class="tag">DFIR</span>
+                        <span class="tag">Training</span>
+                        <span class="tag">Forensics</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">campus-dining</span>
+                        <a href="https://github.com/aaditagrawal/campus-dining/pull/3" target="_blank" class="project-link">PR #3 ↗</a>
+                    </div>
+                    <p class="project-desc">Implemented a comprehensive localStorage-based favorites/bookmarking system allowing users to star and save any content across the MIT Manipal Campus Directory for quick access.</p>
+                    <p class="item-detail">aaditagrawal/campus-dining · +643 −50 · Merged</p>
+                    <div class="tags">
+                        <span class="tag">Next.js</span>
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">React</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">macos-UnifiedLogs</span>
+                        <a href="https://github.com/mandiant/macos-UnifiedLogs/pull/97" target="_blank" class="project-link">PR #97 ↗</a>
+                    </div>
+                    <p class="project-desc">Fixed out-of-bounds array access vulnerability in message.rs. Added proper bounds checking for unknown_uuid_index before indexing into shared_string.uuids vector, preventing crash risk when handling corrupted DSC log files (CWE-125).</p>
+                    <p class="item-detail">Mandiant (Google) · +36 −6 · Merged</p>
+                    <div class="tags">
+                        <span class="tag">Rust</span>
+                        <span class="tag">Security</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">superhuman</span>
+                        <a href="https://github.com/google-deepmind/superhuman/pull/5" target="_blank" class="project-link">PR #5 ↗</a>
+                    </div>
+                    <p class="project-desc">Built a Python library for IMO Bench providing a clean API with type-safe dataclasses, lazy loading for GradingBench, filtering by category/difficulty/source, and 35 passing tests. Ready for PyPI publishing.</p>
+                    <p class="item-detail">Google DeepMind · Merged</p>
+                    <div class="tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">API Design</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blogs -->
+        <section id="blogs">
+            <h2 class="section-title">Blogs</h2>
+            <div class="projects-grid">
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">Memory Forensics with Volatility 3: A Complete Deep Dive</span>
+                        <a href="https://hackmd.io/@4ZjT700SS96tm5LpipvFGw/SJeQ7UXg-l" target="_blank" class="project-link">read ↗</a>
+                    </div>
+                    <p class="project-desc">Comprehensive deep dive into memory forensics with Volatility covering plugins, lower-level internals, and advanced investigation techniques. Detailed exploration of how Volatility works under the hood with practical applications.</p>
+                    <div class="tags">
+                        <span class="tag">Volatility</span>
+                        <span class="tag">Memory Forensics</span>
+                        <span class="tag">Deep Dive</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <div class="project-header">
+                        <span class="project-name">MemLabs Lab 6 Writeup: The Reckoning</span>
+                        <a href="https://hackmd.io/@4ZjT700SS96tm5LpipvFGw/ryHCN8mlbx" target="_blank" class="project-link">read ↗</a>
+                    </div>
+                    <p class="project-desc">Step-by-step tutorial walkthrough for solving MemLabs Lab 6 challenge. Practical guide covering memory dump analysis, artifact extraction, and forensic investigation techniques using Volatility framework.</p>
+                    <div class="tags">
+                        <span class="tag">Writeup</span>
+                        <span class="tag">MemLabs</span>
+                        <span class="tag">Tutorial</span>
+                    </div>
+                </div>
             </div>
         </section>
 

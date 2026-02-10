@@ -44,11 +44,34 @@
     50% { box-shadow: 0 0 15px rgba(196, 90, 26, 0.3); }
 }
 
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+        text-shadow: -1px 0 #ff00ff, 1px 0 #00ffff;
+    }
+    25% {
+        transform: translate(-1px, 1px);
+        text-shadow: 1px -1px #00ffff, -1px 1px #ff00ff;
+    }
+    50% {
+        transform: translate(1px, -1px);
+        text-shadow: -1px 1px #ff00ff, 1px -1px #00ffff;
+    }
+    75% {
+        transform: translate(-1px, 0);
+        text-shadow: 1px 0 #00ffff, -1px 0 #ff00ff;
+    }
+    100% {
+        transform: translate(0);
+        text-shadow: -1px 0 #ff00ff, 1px 0 #00ffff;
+    }
+}
+
 :root {
     --bg: #000000;
     --bg-secondary: #080808;
     --text: #d0d0d0;
-    --text-dim: #505050;
+    --text-dim: #808080;
     --accent: #c45a1a;
     --accent-dim: #8a3d10;
     --border: #151515;
@@ -131,11 +154,28 @@ header {
     letter-spacing: -1px;
     margin-bottom: 4px;
     transition: all 0.3s ease;
+    position: relative;
+    color: var(--text);
 }
 
 .name:hover {
+    color: transparent;
+}
+
+.tryhard-reveal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
     color: var(--accent);
-    text-shadow: 0 0 20px rgba(196, 90, 26, 0.2);
+    pointer-events: none;
+    transition: opacity 0.1s ease;
+    font-weight: 600;
+}
+
+.name:hover .tryhard-reveal {
+    opacity: 1;
+    animation: glitch 0.4s ease-in-out infinite;
 }
 
 .handle {
@@ -161,13 +201,12 @@ header {
 .terminal-nav {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     margin-top: 24px;
-    padding: 16px 20px;
+    padding: 14px 18px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    font-size: 13px;
-    overflow-x: auto;
+    font-size: 12px;
     position: relative;
 }
 
@@ -180,13 +219,13 @@ header {
 
 .nav-links {
     display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
 }
 
 .terminal-nav a {
     color: var(--text-dim);
-    padding: 4px 8px;
+    padding: 4px 6px;
     position: relative;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -571,6 +610,155 @@ section:nth-child(9) .section-title { animation-delay: 0.5s; }
     gap: 20px;
 }
 
+/* New Skills Section - Terminal Style */
+.skills-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skill-category {
+    background: transparent;
+    border: none;
+    padding: 0;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.category-title {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: lowercase;
+    letter-spacing: 0;
+    font-family: var(--mono);
+}
+
+.category-title::before {
+    content: '> ';
+    color: var(--accent);
+}
+
+.skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 12px;
+}
+
+.skill-tag {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    font-family: var(--mono);
+}
+
+.skill-tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(196, 90, 26, 0.05);
+}
+
+/* Loading Screen Tooltip */
+.skill-tag::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    width: 280px;
+    height: 80px;
+    background: #0a0a0a;
+    border: 1px solid var(--accent);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99;
+}
+
+.skill-tag::after {
+    content: '> loading...\a' attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    width: 280px;
+    background: #0a0a0a;
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 10px;
+    white-space: pre-wrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    line-height: 1.5;
+    font-family: var(--mono);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.skill-tag:hover::before,
+.skill-tag:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+@keyframes loadingDots {
+    0%, 20% { content: '> loading'; }
+    40% { content: '> loading.'; }
+    60% { content: '> loading..'; }
+    80%, 100% { content: '> loading...'; }
+}
+
+.skill-tag:hover::after {
+    animation: tooltipAppear 0.5s ease forwards;
+}
+
+@keyframes tooltipAppear {
+    0% {
+        content: '> loading...';
+    }
+    100% {
+        content: '> ' attr(data-tooltip);
+    }
+}
+
+/* Cryptonite Link */
+.cryptonite-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cryptonite-link:hover {
+    animation: glitch 0.3s infinite;
+}
+
+.cryptonite-logo {
+    height: 1em;
+    width: auto;
+    vertical-align: baseline;
+    display: inline-block;
+    margin-left: 2px;
+    transition: transform 0.3s ease;
+    filter: brightness(2.2) contrast(1.4);
+    opacity: 1;
+}
+
+.cryptonite-link:hover .cryptonite-logo {
+    transform: scale(1.2) rotate(5deg);
+    filter: brightness(2.8) contrast(1.6);
+    opacity: 1;
+}
+
 /* Projects */
 .projects-grid {
     display: grid;
@@ -941,7 +1129,7 @@ footer {
         gap: 10px;
     }
     
-    .two-col, .three-col, .skills-row, .projects-grid, .achievements-grid {
+    .two-col, .three-col, .skills-row, .skills-grid, .projects-grid, .achievements-grid {
         grid-template-columns: 1fr;
     }
     

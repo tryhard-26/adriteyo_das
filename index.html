@@ -10,8 +10,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Inline critical styles for smooth loading */
+        body { opacity: 0; transition: opacity 0.3s ease; }
+        body.loaded { opacity: 1; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
 </head>
 <body>
+    <script>
+        // Prevent FOUC (Flash of Unstyled Content)
+        document.body.classList.add('loaded');
+        
+        // Add hint for command palette
+        setTimeout(() => {
+            const hint = document.createElement('div');
+            hint.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(196, 90, 26, 0.9);
+                color: #000;
+                padding: 10px 15px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-family: 'JetBrains Mono', monospace;
+                z-index: 9998;
+                animation: fadeIn 0.5s ease;
+                cursor: pointer;
+            `;
+            hint.textContent = '💡 Press Ctrl+K for quick navigation';
+            document.body.appendChild(hint);
+            
+            hint.addEventListener('click', () => hint.remove());
+            setTimeout(() => hint.remove(), 5000);
+        }, 2000);
+    </script>
     <div class="container">
         <header>
             <div class="header-top">
@@ -55,14 +89,50 @@
                     <p class="about-text">
                         I play CTF for <a href="https://cryptonitemit.in/" target="_blank" class="cryptonite-link">Cryptonite<img src="assets/img/nite.png" alt="" class="cryptonite-logo"></a>.
                     </p>
-                </div>
-                <div>
                     <div class="fact-widget">
                         <p class="fact-label">$ random_fact</p>
                         <p class="fact-text" id="random-fact">loading...</p>
                         <button class="fact-refresh" id="refresh-fact" title="New fact">
                             <i class="fas fa-sync-alt"></i>
                         </button>
+                    </div>
+                    
+                    <div class="visitor-info-widget">
+                        <p class="fact-label">$ whoami --session</p>
+                        <div class="visitor-info-content">
+                            <div class="info-line">
+                                <span class="info-key">ip_addr:</span>
+                                <span class="info-value" id="visitor-ip">...</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-key">location:</span>
+                                <span class="info-value" id="visitor-location">...</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-key">browser:</span>
+                                <span class="info-value" id="visitor-browser">...</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-key">os:</span>
+                                <span class="info-value" id="visitor-os">...</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-key">visits:</span>
+                                <span class="info-value" id="visitor-visits">1</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-key">time_here:</span>
+                                <span class="info-value" id="visitor-time">0s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="apod-widget" id="apod-widget">
+                        <p class="fact-label">$ nasa_apod</p>
+                        <div id="apod-content">
+                            <p class="fact-text">loading astronomy picture...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -593,6 +663,7 @@
         </button>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="js/main.js"></script>
     <script>
         const audio = document.getElementById('bg-music');

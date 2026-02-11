@@ -16,5 +16,8 @@ node_modules/
 .env.local
 .env.*
 
+# Config files with API keys
+js/config.js
+
 # Misc
 *.log

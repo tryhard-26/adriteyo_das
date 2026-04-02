@@ -975,6 +975,7 @@ section:nth-child(9) .section-title { animation-delay: 0.5s; }
     background: radial-gradient(circle, rgba(196, 90, 26, 0.1) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .project::after {
@@ -986,6 +987,7 @@ section:nth-child(9) .section-title { animation-delay: 0.5s; }
     height: 2px;
     background: linear-gradient(90deg, var(--accent), var(--accent-dim));
     transition: width 0.3s ease;
+    pointer-events: none;
 }
 
 .project:hover {

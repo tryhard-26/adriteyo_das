@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post | Adriteyo Das</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090909;
+            --bg-secondary: #111111;
+            --panel: #141414;
+            --text: #d7d7d7;
+            --muted: #8b8b8b;
+            --accent: #c45a1a;
+            --border: #232323;
+            --code: #d88a58;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 90% -10%, rgba(196, 90, 26, 0.12), transparent 45%),
+                radial-gradient(1000px 500px at -20% 100%, rgba(196, 90, 26, 0.08), transparent 50%),
+                var(--bg);
+            font-family: 'Literata', serif;
+            line-height: 1.8;
+            padding: 24px 18px 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 24px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .crumbs {
+            color: var(--muted);
+            font-size: 13px;
+            letter-spacing: 0.2px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            color: var(--muted);
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .header {
+            background: linear-gradient(180deg, rgba(196, 90, 26, 0.12), rgba(196, 90, 26, 0.03));
+            border: 1px solid var(--border);
+            padding: 22px 20px;
+            margin-bottom: 18px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: clamp(1.65rem, 4vw, 2.5rem);
+            font-weight: 700;
+            color: #f1ece8;
+            line-height: 1.2;
+        }
+
+        .meta {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.2px;
+        }
+
+        article {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            padding: clamp(18px, 3vw, 34px);
+            overflow-wrap: anywhere;
+        }
+
+        article h1,
+        article h2,
+        article h3,
+        article h4,
+        article h5,
+        article h6 {
+            line-height: 1.35;
+            color: #f0ece8;
+            margin-top: 1.8em;
+            margin-bottom: 0.6em;
+        }
+
+        article h1 { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+        article h2 { font-size: clamp(1.3rem, 2.5vw, 1.7rem); }
+        article h3 { font-size: clamp(1.1rem, 2vw, 1.35rem); }
+
+        article p,
+        article li {
+            color: var(--text);
+            font-size: 1.03rem;
+        }
+
+        article a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(196, 90, 26, 0.5);
+        }
+
+        article a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        article blockquote {
+            margin: 1.4em 0;
+            padding: 0.4em 1em;
+            border-left: 3px solid var(--accent);
+            color: #c2b8b1;
+            background: rgba(196, 90, 26, 0.08);
+        }
+
+        article hr {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 2em 0;
+        }
+
+        article img {
+            max-width: 100%;
+            border: 1px solid var(--border);
+            display: block;
+            margin: 1.2em auto;
+            height: auto;
+        }
+
+        article table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+            font-size: 0.95rem;
+        }
+
+        article th,
+        article td {
+            border: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        article th {
+            color: #f0ece8;
+            background: #1a1a1a;
+        }
+
+        article code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            background: #101010;
+            color: var(--code);
+            border: 1px solid var(--border);
+            padding: 0.15em 0.35em;
+        }
+
+        article pre {
+            background: #0b0b0b;
+            border: 1px solid var(--border);
+            padding: 14px;
+            overflow-x: auto;
+        }
+
+        article pre code {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            color: #dedede;
+            font-size: 0.88rem;
+        }
+
+        .status {
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            padding: 14px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 18px 12px 30px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            article {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div class="crumbs">~/tryhard/blogs/post</div>
+            <div class="actions">
+                <a class="btn" href="/blogs">all blogs</a>
+                <a class="btn" href="/">home</a>
+            </div>
+        </div>
+
+        <header class="header">
+            <h1 id="post-title" class="title">Loading post...</h1>
+            <div id="post-meta" class="meta">Fetching markdown...</div>
+        </header>
+
+        <article id="content" style="display:none;"></article>
+        <div id="status" class="status">Loading markdown content...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const requestedPost = params.get('post') || '';
+
+        const allowedPosts = {
+            'memoryforensics.md': 'Memory Forensics with Volatility 3: A Complete Deep Dive',
+            'memlabs.md': 'MemLabs Lab 6 Writeup: The Reckoning'
+        };
+
+        function escapeHtml(input) {
+            return input
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function getWordCount(text) {
+            return (text.match(/\S+/g) || []).length;
+        }
+
+        function getReadMinutes(wordCount) {
+            return Math.max(1, Math.round(wordCount / 220));
+        }
+
+        function setError(message) {
+            const title = document.getElementById('post-title');
+            const meta = document.getElementById('post-meta');
+            const status = document.getElementById('status');
+            title.textContent = 'Post unavailable';
+            meta.textContent = 'Could not load the requested markdown file.';
+            status.innerHTML = escapeHtml(message);
+        }
+
+        async function loadPost() {
+            if (!requestedPost || !allowedPosts[requestedPost]) {
+                setError('Unknown post. Open this page from /blogs to view a valid entry.');
+                return;
+            }
+
+            const markdownPath = `/blogs/${requestedPost}`;
+
+            try {
+                const response = await fetch(markdownPath, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const markdown = await response.text();
+                const title = document.getElementById('post-title');
+                const meta = document.getElementById('post-meta');
+                const content = document.getElementById('content');
+                const status = document.getElementById('status');
+
+                marked.setOptions({
+                    gfm: true,
+                    breaks: false,
+                    headerIds: true,
+                    mangle: false
+                });
+
+                const rendered = marked.parse(markdown);
+                const clean = DOMPurify.sanitize(rendered);
+
+                content.innerHTML = clean;
+                content.style.display = 'block';
+                status.style.display = 'none';
+
+                const wordCount = getWordCount(markdown);
+                const readMinutes = getReadMinutes(wordCount);
+                const prettyTitle = allowedPosts[requestedPost];
+
+                title.textContent = prettyTitle;
+                meta.textContent = `${requestedPost} | ${wordCount.toLocaleString()} words | ~${readMinutes} min read`;
+                document.title = `${prettyTitle} | Adriteyo Das`;
+
+                content.querySelectorAll('a').forEach((link) => {
+                    const href = link.getAttribute('href') || '';
+                    if (href.startsWith('http://') || href.startsWith('https://')) {
+                        link.setAttribute('target', '_blank');
+                        link.setAttribute('rel', 'noopener noreferrer');
+                    }
+                });
+            } catch (error) {
+                setError(`Failed to load ${requestedPost}: ${error.message}`);
+            }
+        }
+
+        loadPost();
+    </script>
+</body>
+</html>

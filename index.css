@@ -98,7 +98,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 .sidebar { -ms-overflow-style: none; scrollbar-width: none; }
 
 .profile-card {
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 1.2rem;
     background-color: var(--surface-color);
     border-radius: 0;
@@ -172,7 +172,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 }
 
 .terminal-block {
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 0.8rem;
     background-color: var(--surface-color);
     border-radius: 0;
@@ -209,7 +209,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 }
 
 .apod-card {
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     border-radius: 0;
     overflow: hidden;
     margin-top: 0.4rem;
@@ -256,7 +256,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     margin-bottom: 2rem;
     color: var(--text-muted);
     align-items: center;
-    border-bottom: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border-bottom: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding-bottom: 0.6rem;
     font-family: var(--font-mono);
     font-size: 12px;
@@ -283,7 +283,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 .top-nav a.active {
     color: var(--accent-green);
     background: rgba(16, 185, 129, 0.1);
-    border: 1px solid var(--accent-green); /* SOLID matching reference image */
+    border: 1px dashed var(--accent-green); /* Retro dashed borders */
     text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
 }
 
@@ -330,7 +330,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 /* Sections: Solid borders, matching screenshot */
 .section {
     margin-bottom: 2.5rem;
-    border: 1px solid var(--border-color); /* SOLID thin border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 1.5rem;
     border-radius: 0;
     background-color: var(--surface-color);
@@ -440,7 +440,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .skill-category {
     background-color: var(--surface-color);
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 1.2rem;
     border-radius: 0;
     transition: all 0.25s ease;
@@ -528,7 +528,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .achievement-card {
     background-color: var(--surface-color);
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 1.2rem;
     position: relative;
     transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -598,7 +598,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .oss-card {
     background-color: var(--surface-color);
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 1.2rem;
     display: flex;
     flex-direction: column;
@@ -668,7 +668,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .project {
     background-color: var(--surface-color);
-    border: 1px solid var(--border-color); /* SOLID border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 1.2rem;
     border-radius: 0;
     display: flex;
@@ -739,7 +739,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .hobby-item {
     background-color: var(--surface-color);
-    border: 1px solid var(--border-color); /* SOLID thin border matching reference image */
+    border: 1px dashed var(--border-color); /* Retro dashed card borders */
     padding: 0.8rem 1.4rem;
     display: flex;
     align-items: center;
@@ -793,7 +793,7 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 input, textarea {
     background: #000000;
-    border: 1px solid var(--border-color);
+    border: 1px dashed var(--border-color);
     color: var(--text-main);
     font-family: var(--font-mono);
     font-size: 12px;
@@ -811,7 +811,7 @@ input:focus, textarea:focus {
 button {
     background: var(--surface-color);
     color: var(--text-main);
-    border: 1px solid var(--border-color);
+    border: 1px dashed var(--border-color);
     padding: 0.6rem;
     font-family: var(--font-mono);
     font-size: 12px;

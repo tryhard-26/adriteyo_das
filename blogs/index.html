@@ -1,148 +1,169 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blogs | Adriteyo Das</title>
+    <title>tryhard // blogs</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg: #0a0a0a;
-            --bg-secondary: #111111;
-            --text: #d0d0d0;
-            --text-dim: #808080;
-            --accent: #c45a1a;
-            --border: #1f1f1f;
+            --bg-color: #000000;
+            --text-main: #f1f5f9;
+            --text-muted: #88888e;
+            --accent-green: #10b981;
+            --accent-purple: #f43f5e;
+            --accent-blue: #06b6d4;
+            --accent-yellow: #fbbf24;
+            --border-color: #2b2b2f;
+            --font-mono: 'IBM Plex Mono', monospace;
         }
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            min-height: 100vh;
-            background: radial-gradient(circle at 10% 0%, #17110d 0%, var(--bg) 38%);
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            line-height: 1.65;
-            padding: 36px 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 920px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 3rem 2rem;
+            max-width: 800px;
             margin: 0 auto;
         }
 
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
+        .header {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 28px;
-            color: var(--accent);
-            font-weight: 600;
-            letter-spacing: 0.2px;
+        .header .path {
+            color: var(--accent-green);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.4rem;
         }
 
-        .home-link {
-            color: var(--text-dim);
+        .header .cmd {
+            color: var(--accent-purple);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .header .desc {
+            color: var(--text-main);
+            margin-top: 0.5rem;
+        }
+
+        .section-title {
+            color: var(--accent-yellow);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 0.3rem;
+            letter-spacing: 1px;
+        }
+
+        .blog-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .blog-list li {
+            margin-bottom: 1rem;
+            padding-left: 1.2rem;
+            position: relative;
+        }
+
+        .blog-list li::before {
+            content: ">";
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .blog-list.upcoming li::before {
+            content: "-";
+            color: var(--accent-purple);
+        }
+
+        .blog-list a {
+            color: var(--accent-blue);
             text-decoration: none;
-            border: 1px solid var(--border);
-            padding: 8px 12px;
+            font-weight: 500;
+            border-bottom: 1px dashed var(--accent-blue);
             transition: all 0.2s ease;
         }
 
-        .home-link:hover {
-            color: var(--accent);
-            border-color: var(--accent);
+        .blog-list a:hover {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
         }
 
-        .intro {
-            margin: 0 0 24px;
-            color: var(--text-dim);
-            border-left: 2px solid var(--accent);
-            padding-left: 12px;
+        .upcoming-text {
+            color: var(--text-muted);
         }
 
-        .panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            padding: 16px;
-            margin-bottom: 16px;
+        .back-home {
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
         }
 
-        h2 {
-            margin: 0 0 12px;
-            font-size: 16px;
-            color: var(--text);
-            font-weight: 600;
-        }
-
-        ul {
-            margin: 0;
-            padding-left: 18px;
-        }
-
-        li {
-            margin: 10px 0;
-            color: var(--text-dim);
-        }
-
-        a {
-            color: var(--accent);
+        .back-home a {
+            color: var(--accent-purple);
             text-decoration: none;
+            font-weight: bold;
         }
 
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .note {
-            margin-top: 20px;
-            font-size: 13px;
-            color: #666;
+        .back-home a:hover {
+            color: var(--accent-blue);
         }
     </style>
 </head>
 <body>
-    <main class="container">
-        <div class="top">
-            <h1>/blogs</h1>
-            <a class="home-link" href="/">cd ~</a>
-        </div>
 
-        <p class="intro">My collection of blogs where i plan to cover topics on digital forensics, aiml and low level programming</p>
+    <header class="header">
+        <h1 style="color: var(--accent-green); margin-bottom: 0.5rem; font-size: 1.8rem; letter-spacing: 1px;">/blogs</h1>
+        <p class="desc" style="color: var(--text-main);">My collection of blogs where i plan to cover topics on digital forensics, aiml and low level programming</p>
+    </header>
 
-        <section class="panel">
-            <h2>Published</h2>
-            <ul>
-                <li><a href="/blogs/post.html?post=memoryforensics.md">Memory Forensics with Volatility 3: A Complete Deep Dive</a></li>
-                <li><a href="/blogs/post.html?post=memlabs.md">MemLabs Lab 6 Writeup: The Reckoning</a></li>
-            </ul>
-        </section>
+    <main>
+        <h2 class="section-title">Published</h2>
+        <ul class="blog-list">
+            <li>
+                <a href="post.html?src=memoryforensics.md">Memory Forensics with Volatility 3: A Complete Deep Dive</a>
+            </li>
+            <li>
+                <a href="post.html?src=memlabs.md">MemLabs Lab 6 Writeup: The Reckoning</a>
+            </li>
+        </ul>
 
-        <section class="panel">
-            <h2>Upcoming</h2>
-            <ul>
-                <li>Writing, Dissecting and Detecting Rootkits</li>
-                <li>The Math behind ViT</li>
-                <li>The Math behind Foundational Vision Models</li>
-                <li>Quantization Explained</li>
-                <li>FlashAttention under the hood</li>
-            </ul>
-        </section>
-
-        <p class="note">More posts coming soon.</p>
+        <h2 class="section-title">Upcoming</h2>
+        <ul class="blog-list upcoming">
+            <li><span class="upcoming-text">Writing, Dissecting and Detecting Rootkits</span></li>
+            <li><span class="upcoming-text">The Math behind ViT</span></li>
+            <li><span class="upcoming-text">The Math behind Foundational Vision Models</span></li>
+            <li><span class="upcoming-text">Quantization Explained</span></li>
+            <li><span class="upcoming-text">FlashAttention under the hood</span></li>
+        </ul>
     </main>
+
+    <footer class="back-home">
+        <a href="../">&lt;-- Return to Portfolio</a>
+    </footer>
+
 </body>
 </html>

@@ -1,15 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
 
 :root {
-    --bg-color: #000000; /* Pure dead monitor black matching screenshot */
-    --surface-color: #000000; /* Solid terminal surface black */
-    --text-main: #f1f5f9; /* Super clean, high-contrast bright silver-white */
-    --text-muted: #88888e; /* Muted gray for lines and metadata */
-    --accent-green: #10b981; /* Saturated phosphor active highlight green */
-    --accent-purple: #f43f5e; /* Vibrant magenta/rose for dates */
-    --accent-yellow: #fbbf24; /* Radiant phosphor amber-yellow for section headers */
-    --accent-blue: #06b6d4; /* Vibrant cyan for subheaders and project links */
-    --border-color: #2b2b2f; /* Solid thin gray borders matching the screenshot */
+    --bg-color: #000000;
+    /* Pure dead monitor black matching screenshot */
+    --surface-color: #000000;
+    /* Solid terminal surface black */
+    --text-main: #f1f5f9;
+    /* Super clean, high-contrast bright silver-white */
+    --text-muted: #88888e;
+    /* Muted gray for lines and metadata */
+    --accent-green: #10b981;
+    /* Saturated phosphor active highlight green */
+    --accent-purple: #f43f5e;
+    /* Vibrant magenta/rose for dates */
+    --accent-yellow: #fbbf24;
+    /* Radiant phosphor amber-yellow for section headers */
+    --accent-blue: #06b6d4;
+    /* Vibrant cyan for subheaders and project links */
+    --border-color: #2b2b2f;
+    /* Solid thin gray borders matching the screenshot */
     --font-main: 'VT323', monospace;
     --font-mono: 'IBM Plex Mono', monospace;
 }
@@ -28,7 +37,8 @@ body {
     background-color: var(--bg-color);
     color: var(--text-main);
     font-family: var(--font-main);
-    font-size: 22px; /* Large, pixelated, readable font size */
+    font-size: 22px;
+    /* Large, pixelated, readable font size */
     line-height: 1.35;
     letter-spacing: 0.04em;
     overflow-x: hidden;
@@ -41,7 +51,10 @@ body::before {
     content: " ";
     display: block;
     position: fixed;
-    top: 0; left: 0; bottom: 0; right: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
     z-index: 9999;
     background-size: 100% 3px;
@@ -50,9 +63,17 @@ body::before {
 }
 
 @keyframes crt-flicker {
-    0% { opacity: 0.99; }
-    50% { opacity: 1; }
-    100% { opacity: 0.995; }
+    0% {
+        opacity: 0.99;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.995;
+    }
 }
 
 a {
@@ -67,7 +88,14 @@ a:hover {
 }
 
 /* Tactile Click Squeeze Feedback */
-a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active, .hobby-item:active, .oss-card:active, .achievement-card:active {
+a:active,
+button:active,
+.top-nav a:active,
+.project:active,
+.skill-pill:active,
+.hobby-item:active,
+.oss-card:active,
+.achievement-card:active {
     transform: scale(0.97) !important;
 }
 
@@ -94,11 +122,18 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     overflow-y: auto;
 }
 
-.sidebar::-webkit-scrollbar { display: none; }
-.sidebar { -ms-overflow-style: none; scrollbar-width: none; }
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 
 .profile-card {
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 1.2rem;
     background-color: var(--surface-color);
     border-radius: 0;
@@ -152,7 +187,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 }
 
 .divider {
-    border-top: 1px dashed var(--border-color); /* Inner elements use dashed divider */
+    border-top: 1px dashed var(--border-color);
+    /* Inner elements use dashed divider */
     margin: 0.8rem 0;
 }
 
@@ -172,7 +208,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 }
 
 .terminal-block {
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 0.8rem;
     background-color: var(--surface-color);
     border-radius: 0;
@@ -209,7 +246,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 }
 
 .apod-card {
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     border-radius: 0;
     overflow: hidden;
     margin-top: 0.4rem;
@@ -256,15 +294,16 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     margin-bottom: 2rem;
     color: var(--text-muted);
     align-items: center;
-    border-bottom: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border-bottom: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding-bottom: 0.6rem;
     font-family: var(--font-mono);
     font-size: 12px;
 }
 
-.nav-prompt { 
-    color: var(--accent-purple); 
-    font-weight: bold; 
+.nav-prompt {
+    color: var(--accent-purple);
+    font-weight: bold;
     margin-right: 0.3rem;
 }
 
@@ -283,7 +322,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 .top-nav a.active {
     color: var(--accent-green);
     background: rgba(16, 185, 129, 0.1);
-    border: 1px dashed var(--accent-green); /* Retro dashed borders */
+    border: 1px dashed var(--accent-green);
+    /* Retro dashed borders */
     text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
 }
 
@@ -319,18 +359,36 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 }
 
 @keyframes glitch {
-    0% { transform: translate(0) }
-    20% { transform: translate(-1px, 1px) }
-    40% { transform: translate(-1px, -1px) }
-    60% { transform: translate(1px, 1px) }
-    80% { transform: translate(1px, -1px) }
-    100% { transform: translate(0) }
+    0% {
+        transform: translate(0)
+    }
+
+    20% {
+        transform: translate(-1px, 1px)
+    }
+
+    40% {
+        transform: translate(-1px, -1px)
+    }
+
+    60% {
+        transform: translate(1px, 1px)
+    }
+
+    80% {
+        transform: translate(1px, -1px)
+    }
+
+    100% {
+        transform: translate(0)
+    }
 }
 
 /* Sections: Solid borders, matching screenshot */
 .section {
     margin-bottom: 2.5rem;
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 1.5rem;
     border-radius: 0;
     background-color: var(--surface-color);
@@ -342,7 +400,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     box-shadow: 0 5px 25px rgba(255, 255, 255, 0.03);
 }
 
-.section.visible, .animate-on-scroll {
+.section.visible,
+.animate-on-scroll {
     opacity: 1 !important;
     transform: none !important;
 }
@@ -354,7 +413,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     margin-bottom: 1.2rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    border-bottom: 1px dashed var(--border-color); /* Inner headers use dashed dividers */
+    border-bottom: 1px dashed var(--border-color);
+    /* Inner headers use dashed dividers */
     padding-bottom: 0.3rem;
     text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
 }
@@ -362,7 +422,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 /* Generic List/Item Styling - separated by dashed separators */
 .item {
     margin-bottom: 1.5rem;
-    border-bottom: 1px dashed var(--border-color); /* Dashed separation inside sections */
+    border-bottom: 1px dashed var(--border-color);
+    /* Dashed separation inside sections */
     padding-bottom: 1.2rem;
 }
 
@@ -440,7 +501,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .skill-category {
     background-color: var(--surface-color);
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 1.2rem;
     border-radius: 0;
     transition: all 0.25s ease;
@@ -528,7 +590,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .achievement-card {
     background-color: var(--surface-color);
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 1.2rem;
     position: relative;
     transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -576,7 +639,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 .achievement-list span.loc {
     color: var(--text-muted);
     font-size: 11px;
-    padding-left: 20px; /* Aligns with name text offset from favicon */
+    padding-left: 20px;
+    /* Aligns with name text offset from favicon */
 }
 
 .favicon {
@@ -598,7 +662,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .oss-card {
     background-color: var(--surface-color);
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 1.2rem;
     display: flex;
     flex-direction: column;
@@ -668,7 +733,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .project {
     background-color: var(--surface-color);
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 1.2rem;
     border-radius: 0;
     display: flex;
@@ -739,12 +805,14 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
 
 .hobby-item {
     background-color: var(--surface-color);
-    border: 1px dashed var(--border-color); /* Retro dashed card borders */
+    border: 1px dashed var(--border-color);
+    /* Retro dashed card borders */
     padding: 0.8rem 1.4rem;
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    font-size: 1.35rem; /* Large, bold hobbies */
+    font-size: 1.35rem;
+    /* Large, bold hobbies */
     font-family: var(--font-main);
     font-weight: bold;
     cursor: pointer;
@@ -758,12 +826,14 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
 }
 
-.hobby-item .hobby-svg, .hobby-item .favicon {
+.hobby-item .hobby-svg,
+.hobby-item .favicon {
     transition: transform 0.3s ease;
     flex-shrink: 0;
 }
 
-.hobby-item:hover .hobby-svg, .hobby-item:hover .favicon {
+.hobby-item:hover .hobby-svg,
+.hobby-item:hover .favicon {
     transform: scale(1.35) rotate(-10deg);
 }
 
@@ -791,7 +861,8 @@ a:active, button:active, .top-nav a:active, .project:active, .skill-pill:active,
     gap: 0.3rem;
 }
 
-input, textarea {
+input,
+textarea {
     background: #000000;
     border: 1px dashed var(--border-color);
     color: var(--text-main);
@@ -803,7 +874,8 @@ input, textarea {
     transition: all 0.2s ease;
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
     border-color: var(--accent-blue);
     box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
 }
@@ -831,12 +903,14 @@ button:hover {
     .container {
         flex-direction: column;
     }
+
     .sidebar {
         width: 100%;
         position: relative;
         top: 0;
         height: auto;
     }
+
     .top-nav {
         justify-content: center;
         position: sticky;

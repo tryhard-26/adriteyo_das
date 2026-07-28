@@ -113,26 +113,26 @@ async function fetchAPOD() {
     try {
         const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}`);
         const data = await response.json();
-        
+
         if (data.url) {
             const img = document.getElementById('apod-img');
             if (img) {
                 img.src = data.url;
                 img.style.display = 'block';
             }
-            
+
             const title = document.getElementById('apod-title');
             if (title) title.innerText = data.title;
-            
+
             const date = document.getElementById('apod-date');
             if (date) date.innerText = data.date;
-            
+
             const descSpan = document.getElementById('apod-desc');
             if (descSpan) {
                 const desc = data.explanation;
                 descSpan.innerText = desc.substring(0, 100) + '...';
             }
-            
+
             const link = document.getElementById('apod-link');
             if (link) {
                 link.href = data.hdurl || data.url;

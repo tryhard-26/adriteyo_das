@@ -1,26 +1,59 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
 
 :root {
-    --bg-color: #000000;
-    /* Pure dead monitor black matching screenshot */
-    --surface-color: #000000;
-    /* Solid terminal surface black */
-    --text-main: #f1f5f9;
-    /* Super clean, high-contrast bright silver-white */
-    --text-muted: #88888e;
-    /* Muted gray for lines and metadata */
+    /* Slightly dark theme - comfortable deep charcoal/slate, not pure dead pitch black */
+    --bg-color: #0f141c;
+    --surface-color: #161e2b;
+    --surface-hover: #1e283a;
+    --input-bg: #0b0f16;
+    --tooltip-bg: #1c2432;
+    --text-main: #edf2f7;
+    --text-muted: #8c9cb3;
     --accent-green: #10b981;
-    /* Saturated phosphor active highlight green */
     --accent-purple: #f43f5e;
-    /* Vibrant magenta/rose for dates */
     --accent-yellow: #fbbf24;
-    /* Radiant phosphor amber-yellow for section headers */
-    --accent-blue: #06b6d4;
-    /* Vibrant cyan for subheaders and project links */
-    --border-color: #2b2b2f;
-    /* Solid thin gray borders matching the screenshot */
+    --accent-blue: #38bdf8;
+    --border-color: #263345;
+    --border-hover: #38bdf8;
+    --scanline-opacity: 0.18;
     --font-main: 'VT323', monospace;
     --font-mono: 'IBM Plex Mono', monospace;
+}
+
+:root[data-theme="light"],
+html[data-theme="light"],
+html.light-theme,
+body.light-theme,
+[data-theme="light"] {
+    /* Modern light mode - crisp, readable terminal aesthetic */
+    --bg-color: #f1f5f9;
+    --surface-color: #ffffff;
+    --surface-hover: #f8fafc;
+    --input-bg: #f8fafc;
+    --tooltip-bg: #0f172a;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --accent-green: #059669;
+    --accent-purple: #e11d48;
+    --accent-yellow: #b45309;
+    --accent-blue: #0284c7;
+    --border-color: #cbd5e1;
+    --border-hover: #0284c7;
+    --scanline-opacity: 0.03;
+}
+
+[data-theme="light"] body,
+html.light-theme body,
+body.light-theme {
+    animation: none !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] body::before,
+html.light-theme body::before,
+body.light-theme::before {
+    display: none !important;
 }
 
 * {
@@ -38,15 +71,15 @@ body {
     color: var(--text-main);
     font-family: var(--font-main);
     font-size: 22px;
-    /* Large, pixelated, readable font size */
     line-height: 1.35;
     letter-spacing: 0.04em;
     overflow-x: hidden;
     position: relative;
     animation: crt-flicker 0.15s infinite;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Pure Monochrome Scanline Overlay */
+/* Phosphor Scanline Overlay */
 body::before {
     content: " ";
     display: block;
@@ -55,11 +88,12 @@ body::before {
     left: 0;
     bottom: 0;
     right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
     z-index: 9999;
     background-size: 100% 3px;
     pointer-events: none;
-    opacity: 0.6;
+    opacity: var(--scanline-opacity, 0.18);
+    transition: opacity 0.25s ease;
 }
 
 @keyframes crt-flicker {
@@ -251,7 +285,7 @@ button:active,
     border-radius: 0;
     overflow: hidden;
     margin-top: 0.4rem;
-    background: #000;
+    background: var(--surface-color);
 }
 
 .apod-image {
@@ -283,6 +317,7 @@ button:active,
 /* Main Content */
 .main-content {
     flex-grow: 1;
+    min-width: 0;
     padding-bottom: 3rem;
 }
 
@@ -325,6 +360,55 @@ button:active,
     border: 1px dashed var(--accent-green);
     /* Retro dashed borders */
     text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+}
+
+.theme-toggle-btn {
+    margin: 0;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+    background: rgba(251, 191, 36, 0.08);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.25);
+}
+
+.bulb-svg {
+    display: block;
+    pointer-events: none;
+    transition: all 0.25s ease;
+}
+
+:root[data-theme="light"] .theme-toggle-btn,
+html.light-theme .theme-toggle-btn,
+body.light-theme .theme-toggle-btn,
+[data-theme="light"] .theme-toggle-btn {
+    color: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    background: rgba(217, 119, 6, 0.08);
+}
+
+:root[data-theme="light"] .theme-toggle-btn .bulb-svg,
+html.light-theme .theme-toggle-btn .bulb-svg,
+body.light-theme .theme-toggle-btn .bulb-svg,
+[data-theme="light"] .theme-toggle-btn .bulb-svg {
+    fill: var(--accent-yellow);
+    stroke: var(--accent-yellow);
+    filter: drop-shadow(0 0 4px rgba(217, 119, 6, 0.45));
 }
 
 /* Cryptonite Glitch Hover Effect and small logo sizing */
@@ -561,7 +645,7 @@ button:active,
     transform: translateX(-50%) scale(0.85);
     opacity: 0;
     pointer-events: none;
-    background: #110f22;
+    background: var(--tooltip-bg);
     border: 1px dashed var(--accent-purple);
     color: #fff;
     padding: 0.4rem 0.6rem;
@@ -724,6 +808,70 @@ button:active,
     margin-bottom: 0.6rem;
 }
 
+/* CERN / Compiler Research PR Dashboard Table */
+.cern-pr-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0.6rem 0;
+    font-family: var(--font-mono);
+}
+
+.cern-pr-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--surface-hover);
+    border: 1px dashed var(--border-color);
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.cern-pr-row:hover {
+    border-color: var(--accent-blue);
+    background: rgba(6, 182, 212, 0.05);
+}
+
+.cern-pr-tag {
+    color: var(--accent-green);
+    font-weight: bold;
+    text-decoration: none;
+    white-space: nowrap;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    padding: 0.1rem 0.4rem;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.cern-pr-tag:hover {
+    border-color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.cern-pr-desc {
+    flex-grow: 1;
+    color: var(--text-main);
+    line-height: 1.35;
+}
+
+.cern-pr-desc code {
+    color: var(--accent-yellow);
+    background: rgba(251, 191, 36, 0.1);
+    padding: 0.05rem 0.3rem;
+    font-size: 11px;
+    border: 1px dashed rgba(251, 191, 36, 0.3);
+}
+
+.cern-pr-status {
+    color: var(--accent-green);
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--accent-green);
+    white-space: nowrap;
+}
+
 /* Project Cards with SOLID borders */
 .projects-grid {
     display: grid;
@@ -749,7 +897,7 @@ button:active,
     border-color: var(--accent-blue);
     transform: translateY(-4px);
     box-shadow: 0 5px 15px rgba(6, 182, 212, 0.2);
-    background-color: #0c0a15;
+    background-color: var(--surface-hover);
 }
 
 .project .item-title {
@@ -863,7 +1011,7 @@ button:active,
 
 input,
 textarea {
-    background: #000000;
+    background: var(--input-bg);
     border: 1px dashed var(--border-color);
     color: var(--text-main);
     font-family: var(--font-mono);

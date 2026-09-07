@@ -5,8 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adriteyo Das | Portfolio</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css?v=4">
     <link rel="icon" type="image/jpeg" href="assets/img/razorbill.jpeg">
+    <script>
+        function applyTheme(theme) {
+            var btn = document.getElementById('theme-toggle');
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.documentElement.classList.add('light-theme');
+                if (document.body) document.body.classList.add('light-theme');
+                if (btn) {
+                    btn.setAttribute('title', 'Switch to Dark Mode');
+                    btn.setAttribute('aria-label', 'Switch to Dark Mode');
+                }
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.documentElement.classList.remove('light-theme');
+                if (document.body) document.body.classList.remove('light-theme');
+                if (btn) {
+                    btn.setAttribute('title', 'Switch to Light Mode');
+                    btn.setAttribute('aria-label', 'Switch to Light Mode');
+                }
+            }
+            try {
+                localStorage.setItem('theme_preference', theme);
+            } catch (e) {}
+        }
+
+        function toggleTheme() {
+            var isLight = document.documentElement.getAttribute('data-theme') === 'light' || document.documentElement.classList.contains('light-theme');
+            applyTheme(isLight ? 'dark' : 'light');
+        }
+
+        window.toggleTheme = toggleTheme;
+        window.applyTheme = applyTheme;
+
+        // Apply theme immediately on head parse
+        try {
+            var saved = localStorage.getItem('theme_preference');
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.documentElement.classList.add('light-theme');
+            }
+        } catch (e) {}
+    </script>
 </head>
 
 <body>
@@ -14,14 +56,17 @@
     <div class="container">
         <aside class="sidebar">
             <div class="profile-card">
-                <div class="name">
-                    <span class="full-name">Adriteyo Das</span>
-                    <span class="handle">tryhard</span>
-                </div>
-                <div class="focus-areas">
-                    Computer Vision.<br>
-                    Low Level Systems.<br>
-                    Forensics.
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div class="name" style="margin-bottom: 0;">
+                        <span class="full-name">Adriteyo Das</span>
+                        <span class="handle">tryhard</span>
+                    </div>
+                    <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Light / Dark Mode" title="Toggle Light / Dark Mode">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bulb-svg">
+                            <path d="M12 2a6 6 0 0 0-6 6c0 2.22 1.2 4.15 3 5.19V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-3.81c1.8-1.04 3-2.97 3-5.19a6 6 0 0 0-6-6z"/>
+                            <path d="M9 21h6"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <div class="divider"></div>
@@ -29,11 +74,11 @@
                 <ul class="links-list" style="font-size: 11px;">
                     <li style="display: flex; align-items: center; margin-bottom: 0.4rem;">
                         <span class="chevron" style="margin-right: 0.4rem;">&gt;</span>
-                        <a href="https://github.com/tryh4rd-26" target="_blank"
+                        <a href="https://github.com/tryhard-26" target="_blank"
                             style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                             <img src="assets/img/retro_github_icon.png" width="18" height="18" alt="github"
                                 style="image-rendering: pixelated; display: inline-block; vertical-align: middle;">
-                            <span>tryh4rd-26</span>
+                            <span>tryhard-26</span>
                         </a>
                     </li>
                     <li style="display: flex; align-items: center; margin-bottom: 0.4rem;">
@@ -133,7 +178,7 @@
                     cybersecurity.
                 </p>
                 <p style="font-family: var(--font-mono); font-size: 14px; line-height: 1.6; color: var(--text-main);">
-                    I play CTF for <a href="https://cryptonitemit.in/" target="_blank"
+                    I used to play CTFs for <a href="https://cryptonitemit.in/" target="_blank"
                         class="cryptonite-link">Cryptonite <img class="nite-img" src="assets/img/nite.png" alt=""
                             style="display: inline-block; width: 24px; height: 24px; vertical-align: middle; margin-left: 4px;"></a>.
                 </p>
@@ -153,13 +198,14 @@
                     </div>
                     <div style="flex-grow: 1;">
                         <div class="item-header">
-                            <div class="item-title">Upcoming SEP Intern</div>
-                            <div class="item-date">Jun 2026 – Aug 2026</div>
+                            <div class="item-title">Software Engineer Program (SEP) Intern</div>
+                            <div class="item-date">June 2026 – August 2026</div>
                         </div>
-                        <div class="item-subtitle">JPMorgan & Chase, Bangalore</div>
+                        <div class="item-subtitle">JPMorgan Chase &amp; Co. — Corporate Technology (Firmwide Planning &amp; Analysis) · Bengaluru, India</div>
                         <ul class="item-details">
-                            <li>Selected for the Software Engineer Program (SEP) Internship at JPMorgan & Chase</li>
-                            <li>Will be working in the Bangalore office, Summer 2026</li>
+                            <li>Worked as a Data Infrastructure Engineer within Corporate Technology (Firmwide Planning &amp; Analysis).</li>
+                            <li>Engineered distributed data pipelines and analytics systems utilizing Apache Spark and AWS.</li>
+                            <li>Automated cloud infrastructure provisioning and CI/CD pipelines with Terraform, Jenkins, Spinnaker, and ADK.</li>
                         </ul>
                     </div>
                 </div>
@@ -171,13 +217,12 @@
                     </div>
                     <div style="flex-grow: 1;">
                         <div class="item-header">
-                            <div class="item-title">Undergraduate Research Assistant</div>
-                            <div class="item-date">Aug 2025 – Present</div>
+                            <div class="item-title">Research Assistant</div>
+                            <div class="item-date">Aug 2026 – Present</div>
                         </div>
                         <div class="item-subtitle">Carnegie Mellon University · Xu Lab</div>
                         <ul class="item-details">
-                            <li>Research in biomedical AI under Dr Xingjian Li and Dr Min Xu, focusing on computational
-                                biology and deep learning applications.</li>
+                            <li>Working in Embodied AI under Dr. Xiaolong Wang at Xu Lab.</li>
                         </ul>
                     </div>
                 </div>
@@ -190,7 +235,7 @@
                     <div style="flex-grow: 1;">
                         <div class="item-header">
                             <div class="item-title">Head of Research & Development</div>
-                            <div class="item-date">Apr 2024 – Present</div>
+                            <div class="item-date">Apr 2024 – Aug 2026</div>
                         </div>
                         <div class="item-subtitle"><a href="https://cryptonitemit.in/" target="_blank"
                                 class="cryptonite-link"
@@ -244,9 +289,23 @@
                     </div>
                     <div style="flex-grow: 1;">
                         <div class="item-header">
-                            <div class="item-title">Non-correlative Feature Interaction for Classification of Real and
-                                Fake
-                                Scene Images</div>
+                            <div class="item-title">Enhanced Stress Detection via Intermediate Fusion of Intermodal Signals</div>
+                            <div class="item-date">Jan 2026</div>
+                        </div>
+                        <div class="item-subtitle">Intelligence-Based Medicine</div>
+                        <a href="https://doi.org/10.1016/j.ibmed.2026.100406" target="_blank"
+                            style="font-size: 0.9rem;">Elsevier ↗</a>
+                    </div>
+                </div>
+
+                <div class="item" style="display: flex; gap: 1.25rem; align-items: flex-start;">
+                    <div style="flex-shrink: 0; padding-top: 0.15rem;">
+                        <img src="assets/img/retro_paper_icon.png" width="40" height="40" alt="paper"
+                            style="image-rendering: pixelated; display: block; border: 1px dashed var(--border-color); padding: 4px; background: rgba(255, 255, 255, 0.01);">
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div class="item-header">
+                            <div class="item-title">Non-correlative Feature Interaction for Classification of Real and Fake Scene Images</div>
                             <div class="item-date">Nov 2025</div>
                         </div>
                         <div class="item-subtitle">8th Asian Conference on Pattern Recognition (ACPR), Gold Coast</div>
@@ -262,9 +321,7 @@
                     </div>
                     <div style="flex-grow: 1;">
                         <div class="item-header">
-                            <div class="item-title">Comparative Analysis of Multimodal Architectures for Effective Skin
-                                Skin
-                                Lesion Detection</div>
+                            <div class="item-title">Comparative Analysis of Multimodal Architectures for Effective Skin Lesion Detection</div>
                             <div class="item-date">Aug 2025</div>
                         </div>
                         <div class="item-subtitle">Frontiers in Artificial Intelligence</div>
@@ -315,8 +372,7 @@
                         </ul>
                     </div>
                 </div>
-    </div>
-    </section>
+            </section>
 
     <section id="skills" class="section animate-on-scroll">
         <h2 class="section-title">Skills</h2>
@@ -425,8 +481,11 @@
                 </ul>
             </div>
             <div class="skill-category">
-                <h4>databases</h4>
+                <h4>databases &amp; big data</h4>
                 <ul class="skill-list">
+                    <li class="skill-pill"
+                        data-tooltip="Distributed data pipelines and analytics engine engineered at JPMC.">
+                        Apache Spark</li>
                     <li class="skill-pill"
                         data-tooltip="Structured relational tables with foreign keys and optimizations.">MySQL
                     </li>
@@ -441,13 +500,28 @@
                 </ul>
             </div>
             <div class="skill-category">
-                <h4>devops & sre</h4>
+                <h4>devops &amp; sre</h4>
                 <ul class="skill-list">
+                    <li class="skill-pill"
+                        data-tooltip="Cloud data infrastructure, S3, IAM, and enterprise compute.">
+                        AWS</li>
                     <li class="skill-pill"
                         data-tooltip="Containerized SimuTrade, backend scripts, and sandbox environments.">
                         Docker</li>
                     <li class="skill-pill" data-tooltip="Deployed multi-node microservices with rolling updates.">
                         Kubernetes</li>
+                    <li class="skill-pill" data-tooltip="Infrastructure as Code for provisioning multi-cloud architecture.">
+                        Terraform
+                    </li>
+                    <li class="skill-pill" data-tooltip="Continuous integration and automated build verification pipelines.">
+                        Jenkins
+                    </li>
+                    <li class="skill-pill" data-tooltip="Multi-cloud continuous delivery and automated rollouts.">
+                        Spinnaker
+                    </li>
+                    <li class="skill-pill" data-tooltip="Application Development Kit / Cloud SDK infrastructure automation.">
+                        ADK
+                    </li>
                     <li class="skill-pill" data-tooltip="Orchestrated platform-as-a-service application deployments.">
                         Cloud Foundry
                     </li>
@@ -456,9 +530,6 @@
                         Ansible</li>
                     <li class="skill-pill"
                         data-tooltip="Declarative configuration management across enterprise servers.">Puppet
-                    </li>
-                    <li class="skill-pill" data-tooltip="Infrastructure as Code for provisioning multi-cloud hardware.">
-                        Terraform
                     </li>
                 </ul>
             </div>
@@ -600,97 +671,127 @@
         <h2 class="section-title">Projects</h2>
         <div class="projects-grid">
             <div class="project">
+                <div class="item-title">ParaOxidizer</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/ParaOxidizer" target="_blank">github ↗</a>
+                    <a href="https://crates.io/crates/paraoxidizer" target="_blank">crates.io ↗</a>
+                </div>
+                <p>Standalone Rust-native post-training quantizer &amp; inference engine for LLMs. Converts SafeTensors/GGUF to zero-copy memory-mapped .pox format with Metal compute shaders, AWQ/GPTQ, INT4/INT8, and Ed25519 cryptographic signatures.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">LLM Quantization</span><span class="tag">Metal GPU</span><span class="tag">AWQ/GPTQ</span><span class="tag">Inference</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">FeTorrent</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/FeTorrent" target="_blank">github ↗</a>
+                </div>
+                <p>High-performance asynchronous BitTorrent engine in Rust with a distributed stack: headless daemon, REST/WebSocket API layer, and CLI/Web dashboard controllers.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">BitTorrent</span><span class="tag">Async</span><span class="tag">WebSocket</span><span class="tag">P2P</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">rpsmon</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/rpsmon" target="_blank">github ↗</a>
+                    <a href="https://crates.io/crates/rpsmon" target="_blank">crates.io ↗</a>
+                </div>
+                <p>Fast Rust TUI system monitor for macOS &amp; Linux with live process insights, tree navigation, lock selection tracking, watchlists, signal dispatch, and configurable alerts.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">TUI</span><span class="tag">Systems</span><span class="tag">Crates.io</span><span class="tag">Linux/macOS</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">BlueShift</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/BlueShift" target="_blank">github ↗</a>
+                </div>
+                <p>Native macOS dual-pane SSH and remote file manager built in Swift and SwiftUI with differential delta transfers (rsync), keychain credential store, and multi-hop bastion jump host support.</p>
+                <div class="tags"><span class="tag">Swift</span><span class="tag">SwiftUI</span><span class="tag">macOS</span><span class="tag">SSH/SFTP</span><span class="tag">rsync</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">FermiURL</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/FermiURL" target="_blank">github ↗</a>
+                </div>
+                <p>High-throughput URL shortening service with distributed caching, QR code generator, real-time geolocated click analytics, and custom alias routing.</p>
+                <div class="tags"><span class="tag">React</span><span class="tag">Flask</span><span class="tag">MariaDB</span><span class="tag">Analytics</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">MemHawk</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Memhawk" target="_blank">github ↗</a>
+                </div>
+                <p>AI-powered memory forensics platform integrating Volatility 3 with local LLMs (Ollama) for automated triage, anomaly detection, and interactive dump analysis.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">Volatility</span><span class="tag">Ollama</span><span class="tag">Electron</span><span class="tag">DFIR</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">DropLAN</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/DropLAN" target="_blank">github ↗</a>
+                </div>
+                <p>Real-time local network file sharing service with zero-configuration peer discovery, streaming transfers, and QR connectivity.</p>
+                <div class="tags"><span class="tag">Flask</span><span class="tag">Socket.IO</span><span class="tag">Networking</span><span class="tag">WebSockets</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">Astraeus</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Astraeus" target="_blank">github ↗</a>
+                </div>
+                <p>Real-time orbital collision risk prediction with interactive 3D WebGL visualization and machine learning ensemble classifier (94.2% accuracy).</p>
+                <div class="tags"><span class="tag">Three.js</span><span class="tag">XGBoost</span><span class="tag">Flask</span><span class="tag">Orbital Physics</span></div>
+            </div>
+
+            <div class="project">
                 <div class="item-title">ChiefWarden</div>
                 <div class="project-links">
-                    <a href="https://github.com/tryh4rd-26/Cryptonite-Research-and-Development/tree/main/ChiefWarden"
+                    <a href="https://github.com/tryhard-26/Cryptonite-Research-and-Development/tree/main/ChiefWarden"
                         target="_blank">github ↗</a>
                 </div>
-                <p>Hybrid malware detection — PE analysis + ML (98.89% accuracy)</p>
-                <div class="tags"><span class="tag">PyTorch</span><span class="tag">XGBoost</span></div>
+                <p>Hybrid malware detection framework — Portable Executable (PE) static analysis combined with gradient boosting ML (98.89% accuracy).</p>
+                <div class="tags"><span class="tag">PyTorch</span><span class="tag">XGBoost</span><span class="tag">PE Malware</span><span class="tag">DFIR</span></div>
             </div>
 
             <div class="project">
                 <div class="item-title">SimuTrade</div>
                 <div class="project-links">
-                    <a href="https://github.com/tryh4rd-26/Stocksim" target="_blank">github ↗</a> <a
+                    <a href="https://github.com/tryhard-26/Stocksim" target="_blank">github ↗</a> <a
                         href="https://stocksim-dusky.vercel.app/" target="_blank">live ↗</a>
                 </div>
-                <p>Real-time stock trading simulator with Prophet forecasting</p>
+                <p>Real-time stock trading simulator and portfolio tracker with Prophet time-series price forecasting and technical charts.</p>
                 <div class="tags"><span class="tag">React</span><span class="tag">Flask</span><span
-                        class="tag">Docker</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">GAN_RepairNet</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/Inpainting-GAN" target="_blank">github
-                        ↗</a></div>
-                <p>GAN for restoring corrupted dashcam images</p>
-                <div class="tags"><span class="tag">PyTorch</span><span class="tag">U-Net</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">DropLAN</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/DropLAN" target="_blank">github ↗</a>
-                </div>
-                <p>Real-time local network file sharing with QR connectivity</p>
-                <div class="tags"><span class="tag">Flask</span><span class="tag">Socket.IO</span></div>
+                        class="tag">Docker</span><span class="tag">Finance</span></div>
             </div>
 
             <div class="project">
                 <div class="item-title">Irones</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/Irones" target="_blank">github
-                        ↗</a></div>
-                <p>Cycle-accurate NES emulator with SDL2 rendering</p>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Irones" target="_blank">github ↗</a>
+                </div>
+                <p>Cycle-accurate Nintendo Entertainment System (NES) emulator in Rust with 6502 CPU emulation, PPU rendering, and SDL2 audiovisual output.</p>
                 <div class="tags"><span class="tag">Rust</span><span class="tag">SDL2</span><span
-                        class="tag">6502</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">FermiURL</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/FermiURL" target="_blank">github ↗</a>
-                </div>
-                <p>Minimalistic URL shortener with click tracking & analytics</p>
-                <div class="tags"><span class="tag">React</span><span class="tag">Flask</span><span
-                        class="tag">MariaDB</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">MemHawk</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/Memhawk" target="_blank">github ↗</a>
-                </div>
-                <p>AI-powered memory forensics platform for comprehensive dump analysis</p>
-                <div class="tags"><span class="tag">Python</span><span class="tag">Ollama</span><span
-                        class="tag">Electron</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">Astraeus</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/Astraeus" target="_blank">github ↗</a>
-                </div>
-                <p>Real-time orbital collision risk prediction with ML ensemble (94.2% accuracy)</p>
-                <div class="tags"><span class="tag">Three.js</span><span class="tag">XGBoost</span><span
-                        class="tag">Flask</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">FeTorrent</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/FeTorrent" target="_blank">github
-                        ↗</a></div>
-                <p>High-performance asynchronous BitTorrent engine in Rust with a distributed stack: headless
-                    daemon, REST/WebSocket API layer, and CLI/Web dashboard controllers.</p>
-                <div class="tags"><span class="tag">Rust</span><span class="tag">BitTorrent</span><span
-                        class="tag">WebSocket</span></div>
+                        class="tag">6502</span><span class="tag">Emulation</span></div>
             </div>
 
             <div class="project">
                 <div class="item-title">PassRanger</div>
-                <div class="project-links"><a href="https://github.com/tryh4rd-26/PassRanger" target="_blank">github
-                        ↗</a></div>
-                <p>Android password manager in Java with encrypted local storage, optional Firebase sync,
-                    Autofill integration, and password analysis using rule-based + ML scoring with HIBP
-                    k-anonymity checks.</p>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/PassRanger" target="_blank">github ↗</a>
+                </div>
+                <p>Android password manager in Java with encrypted local storage, optional Firebase sync, Autofill integration, and password entropy analysis using rule-based + ML scoring with HIBP k-anonymity checks.</p>
                 <div class="tags"><span class="tag">Android</span><span class="tag">Java</span><span
-                        class="tag">Security</span></div>
+                        class="tag">Cryptography</span><span class="tag">Security</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">GAN_RepairNet</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Inpainting-GAN" target="_blank">github ↗</a>
+                </div>
+                <p>Deep convolutional generative adversarial network with U-Net architecture for reconstructing severely corrupted dashcam images.</p>
+                <div class="tags"><span class="tag">PyTorch</span><span class="tag">U-Net</span><span class="tag">GANs</span><span class="tag">Computer Vision</span></div>
             </div>
         </div>
     </section>
@@ -754,22 +855,32 @@
 
             <div class="oss-card wide">
                 <div class="oss-header">
-                    <span class="oss-repo">CppInterOp (3 PRs)</span>
-                    <span class="oss-status merged">MERGED</span>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="oss-repo">CppInterOp</span>
+                        <span style="color: var(--accent-yellow); font-family: var(--font-mono); font-size: 11px;">[ CERN &amp; LLVM Research ]</span>
+                    </div>
+                    <span class="oss-status merged">3 PRs MERGED</span>
                 </div>
-                <div class="oss-meta">compiler-research/CppInterOp · Clang AST Refactoring</div>
-                <p>Contributed to AST processing and build fixes:</p>
-                <ul class="item-details" style="margin-bottom: 0.8rem; margin-top: 0.3rem;">
-                    <li><a href="https://github.com/compiler-research/CppInterOp/pull/842" target="_blank">PR
-                            #842 ↗</a>: Replaced fragile string matching with Clang AST-based check in
-                        IsBuiltin()</li>
-                    <li><a href="https://github.com/compiler-research/CppInterOp/pull/846" target="_blank">PR
-                            #846 ↗</a>: Refactored shared GetCompleteNameImpl</li>
-                    <li><a href="https://github.com/compiler-research/CppInterOp/pull/829" target="_blank">PR
-                            #829 ↗</a>: Fixed macOS CMake test invocation</li>
-                </ul>
-                <div class="tags"><span class="tag">C++</span><span class="tag">Clang AST</span><span
-                        class="tag">CMake</span></div>
+                <div class="oss-meta">compiler-research/CppInterOp · Clang AST Interoperability &amp; Build Infrastructure</div>
+                <p>Contributed core Clang AST processing improvements, unified symbol resolution, and macOS test invocation fixes to the C++ interoperability engine used at CERN:</p>
+                <div class="cern-pr-grid">
+                    <div class="cern-pr-row">
+                        <a href="https://github.com/compiler-research/CppInterOp/pull/842" target="_blank" class="cern-pr-tag">PR #842 ↗</a>
+                        <span class="cern-pr-desc">Replaced fragile string matching with robust Clang AST-based check in <code>IsBuiltin()</code></span>
+                        <span class="cern-pr-status">MERGED</span>
+                    </div>
+                    <div class="cern-pr-row">
+                        <a href="https://github.com/compiler-research/CppInterOp/pull/846" target="_blank" class="cern-pr-tag">PR #846 ↗</a>
+                        <span class="cern-pr-desc">Refactored shared symbol resolution and name handling in <code>GetCompleteNameImpl</code></span>
+                        <span class="cern-pr-status">MERGED</span>
+                    </div>
+                    <div class="cern-pr-row">
+                        <a href="https://github.com/compiler-research/CppInterOp/pull/829" target="_blank" class="cern-pr-tag">PR #829 ↗</a>
+                        <span class="cern-pr-desc">Fixed macOS CMake test runner invocation and target dependency discovery</span>
+                        <span class="cern-pr-status">MERGED</span>
+                    </div>
+                </div>
+                <div class="tags" style="margin-top: 0.8rem;"><span class="tag">C++</span><span class="tag">Clang AST</span><span class="tag">LLVM</span><span class="tag">CMake</span></div>
             </div>
         </div>
     </section>
@@ -868,7 +979,7 @@
     </main>
     </div>
 
-    <script src="index.js"></script>
+    <script src="index.js?v=4"></script>
 
 </body>
 

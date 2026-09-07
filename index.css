@@ -25,29 +25,33 @@ html[data-theme="light"],
 html.light-theme,
 body.light-theme,
 [data-theme="light"] {
-    /* Modern light mode - crisp, readable terminal aesthetic */
-    --bg-color: #f1f5f9;
-    --surface-color: #ffffff;
-    --surface-hover: #f8fafc;
-    --input-bg: #f8fafc;
-    --tooltip-bg: #0f172a;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --accent-green: #059669;
-    --accent-purple: #e11d48;
-    --accent-yellow: #b45309;
-    --accent-blue: #0284c7;
-    --border-color: #cbd5e1;
-    --border-hover: #0284c7;
-    --scanline-opacity: 0.03;
+    /* Warm Retro Terminal Paper (warm ivory/sepia, deep espresso ink, rich amber & forest accents) */
+    --bg-color: #f6f1e5;
+    --surface-color: #ede5d4;
+    --surface-hover: #e3d9c4;
+    --input-bg: #e6decb;
+    --tooltip-bg: #2d231b;
+    --text-main: #2a2017;
+    --text-muted: #6e6353;
+    --accent-green: #1b663e;
+    --accent-purple: #9e2a2b;
+    --accent-yellow: #a25708;
+    --accent-blue: #1c5b96;
+    --border-color: #cec2ad;
+    --border-hover: #a25708;
+    --scanline-opacity: 0;
 }
 
 [data-theme="light"] body,
 html.light-theme body,
 body.light-theme {
     animation: none !important;
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
+    background-color: var(--bg-color) !important;
+    color: var(--text-main) !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-smoothing: antialiased !important;
+    text-rendering: geometricPrecision !important;
 }
 
 [data-theme="light"] body::before,
@@ -1068,4 +1072,182 @@ button:hover {
         z-index: 10;
         border-bottom: 1px solid var(--border-color);
     }
+}
+
+/* ==========================================================================
+   WARM RETRO TERMINAL PAPER THEME (LIGHT MODE REFINEMENTS)
+   Warm ivory/sepia canvas, rich espresso typewriter ink, amber & forest accents
+   ========================================================================== */
+
+[data-theme="light"] .name,
+[data-theme="light"] .section-title,
+[data-theme="light"] .item-title,
+[data-theme="light"] .item-date,
+[data-theme="light"] .focus-areas,
+[data-theme="light"] .skill-category h4,
+[data-theme="light"] .oss-repo,
+[data-theme="light"] .achievement-badge,
+[data-theme="light"] a:hover,
+[data-theme="light"] .top-nav a.active,
+[data-theme="light"] .hobby-item:hover .hobby-text {
+    text-shadow: none !important;
+}
+
+[data-theme="light"] .profile-card:hover,
+[data-theme="light"] .terminal-block:hover,
+[data-theme="light"] .section:hover,
+[data-theme="light"] .skill-category:hover,
+[data-theme="light"] .oss-card:hover,
+[data-theme="light"] .project:hover,
+[data-theme="light"] .achievement-card:hover,
+[data-theme="light"] .hobby-item:hover {
+    box-shadow: 0 4px 14px rgba(42, 32, 23, 0.09) !important;
+    border-color: var(--accent-yellow) !important;
+}
+
+/* Light mode top navigation */
+[data-theme="light"] .top-nav a:hover {
+    color: var(--accent-green);
+    background: rgba(27, 102, 62, 0.08);
+}
+
+[data-theme="light"] .top-nav a.active {
+    background: rgba(27, 102, 62, 0.12);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+/* Light mode cards & panels */
+[data-theme="light"] .profile-card,
+[data-theme="light"] .terminal-block,
+[data-theme="light"] .section,
+[data-theme="light"] .skill-category,
+[data-theme="light"] .oss-card,
+[data-theme="light"] .project,
+[data-theme="light"] .achievement-card,
+[data-theme="light"] .hobby-item {
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
+}
+
+/* Light mode tags & skill badges */
+[data-theme="light"] .tag {
+    background: #e0d7c4;
+    color: #1b663e;
+    border: 1px dashed #c4b8a2;
+}
+
+[data-theme="light"] .skill-pill {
+    background: #e2d9c6;
+    color: #1b663e;
+    border: 1px dashed #c6baa4;
+}
+
+[data-theme="light"] .skill-pill:hover {
+    background: #d6ccb5;
+    border-color: #1b663e;
+    color: #124d2d;
+    box-shadow: 0 2px 6px rgba(42, 32, 23, 0.1);
+}
+
+[data-theme="light"] .skill-pill::after {
+    background: #2d231b;
+    color: #f6f1e5;
+    border: 1px solid #a25708;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Light mode OSS & PR Cards */
+[data-theme="light"] .oss-status.merged {
+    background: #d6e8dc;
+    color: #135632;
+    border: 1px solid #7ab691;
+}
+
+[data-theme="light"] .cern-pr-row {
+    background: #e6decb;
+    border-color: var(--border-color);
+}
+
+[data-theme="light"] .cern-pr-row:hover {
+    background: #ddd4c0;
+    border-color: var(--accent-blue);
+}
+
+[data-theme="light"] .cern-pr-tag {
+    background: #d8e8dd;
+    color: #135632;
+    border: 1px solid #7ab691;
+}
+
+[data-theme="light"] .cern-pr-tag:hover {
+    background: #c8e0ce;
+    border-color: #135632;
+}
+
+[data-theme="light"] .cern-pr-desc code {
+    color: #8c4705;
+    background: #dfd5c1;
+    border: 1px dashed #bfae95;
+}
+
+[data-theme="light"] .cern-pr-status {
+    background: #d6e8dc;
+    color: #135632;
+    border: 1px solid #7ab691;
+}
+
+/* Light mode APOD image & Cryptonite link */
+[data-theme="light"] .apod-image {
+    filter: contrast(102%) saturate(95%);
+    opacity: 0.95;
+}
+
+[data-theme="light"] .cryptonite-link .nite-img {
+    filter: drop-shadow(0 0 3px rgba(27, 102, 62, 0.35));
+}
+
+/* Light mode Theme Toggle Lightbulb */
+[data-theme="light"] .theme-toggle-btn {
+    background: #e6decb;
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+    box-shadow: 0 1px 4px rgba(42, 32, 23, 0.08);
+}
+
+[data-theme="light"] .theme-toggle-btn:hover {
+    background: #ddd4bf;
+    border-color: var(--accent-yellow);
+    box-shadow: 0 2px 8px rgba(162, 87, 8, 0.25);
+}
+
+[data-theme="light"] .theme-toggle-btn .bulb-svg {
+    fill: var(--accent-yellow);
+    stroke: var(--accent-yellow);
+    filter: drop-shadow(0 0 3px rgba(162, 87, 8, 0.4));
+}
+
+/* Light mode Form Inputs & Buttons */
+[data-theme="light"] input,
+[data-theme="light"] textarea {
+    background: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 8px rgba(28, 91, 150, 0.2);
+}
+
+[data-theme="light"] button {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+[data-theme="light"] button:hover {
+    border-color: var(--accent-green);
+    background: #e0d7c4;
 }

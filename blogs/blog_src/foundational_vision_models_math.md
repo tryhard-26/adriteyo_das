@@ -2,22 +2,34 @@
 
 Modern vision models look very different from classical convolutional networks. Instead of baking spatial locality and translation equivariance directly into sliding kernels, models like ViT, DINOv2, SAM, SigLIP, NaViT, and PaliGemma 2 rely on sequence tokenization, self-supervised distillation objectives, prompt-conditioned interactive segmentation, and unified autoregressive loss formulations.
 
-This post walks through the mathematical machinery behind these architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, prompt Fourier encodings in Segment Anything, pairwise sigmoid loss in SigLIP, and how Vision-Language Models (VLMs) evolved from global vector pooling to unified token sequences.
-
----
+This guide walks through the mathematical machinery, physical intuition, and step-by-step toy calculations behind these architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, prompt Fourier encodings in Segment Anything, pairwise sigmoid loss in SigLIP, and how Vision-Language Models (VLMs) evolved from global vector pooling to unified token sequences.
 
 ## 1. Spatial tokenization: patch projection geometry
 
 A standard 2D convolution assumes that nearby pixels have stronger statistical dependencies than distant pixels (locality) and that patterns appear identically across spatial shifts (translation equivariance). Vision Transformers drop both structural constraints from the layer definition. The network learns spatial correlations directly from training data.
 
-```mermaid
-graph TD
-    A["Raw Image: H x W x C"] --> B["Flatten into N non-overlapping patches: P x P"]
-    B --> C["Linear Projection Matrix E: (P²·C) -> D"]
-    C --> D["Patch Embeddings: N x D"]
-    D --> E["Add Position Embeddings E_pos: N x D"]
-    E --> F["Sequence of Tokens fed to Transformer Encoder"]
-```
+<div class="svg-diagram">
+<svg viewBox="0 0 760 210" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="15" y="45" width="110" height="110" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="2"/>
+  <text x="70" y="95" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">RAW IMAGE</text>
+  <text x="70" y="115" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">H x W x C</text>
+  <path d="M 130 100 L 165 100" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="170" y="45" width="130" height="110" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="2"/>
+  <text x="235" y="90" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">PATCH GRID</text>
+  <text x="235" y="110" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">N = (H·W)/P²</text>
+  <text x="235" y="128" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">P x P x C</text>
+  <path d="M 305 100 L 340 100" stroke="#fbbf24" stroke-width="2"/>
+  <rect x="345" y="45" width="145" height="110" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="2"/>
+  <text x="417" y="90" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">LINEAR PROJECTION</text>
+  <text x="417" y="110" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Matrix E: (P²·C) -> D</text>
+  <text x="417" y="128" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">stride P conv</text>
+  <path d="M 495 100 L 530 100" stroke="#f43f5e" stroke-width="2"/>
+  <rect x="535" y="45" width="190" height="110" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="2"/>
+  <text x="630" y="85" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">TRANSFORMER TOKENS</text>
+  <text x="630" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">z₀ = [CLS; x_p E] + E_pos</text>
+  <text x="630" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Shape: (N + 1) x D</text>
+</svg>
+</div>
 
 ### The linear projection equation
 
@@ -28,15 +40,17 @@ Take an input image $\mathbf{X} \in \mathbb{R}^{H \times W \times C}$, where $H$
 
 $$N = \frac{H \cdot W}{P^2}$$
 
-3. Each patch $\mathbf{x}_p^{(i)}$ is flattened into a 1D vector of dimension $P^2 \cdot C$:
+1. Each patch $\mathbf{x}_p^{(i)}$ is flattened into a 1D vector of dimension $P^2 \cdot C$:
 
 $$\mathbf{x}_p^{(i)} \in \mathbb{R}^{P^2 \cdot C}, \quad i \in \{1, \dots, N\}$$
 
-4. The flattened vector maps into hidden dimension $D$ through a projection matrix $\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}$ and optional bias $\mathbf{b}_e \in \mathbb{R}^D$:
+1. The flattened vector maps into hidden dimension $D$ through a projection matrix $\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}$ and optional bias $\mathbf{b}_e \in \mathbb{R}^D$:
 
 $$\mathbf{z}_0 = \left[ \mathbf{x}_{\text{class}}; \ \mathbf{x}_p^{(1)}\mathbf{E}; \ \mathbf{x}_p^{(2)}\mathbf{E}; \ \dots; \ \mathbf{x}_p^{(N)}\mathbf{E} \right] + \mathbf{E}_{\text{pos}}$$
 
 Here $\mathbf{x}_{\text{class}} \in \mathbb{R}^D$ is the prepended learnable `[CLS]` token, and $\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N + 1) \times D}$ is the positional encoding matrix.
+
+Mathematically, this linear projection is equivalent to a single 2D convolutional layer where kernel size is $P \times P$, stride is $P$, and output channel count is $D$. It discretizes continuous spatial pixels into an ordered sequence of vector embeddings.
 
 ### Computational complexity and the quadratic bottleneck
 
@@ -60,9 +74,37 @@ Summing these terms gives the per-layer cost:
 
 $$\text{FLOPs}_{\text{layer}} \approx 8 N D^2 + 4 N^2 D$$
 
-Because $N = \frac{HW}{P^2}$, halving the patch size from $P=16$ to $P=8$ quadruples $N$. The $4 N^2 D$ attention term and training activation memory both increase by a factor of 16. For this reason, architectures like ViT-H, SAM, and SigLIP keep $P=14$ or $P=16$ during pre-training, reserving smaller patch sizes like $P=8$ for fine-tuning.
+The intuition behind this cost lies in the dependency on patch size $P$. Because $N = \frac{HW}{P^2}$, halving the patch size from $P=16$ to $P=8$ quadruples the token count:
 
----
+$$N \to 4N$$
+
+The quadratic term $4 N^2 D$ scales as:
+
+$$4(4N)^2 D = 16 \cdot (4 N^2 D)$$
+
+A $2\times$ reduction in patch granularity increases attention computation and intermediate activation memory by a factor of 16. That is why backbones like ViT-H, SAM, and SigLIP pre-train at $P=14$ or $P=16$, using $P=8$ only for dense fine-tuning.
+
+### Toy numerical walkthrough: patch projection & FLOP explosion
+
+Consider a tiny toy image with height $H=4$, width $W=4$, and channels $C=3$. Let the transformer hidden dimension be $D=6$.
+
+First, choose patch size $P=2$:
+
+* Number of patches: $N = \frac{4 \times 4}{2^2} = \frac{16}{4} = 4$ patches.
+* Each patch contains $2 \times 2 \times 3 = 12$ raw pixel numbers.
+* The projection matrix $\mathbf{E}$ has shape $(12 \times 6)$.
+* Multiplying the 4 flattened patches by $\mathbf{E}$ yields a token sequence of shape $(4 \times 6)$.
+* FLOPs per attention layer:
+  $$8 N D^2 + 4 N^2 D = 8(4)(36) + 4(16)(6) = 1152 + 384 = 1536 \text{ FLOPs}$$
+
+Now cut the patch size in half to $P=1$:
+
+* Number of patches: $N = \frac{4 \times 4}{1^2} = 16$ patches ($4\times$ increase).
+* Each patch is $1 \times 1 \times 3 = 3$ pixels.
+* The attention matrix $\mathbf{Q}\mathbf{K}^\top$ is now $(16 \times 16) = 256$ entries instead of $(4 \times 4) = 16$ entries.
+* The attention FLOP cost jumps:
+  $$4 N^2 D = 4(16^2)(6) = 4(256)(6) = 6144 \text{ FLOPs}$$
+  Notice that $6144 / 384 = 16$. The attention computation scaled by an exact factor of 16.
 
 ## 2. 2D positional geometry: learned embeddings vs 2D-RoPE
 
@@ -76,21 +118,41 @@ To adapt pre-trained positional embeddings to the larger grid, ViT applies 2D bi
 
 $$\mathbf{E}_{\text{pos}}^{2D}(x, y) = \sum_{k=0}^3 \sum_{l=0}^3 a_{k, l} \, x^k y^l$$
 
-This interpolation fits new coordinates to the learned grid, but the representation remains tied to absolute coordinates rather than relative spatial distance.
+While this interpolation fits new coordinates to the learned grid, the representation remains tied to absolute coordinates rather than relative spatial distance.
 
 ### 2D rotary position embeddings (2D-RoPE)
 
 Modern backbones adapt Rotary Position Embeddings (RoPE) to two dimensions. Instead of adding vectors to token inputs, 2D-RoPE rotates query and key vectors in the complex plane based on their 2D coordinates $(m_x, m_y)$.
 
-```mermaid
-graph LR
-    A["Query Vector q in R^d"] --> B["Split into x-subspace (d/2) and y-subspace (d/2)"]
-    B --> C["Apply Rotation R_x(m_x)"]
-    B --> D["Apply Rotation R_y(m_y)"]
-    C --> E["Concatenate Rotated Subspaces: q_rotated"]
-    D --> E
-    E --> F["Inner Product depends strictly on (m_i - m_j)"]
-```
+<div class="svg-diagram">
+<svg viewBox="0 0 720 180" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="40" width="130" height="95" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="2"/>
+  <text x="85" y="80" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">QUERY q ∈ ℝᵈ</text>
+  <text x="85" y="100" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">dim d per head</text>
+  <path d="M 155 87 L 195 87" stroke="#06b6d4" stroke-width="2"/>
+  <rect x="200" y="25" width="140" height="55" rx="6" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
+  <text x="270" y="55" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">X-Subspace (d/2)</text>
+  <text x="270" y="70" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Rotate by R_x(m_x)</text>
+  <rect x="200" y="95" width="140" height="55" rx="6" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="270" y="125" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">Y-Subspace (d/2)</text>
+  <text x="270" y="140" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Rotate by R_y(m_y)</text>
+  <path d="M 345 52 L 385 75" stroke="#10b981" stroke-width="1.5"/>
+  <path d="M 345 122 L 385 95" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="390" y="40" width="140" height="95" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="2"/>
+  <text x="460" y="80" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">ROTATED q</text>
+  <text x="460" y="100" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">[q_x rot; q_y rot]</text>
+  <path d="M 535 87 L 575 87" stroke="#f43f5e" stroke-width="2"/>
+  <rect x="580" y="40" width="125" height="95" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="2"/>
+  <text x="642" y="80" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">INNER PRODUCT</text>
+  <text x="642" y="100" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">depends on Δp</text>
+</svg>
+</div>
+
+The mathematical intuition behind RoPE is Euler's formula:
+
+$$e^{i \theta_u} \cdot e^{-i \theta_v} = e^{i(\theta_u - \theta_v)}$$
+
+When multiplying two complex numbers, their angles subtract. By encoding coordinates as rotation angles, the inner product between query and key vectors depends strictly on their coordinate difference rather than their absolute positions.
 
 For head dimension $d$, the channel space splits into two equal parts of size $d/2$: one for the horizontal axis $x$, and one for the vertical axis $y$.
 
@@ -112,30 +174,61 @@ $$\Delta \mathbf{p} = (u_x - v_x, \ u_y - v_y)$$
 
 The attention operation retains translation equivariance across the 2D plane regardless of input image dimensions.
 
----
+### Toy numerical walkthrough: 2D-RoPE relative cancellation
+
+Let head dimension $d=4$. The subspace for $x$ has dimension 2, and the subspace for $y$ has dimension 2.
+
+Take two patches:
+
+* Patch A (Query $\mathbf{q}$) is located at coordinate $\mathbf{u} = (x=0, y=1)$.
+* Patch B (Key $\mathbf{k}$) is located at coordinate $\mathbf{v} = (x=2, y=3)$.
+
+Let the rotation angle multiplier be $\theta = \frac{\pi}{2}$ (90 degrees).
+
+Compute the rotation angles for Patch A at $(0, 1)$:
+
+* $x$-rotation: $0 \cdot \theta = 0$. The rotation matrix is identity $\begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}$.
+* $y$-rotation: $1 \cdot \theta = \frac{\pi}{2}$. The rotation matrix is $\begin{pmatrix} \cos(\pi/2) & -\sin(\pi/2) \\ \sin(\pi/2) & \cos(\pi/2) \end{pmatrix} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$.
+
+Compute the rotation angles for Patch B at $(2, 3)$:
+
+* $x$-rotation: $2 \cdot \theta = \pi$. The matrix is $\begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix}$.
+* $y$-rotation: $3 \cdot \theta = \frac{3\pi}{2}$. The matrix is $\begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}$.
+
+Now look at the combined relative transformation in the $y$-subspace:
+$$\mathbf{R}_{y, \mathbf{u}}^\top \mathbf{R}_{y, \mathbf{v}} = \begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix} \begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix} = \begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix}$$
+Notice that $\begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix}$ is the exact rotation matrix for angle $\Delta y \cdot \theta = (3 - 1) \frac{\pi}{2} = \pi$.
+
+Even if both patches shift by 100 pixels along the image (say to $(100, 101)$ and $(102, 103)$), the difference remains $(2, 2)$, and the resulting attention score is identical.
 
 ## 3. Google's NaViT: Patch 'n' Pack and arbitrary aspect ratios
 
-Standard vision models process square inputs ($224 \times 224$ or $384 \times 384$). Non-square inputs either get resized, which distorts object aspect ratios, or padded with zeros, which wastes attention operations on empty space.
+Standard vision models process square inputs ($224 \times 224$ or $384 \times 384$) because hardware matrix multipliers expect rectangular tensors. Non-square inputs either get resized, which distorts object aspect ratios, or padded with zeros, which wastes attention operations on empty space. For panoramic ($16:9$) or portrait ($9:16$) images, up to 40% of tokens in a batch can be padding tokens.
 
-Google Research designed NaViT (Native Resolution ViT) around an approach called Patch 'n' Pack, which processes variable aspect ratios without padding.
+Google Research designed NaViT (Native Resolution ViT) around an approach called Patch 'n' Pack, borrowing sequence packing from NLP.
 
-```mermaid
-graph TD
-    subgraph Standard ViT
-        I1["Image A (4:3)"] --> Pad1["Resize & Pad to Square (1:1)"]
-        I2["Image B (16:9)"] --> Pad2["Resize & Pad to Square (1:1)"]
-        Pad1 --> Batch["Separate Batch Items with Wasted Zero-Padding"]
-        Pad2 --> Batch
-    end
+<div class="svg-diagram">
+<svg viewBox="0 0 740 210" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="25" width="310" height="165" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="175" y="50" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">STANDARD ViT (PADDING WASTE)</text>
+  <rect x="40" y="65" width="60" height="40" rx="4" fill="#1a1a24" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="70" y="90" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 1</text>
+  <rect x="110" y="65" width="70" height="70" rx="4" fill="#0c0a15" stroke="#88888e" stroke-dasharray="3 3"/>
+  <text x="145" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9" text-anchor="middle">Pad (0s)</text>
+  <text x="175" y="165" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Up to 40% wasted attention FLOPs</text>
 
-    subgraph Google NaViT
-        N1["Image A: n_A patches"] --> Pack["Single Unified Sequence (Total Length L)"]
-        N2["Image B: n_B patches"] --> Pack
-        N3["Image C: n_C patches"] --> Pack
-        Pack --> Mask["Self-Attention with Block-Diagonal Masking"]
-    end
-```
+  <rect x="370" y="25" width="350" height="165" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
+  <text x="545" y="50" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">GOOGLE NaViT (PATCH 'N' PACK)</text>
+  <rect x="390" y="70" width="80" height="35" rx="4" fill="#1a1a24" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="430" y="92" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 1 (n₁)</text>
+  <rect x="480" y="70" width="110" height="35" rx="4" fill="#1a1a24" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="535" y="92" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 2 (n₂)</text>
+  <rect x="600" y="70" width="100" height="35" rx="4" fill="#1a1a24" stroke="#10b981" stroke-width="1.5"/>
+  <text x="650" y="92" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 3 (n₃)</text>
+  <text x="545" y="135" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Continuous Buffer: Length L = Σ n_k</text>
+  <text x="545" y="165" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Block-diagonal attention mask: 0% padding</text>
+</svg>
+</div>
 
 ### The Patch 'n' Pack formulation
 
@@ -151,30 +244,55 @@ To prevent tokens from different images attending to each other within the share
 
 $$\mathbf{A}_{i, j} = \begin{cases} \frac{\mathbf{q}_i^\top \mathbf{k}_j}{\sqrt{d_k}} & \text{if } \text{img\_id}(i) = \text{img\_id}(j) \\ -\infty & \text{if } \text{img\_id}(i) \neq \text{img\_id}(j) \end{cases}$$
 
-This structure produces a block-diagonal attention map. Because self-attention is permutation-equivariant up to position encodings, the network processes different images and aspect ratios concurrently in a single forward pass.
+This structure produces a block-diagonal attention map. Because self-attention is permutation-equivariant up to position encodings, the network processes different images and aspect ratios concurrently in a single forward pass without padding overhead.
 
----
+### Toy numerical walkthrough: block-diagonal packing matrix
+
+Suppose we pack two images into a shared buffer of length $L=5$:
+
+* Image 1 is rectangular, producing $n_1 = 2$ patches (tokens $t_1, t_2$).
+* Image 2 is square, producing $n_2 = 3$ patches (tokens $t_3, t_4, t_5$).
+
+The unmasked self-attention logits form a $(5 \times 5)$ affinity matrix $\mathbf{S}$.
+
+Applying the NaViT indicator mask produces the block-diagonal structure:
+
+$$\mathbf{A} = \begin{pmatrix}
+s_{11} & s_{12} & -\infty & -\infty & -\infty \\
+s_{21} & s_{22} & -\infty & -\infty & -\infty \\
+-\infty & -\infty & s_{33} & s_{34} & s_{35} \\
+-\infty & -\infty & s_{43} & s_{44} & s_{45} \\
+-\infty & -\infty & s_{53} & s_{54} & s_{55}
+\end{pmatrix}$$
+
+When computing softmax along row 1:
+$$\text{softmax}([s_{11}, s_{12}, -\infty, -\infty, -\infty]) = [p_{11}, p_{12}, 0, 0, 0]$$
+Because $e^{-\infty} = 0$, attention weights for tokens from Image 2 evaluate to zero. Both images process inside the exact same matrix multiplication with zero padding tokens.
 
 ## 4. Self-supervised distillation: DINO and DINOv2
 
 Supervised training optimizes for discrete class labels, which discards fine spatial details. Self-supervised distillation learns dense visual representations directly from data without human annotation. DINO and DINOv2 use student-teacher distillation with explicit mechanisms to prevent representation collapse.
 
-```mermaid
-sequenceDiagram
-    participant Input as Input Image x
-    participant Student as Student Network g_s
-    participant Teacher as Teacher Network g_t (EMA)
-    participant Center as Center Vector c
-    participant Loss as Cross-Entropy Loss
-
-    Input->>Student: Global + Local Crops
-    Input->>Teacher: Global Crops Only
-    Teacher->>Center: Update Running Mean c
-    Teacher->>Loss: Sharpened Target: Softmax((g_t - c) / tau_t)
-    Student->>Loss: Student Prediction: Softmax(g_s / tau_s)
-    Loss-->>Student: Backprop Gradients (Update theta_s)
-    Student-->>Teacher: Exponential Moving Average Update
-```
+<div class="svg-diagram">
+<svg viewBox="0 0 740 220" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="70" width="120" height="75" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="2"/>
+  <text x="80" y="105" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">IMAGE x</text>
+  <text x="80" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Global/Local</text>
+  <path d="M 145 95 L 205 60" stroke="#10b981" stroke-width="1.5"/>
+  <path d="M 145 120 L 205 155" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="210" y="25" width="165" height="70" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
+  <text x="292" y="55" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STUDENT g_θs</text>
+  <text x="292" y="75" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Temp τ_s = 0.1</text>
+  <rect x="210" y="125" width="165" height="70" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="292" y="155" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">TEACHER g_θt (EMA)</text>
+  <text x="292" y="175" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Center c + Sharpen τ_t = 0.04</text>
+  <path d="M 380 60 L 465 95" stroke="#10b981" stroke-width="1.5"/>
+  <path d="M 380 160 L 465 125" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="470" y="70" width="240" height="75" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="2"/>
+  <text x="590" y="102" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">CROSS-ENTROPY LOSS</text>
+  <text x="590" y="125" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">L = - Σ P_t(x) log P_s(x)</text>
+</svg>
+</div>
 
 ### Student-teacher distillation
 
@@ -182,6 +300,8 @@ DINO feeds different augmented views of an image to two networks:
 
 * Student network $g_{\theta_s}$: processes global and local crops, parameterized by weights $\theta_s$.
 * Teacher network $g_{\theta_t}$: processes global crops only, parameterized by weights $\theta_t$.
+
+The intuition of multi-crop distillation is local-to-global matching: the student sees only a small crop (for example, a bird's beak) and must predict the distribution produced by the teacher looking at the full image (the whole bird).
 
 Teacher weights do not receive gradients. They update using an Exponential Moving Average (EMA) of the student weights:
 
@@ -203,8 +323,8 @@ $$\mathcal{L}_{\text{DINO}} = - \sum_{k=1}^K P_t(x)^{(k)} \log P_s(x)^{(k)}$$
 
 Without negative pairs, self-distillation can collapse in two ways:
 
-1. Uniform collapse: the distribution becomes completely flat across all outputs.
-2. One-hot collapse: the model outputs 100% probability on a single dimension regardless of input.
+1. Uniform collapse: the distribution becomes completely flat across all outputs, maximizing entropy.
+2. One-hot collapse: the model outputs 100% probability on a single dimension regardless of input, minimizing entropy.
 
 DINO balances these tendencies with centering and sharpening:
 
@@ -212,7 +332,7 @@ Subtracting the running mean $\mathbf{c}$ prevents any single coordinate from do
 
 $$\mathbf{c} \leftarrow m \mathbf{c} + (1 - m) \frac{1}{B} \sum_{i=1}^B g_{\theta_t}(x_i)$$
 
-If dimension $k$ activates frequently across a batch, $c^{(k)}$ increases, subtracting value from that logit in subsequent iterations.
+The mathematical intuition: if dimension $k$ activates frequently across a batch, $c^{(k)}$ increases, subtracting value from that logit in subsequent iterations. This acts like a repulsive negative feedback loop.
 
 Setting $\tau_t < \tau_s$ (for example, $\tau_t = 0.04$ and $\tau_s = 0.1$) sharpens the teacher output distribution, preventing the logits from decaying toward a uniform vector.
 
@@ -230,7 +350,7 @@ This forces individual patch embeddings to encode localized visual semantics rat
 
 #### 2. The KoLeo regularizer
 
-To keep patch embeddings distributed across the representation manifold, DINOv2 uses the Kozachenko-Leonenko (KoLeo) differential entropy estimator.
+Even with centering and sharpening, high-dimensional representations can collapse into a low-dimensional subspace (for example, lying on a flat line or plane on the unit hypersphere). DINOv2 uses the Kozachenko-Leonenko (KoLeo) differential entropy estimator to spread representations uniformly across the sphere.
 
 For normalized feature vectors $\{\mathbf{z}_1, \dots, \mathbf{z}_n\}$, the KoLeo loss maximizes the Euclidean distance between each vector and its nearest distinct neighbor:
 
@@ -240,27 +360,66 @@ The gradient with respect to sample $\mathbf{z}_i$ and its nearest neighbor $\ma
 
 $$\frac{\partial \mathcal{L}_{\text{KoLeo}}}{\partial \mathbf{z}_i} = - \frac{1}{n} \frac{\mathbf{z}_i - \mathbf{z}_{n(i)}}{\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2^2}$$
 
-As two vectors draw closer together, $\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2 \to 0$, the gradient magnitude increases inversely with squared distance, repelling duplicate representations across the unit sphere $\mathbb{S}^{D-1}$.
+The intuition: as two vectors draw closer together, $\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2 \to 0$, the gradient magnitude increases inversely with squared distance. Like electrostatic repulsion between electrons on a sphere, the vectors push apart until they tile the unit hypersphere $\mathbb{S}^{D-1}$ uniformly.
 
----
+### Toy numerical walkthrough: centering, sharpening, and KoLeo repulsion
+
+Consider a toy dimension $K=3$.
+
+Suppose raw teacher logits for an image are:
+$$\mathbf{g}_t = [4.0, \ 1.0, \ 1.0]$$
+The running mean center vector is currently:
+$$\mathbf{c} = [2.0, \ 0.5, \ 0.5]$$
+
+Step 1: Centering
+Subtract $\mathbf{c}$ from $\mathbf{g}_t$:
+$$\mathbf{g}_t - \mathbf{c} = [4.0 - 2.0, \ 1.0 - 0.5, \ 1.0 - 0.5] = [2.0, \ 0.5, \ 0.5]$$
+The first dimension fired strongly, so $c_1=2.0$ subtracted more from it than from the other dimensions.
+
+Step 2: Sharpening with temperature
+Apply teacher temperature $\tau_t = 0.5$:
+$$\frac{\mathbf{g}_t - \mathbf{c}}{\tau_t} = [4.0, \ 1.0, \ 1.0]$$
+Exponentiating gives $[e^4, e^1, e^1] \approx [54.6, 2.7, 2.7]$.
+The teacher probability distribution is:
+$$P_t = [0.91, \ 0.045, \ 0.045]$$
+If we had used the student temperature $\tau_s = 1.0$ without sharpening, the distribution would be $[0.67, 0.16, 0.16]$. The low temperature sharpened the target into a confident prediction.
+
+Step 3: KoLeo repulsive gradient
+Take two 2D unit vectors on a circle:
+$$\mathbf{z}_1 = [1.0, \ 0.0], \quad \mathbf{z}_2 = [0.96, \ 0.28]$$
+The difference vector is:
+$$\mathbf{z}_1 - \mathbf{z}_2 = [0.04, \ -0.28]$$
+The squared distance is:
+$$\|\mathbf{z}_1 - \mathbf{z}_2\|_2^2 = 0.04^2 + (-0.28)^2 = 0.0016 + 0.0784 = 0.08$$
+The repulsive gradient on $\mathbf{z}_1$ evaluates to:
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{z}_1} \propto - \frac{[0.04, \ -0.28]}{0.08} = [-0.5, \ 3.5]$$
+The gradient pushes $\mathbf{z}_1$ in direction $[-0.5, 3.5]$, repelling it directly away from $\mathbf{z}_2$.
 
 ## 5. Meta's Segment Anything Model (SAM)
 
 Meta AI introduced SAM to solve promptable visual segmentation. Unlike traditional segmentation models that predict fixed semantic categories, SAM evaluates arbitrary prompt conditions: points, bounding boxes, or rough mask sketches.
 
-```mermaid
-graph TD
-    Image["Input Image: 1024 x 1024"] --> Enc["ViT Image Encoder (MAE Init, 16x downsample)"]
-    Enc --> Feat["Image Embeddings: 64 x 64 x 256"]
-    
-    Points["Point / Box Prompts"] --> Fouri["Fourier Positional Encodings + Type Embeddings"]
-    MaskPrompt["Dense Mask Prompts"] --> Conv["Convolutional Downsampling"]
-    Fouri & Conv --> Prompts["Prompt Tokens"]
+<div class="svg-diagram">
+<svg viewBox="0 0 740 220" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="30" width="150" height="155" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
+  <text x="95" y="65" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">IMAGE ENCODER</text>
+  <text x="95" y="85" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">ViT (MAE pre-trained)</text>
+  <text x="95" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">1024x1024 -> 64x64x256</text>
+  <text x="95" y="145" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Run once per image</text>
 
-    Feat & Prompts --> Dec["Two-Way Transformer Decoder"]
-    Dec --> Logits["Dynamic Mask Weights * Upscaled Features"]
-    Logits --> Out["Predicted Mask Candidates + IoU Score"]
-```
+  <rect x="200" y="30" width="165" height="155" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="282" y="65" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">PROMPT ENCODER</text>
+  <text x="282" y="90" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Points / Boxes / Masks</text>
+  <text x="282" y="115" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Fourier Positional Feat</text>
+  <text x="282" y="145" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Run in &lt;10ms</text>
+
+  <rect x="395" y="30" width="325" height="155" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="557" y="65" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">TWO-WAY MASK DECODER</text>
+  <text x="557" y="90" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Tokens ↔ Image Features cross-attention</text>
+  <text x="557" y="115" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">MLP -> dynamic classifier weights w_mask</text>
+  <text x="557" y="145" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Output: 3 Mask Hypotheses + IoU Score</text>
+</svg>
+</div>
 
 ### Image encoder architecture
 
@@ -279,6 +438,8 @@ Prompts fall into two categories:
 $$\gamma(\mathbf{v}) = \left[ \sin(2\pi \mathbf{B}\mathbf{v}), \ \cos(2\pi \mathbf{B}\mathbf{v}) \right]^\top$$
 
 where $\mathbf{B} \in \mathbb{R}^{128 \times 2}$ is a static projection matrix with entries drawn from a Gaussian distribution $\mathcal{N}(0, \sigma^2)$.
+
+The mathematical intuition behind Fourier features: neural networks exhibit spectral bias, learning low-frequency functions easily while struggling with high-frequency spatial transitions. Mapping raw $(x, y)$ coordinates into high-frequency sinusoids allows the transformer to distinguish adjacent pixel coordinates precisely.
 
 To distinguish positive foreground points from negative background points and bounding box corners, a learned prompt type embedding $\mathbf{e}_{\text{type}} \in \mathbb{R}^{256}$ is added to the Fourier vector:
 
@@ -309,7 +470,7 @@ Focal loss compensates for the extreme imbalance between background pixels and s
 
 $$\mathcal{L}_{\text{focal}} = - \frac{1}{HW} \sum_{i=1}^{HW} \alpha_t (1 - p_{t, i})^\gamma \log(p_{t, i})$$
 
-where $p_{t, i} = \sigma(\text{logit}_i)$ if ground truth $y_i = 1$, and $1 - \sigma(\text{logit}_i)$ otherwise, with focusing parameter $\gamma = 2$.
+where $p_{t, i} = \sigma(\text{logit}_i)$ if ground truth $y_i = 1$, and $1 - \sigma(\text{logit}_i)$ otherwise, with focusing parameter $\gamma = 2$. The term $(1 - p_{t, i})^\gamma$ drives loss to near zero on well-classified background pixels, focusing gradients on uncertain boundary pixels.
 
 Dice loss directly optimizes the soft Intersection-over-Union (IoU) between predicted probability map $\mathbf{P}$ and binary ground truth $\mathbf{Y}$:
 
@@ -317,32 +478,48 @@ $$\mathcal{L}_{\text{dice}} = 1 - \frac{2 \sum_{i=1}^{HW} y_i p_i + \epsilon}{\s
 
 To resolve geometric ambiguity (for example, a single point click could refer to a person's shirt, the person, or the entire scene), SAM predicts 3 candidate masks (subpart, part, whole) along with an estimated IoU score trained with Mean Squared Error (MSE) against the real mask IoU.
 
----
+### Toy numerical walkthrough: SAM dynamic dot-product segmentation
+
+Let the upscaled image features at coordinate $(x, y)$ be a 4-dimensional vector:
+$$\mathbf{f}_{(x, y)} = [1.2, \ -0.5, \ 2.0, \ 0.1]$$
+
+After two-way cross-attention, the mask token outputs dynamic classifier weights:
+$$\mathbf{w}_{\text{mask}} = [1.0, \ 0.0, \ 1.5, \ -1.0]$$
+
+Compute the mask logit at this pixel:
+$$\text{logit} = \mathbf{w}_{\text{mask}}^\top \mathbf{f} = (1.0)(1.2) + (0.0)(-0.5) + (1.5)(2.0) + (-1.0)(0.1)$$
+$$\text{logit} = 1.2 + 0.0 + 3.0 - 0.1 = 4.1$$
+
+Pass through sigmoid to get pixel foreground probability:
+$$p = \sigma(4.1) = \frac{1}{1 + e^{-4.1}} \approx \frac{1}{1 + 0.0166} \approx 0.984$$
+Because $p > 0.5$, coordinate $(x, y)$ is classified as inside the mask.
+
+Now compute Focal Loss on this pixel if true label $y = 1$:
+$$p_t = 0.984$$
+$$\mathcal{L}_{\text{focal}} = - (1 - 0.984)^2 \log(0.984) = - (0.016)^2 (-0.0161) \approx (0.000256)(0.0161) \approx 0.0000041$$
+Because the prediction was confident and correct, the focal loss term $(1 - p_t)^2 = 0.000256$ shrunk the gradient by nearly 4000 times.
 
 ## 6. Contrastive foundations: classic CLIP vs Google SigLIP
 
 Contrastive pre-training maps image and text representations into a shared vector space.
 
-```mermaid
-graph TD
-    subgraph Classic Softmax CLIP
-        V1["Vision Embeddings X: B x D"] 
-        T1["Text Embeddings Y: B x D"]
-        V1 & T1 --> S1["Pairwise Similarity: S = t * X * Y^T"]
-        S1 --> Norm1["Global Softmax Normalization across all B candidates"]
-        Norm1 --> Loss1["InfoNCE Cross-Entropy Loss"]
-        style Norm1 fill:#f43f5e,color:#fff
-    end
+<div class="svg-diagram">
+<svg viewBox="0 0 740 210" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="25" width="330" height="165" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="185" y="50" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">CLASSIC CLIP (SOFTMAX)</text>
+  <text x="185" y="80" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Denominator: Σ_j exp(t · x_i^T y_j)</text>
+  <text x="185" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Requires AllGather across all GPUs</text>
+  <text x="185" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">O(B²) memory bottleneck</text>
+  <text x="185" y="160" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Caps batch size around 32k - 65k</text>
 
-    subgraph Google SigLIP
-        V2["Vision Embeddings X: B x D"] 
-        T2["Text Embeddings Y: B x D"]
-        V2 & T2 --> S2["Pairwise Similarity: S = t * X * Y^T + b"]
-        S2 --> Norm2["Pairwise Independent Sigmoids: sigma(S_ij)"]
-        Norm2 --> Loss2["Binary Cross-Entropy Loss"]
-        style Norm2 fill:#10b981,color:#fff
-    end
-```
+  <rect x="390" y="25" width="330" height="165" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
+  <text x="555" y="50" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">GOOGLE SigLIP (PAIRWISE SIGMOID)</text>
+  <text x="555" y="80" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Loss: - log σ(z_ij · (t · x_i^T y_j + b))</text>
+  <text x="555" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Zero cross-GPU AllGather synchronization</text>
+  <text x="555" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Tiled streaming O(B_local · B_chunk)</text>
+  <text x="555" y="160" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Scales past 1,000,000+ batches</text>
+</svg>
+</div>
 
 ### Classic CLIP and InfoNCE loss
 
@@ -392,22 +569,73 @@ $$\mathcal{L}_{\text{SigLIP}} = \frac{1}{|B|} \sum_{i=1}^{|B|} \left[ \log(1 + e
 3. Batch scalability: without a competitive softmax denominator, batch sizes can scale past 1,000,000 samples without gradient instability.
 4. Bias parameter $b$: negative pairs outnumber positive pairs by $B^2 - B$ to $B$. Without offset $b$, negative gradients dominate training. Initializing $b$ to approximately $-10$ sets the baseline prior probability $\sigma(b) \approx 0.000045$, matching the low proportion of positive pairs in large batches.
 
----
+### Toy numerical walkthrough: InfoNCE vs SigLIP calculation
+
+Consider a small batch of $B=2$ image-text pairs:
+* Pair 1: Image 1 and Caption 1 (matching positive, cosine similarity $s_{11} = 0.8$).
+* Pair 2: Image 2 and Caption 2 (matching positive, cosine similarity $s_{22} = 0.7$).
+* Cross pairs: similarity $s_{12} = 0.2$ and $s_{21} = 0.1$.
+Let temperature scale $t = 2.0$.
+
+Calculation 1: InfoNCE Softmax
+For Image 1:
+* Positive exp: $e^{2.0 \times 0.8} = e^{1.6} \approx 4.953$
+* Negative exp: $e^{2.0 \times 0.2} = e^{0.4} \approx 1.492$
+* Softmax denominator: $4.953 + 1.492 = 6.445$
+* Loss for image 1: $- \log\left(\frac{4.953}{6.445}\right) = - \log(0.768) \approx 0.264$
+Notice that if Image 2 were located on another GPU, GPU 1 could not compute the denominator $6.445$ without receiving Image 2 text embeddings over the network.
+
+Calculation 2: SigLIP Independent Sigmoids
+Let temperature $t = 2.0$ and learned bias $b = -0.5$.
+* Positive pair $(1, 1)$:
+  $$\text{logit} = t \cdot s_{11} + b = 2(0.8) - 0.5 = 1.1$$
+  $$\text{Loss}_{11} = - \log \sigma(1.1) = - \log(0.750) \approx 0.287$$
+* Negative pair $(1, 2)$:
+  $$\text{logit} = t \cdot s_{12} + b = 2(0.2) - 0.5 = -0.1$$
+  $$\text{Target } z_{12} = -1 \implies \text{argument} = -(-0.1) = +0.1$$
+  $$\text{Loss}_{12} = - \log \sigma(-0.1) = \log(1 + e^{-0.1}) = \log(1 + 0.904) = \log(1.904) \approx 0.644$$
+
+Pair $(1, 1)$ and pair $(1, 2)$ evaluate completely independently. Neither calculation requires a global sum, allowing GPU 1 to stream through tiles of negative captions stored in local memory.
 
 ## 7. How Vision-Language Models (VLMs) came about
 
 Vision-Language Models did not appear all at once. They evolved across four distinct architectural stages as researchers resolved the interface between continuous visual patches and discrete autoregressive language tokens.
 
-```mermaid
-graph TD
-    S1["Stage 1: Dual Encoders (CLIP, ALIGN)"] --> D1["Global vector pooling, zero spatial tokens"]
-    D1 --> S2["Stage 2: Cross-Attention Conditioning (Flamingo, PaLI)"]
-    S2 --> D2["Gated cross-attention + Perceiver Resampler"]
-    D2 --> S3["Stage 3: Direct Visual Token Injection (LLaVA)"]
-    S3 --> D3["Linear / MLP projections into LLM vocabulary space"]
-    D3 --> S4["Stage 4: Unified Autoregressive Foundations (PaliGemma 2)"]
-    S4 --> D4["Native SigLIP encoder + Gemma autoregressive pre-training"]
-```
+<div class="svg-diagram">
+<svg viewBox="0 0 740 250" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="100" y="45" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 1: DUAL ENCODER</text>
+  <text x="100" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">CLIP, ALIGN (2021)</text>
+  <rect x="35" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
+  <text x="100" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Global Pool: 1D Vector</text>
+  <text x="100" y="155" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Zero spatial tokens survive</text>
+  <text x="100" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Good for retrieval only</text>
+
+  <rect x="200" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="280" y="45" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 2: CROSS-ATTN</text>
+  <text x="280" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Flamingo, PaLI (2022)</text>
+  <rect x="215" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
+  <text x="280" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Perceiver Resampler</text>
+  <text x="280" y="155" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Frozen LLM + Gated Cross-Attn</text>
+  <text x="280" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Compresses N -> M tokens</text>
+
+  <rect x="380" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="460" y="45" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 3: TOKEN INJECTION</text>
+  <text x="460" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">LLaVA (2023)</text>
+  <rect x="395" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
+  <text x="460" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Linear / MLP Adapter</text>
+  <text x="460" y="155" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Patches as pseudo-words</text>
+  <text x="460" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Direct LLM causal attention</text>
+
+  <rect x="560" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
+  <text x="640" y="45" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 4: UNIFIED VLM</text>
+  <text x="640" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">PaliGemma 2 (2024)</text>
+  <rect x="575" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
+  <text x="640" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">SigLIP + Gemma</text>
+  <text x="640" y="155" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Native Patch 'n' Pack</text>
+  <text x="640" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">End-to-end autoregressive</text>
+</svg>
+</div>
 
 ### Stage 1: Dual encoders and global vector pooling (CLIP, ALIGN)
 
@@ -464,8 +692,6 @@ The entire system trains by minimizing standard next-token cross-entropy over ta
 $$\mathcal{L}_{\text{VLM}}(\theta) = - \sum_{i=1}^{T} \log \left( \frac{\exp(\mathbf{w}_{y_i}^\top \mathbf{u}_i)}{\sum_{w \in \mathcal{V}} \exp(\mathbf{w}_w^\top \mathbf{u}_i)} \right)$$
 
 where $\mathbf{u}_i$ is the language decoder hidden state at token position $i$, and $\mathcal{V}$ is the text vocabulary.
-
----
 
 ## 8. Architecture comparison
 

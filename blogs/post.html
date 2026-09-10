@@ -28,7 +28,7 @@
             }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     
     <style>
         :root {
@@ -209,20 +209,106 @@
             overflow-y: hidden !important;
         }
 
-        .mermaid {
-            display: flex;
-            justify-content: center;
+        /* Diagram styling & animation */
+        .svg-diagram {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
             padding: 1.5rem 1rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
+            margin: 1.8rem 0;
+            border-radius: 6px;
             overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transition: border-color 0.3s ease, transform 0.2s ease;
         }
 
-        .mermaid svg {
+        .svg-diagram:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-1px);
+        }
+
+        .diagram-svg {
             max-width: 100%;
             height: auto;
+        }
+
+        /* Interactive Architecture Playground */
+        .interactive-playground {
+            background: #08070e;
+            border: 1px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2.5rem 0;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+        }
+
+        .playground-title {
+            color: var(--accent-green);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .playground-desc {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .playground-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: var(--accent-yellow);
+            font-weight: 500;
+        }
+
+        .control-slider {
+            accent-color: var(--accent-green);
+            cursor: pointer;
+        }
+
+        .playground-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            background: #0e0c18;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .stat-val {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--accent-blue);
         }
 
         /* Table styling */
@@ -371,14 +457,14 @@
 
             // Sanitize query to avoid directory traversal out of blog_src
             const cleanSrc = src.replace(/^.*[\\\/]/, '');
-            const targetPath = "/blogs/blog_src/" + cleanSrc;
+            const targetPath = "/blogs/blog_src/" + cleanSrc + "?t=" + Date.now();
 
             if (headerTitle) {
                 headerTitle.textContent = `/blogs/blog_src/${cleanSrc}`;
             }
 
-            // Fetch markdown content from the blog_src directory
-            fetch(targetPath)
+            // Fetch markdown content with cache buster
+            fetch(targetPath, { cache: "no-store" })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Could not find specified blog: ${cleanSrc} (HTTP status ${response.status})`);
@@ -400,27 +486,81 @@
                         pre.replaceWith(div);
                     });
 
-                    // Render mermaid diagrams
-                    if (typeof mermaid !== "undefined" && contentElem.querySelectorAll('.mermaid').length > 0) {
-                        try {
-                            await mermaid.run({ querySelector: '.mermaid' });
-                        } catch (mErr) {
-                            console.warn("Mermaid rendering warning:", mErr);
+                    // Show content first so SVG layout engines and MathJax can measure element dimensions
+                    loadingElem.style.display = 'none';
+                    contentElem.style.display = 'block';
+
+                    // If viewing the foundational vision models post, mount interactive playground after the intro
+                    if (cleanSrc === 'foundational_vision_models_math.md' && !document.getElementById('vision-playground')) {
+                        const playgroundHTML = `
+                        <div class="interactive-playground" id="vision-playground">
+                            <div class="playground-title">
+                                <span>⚡ Interactive Vision Scaling & Architecture Playground</span>
+                            </div>
+                            <div class="playground-desc">
+                                Adjust resolution, patch size, and batch size to see real-time FLOP explosion, token count, and SigLIP vs Softmax memory scaling.
+                            </div>
+                            <div class="playground-controls">
+                                <div class="control-group">
+                                    <label class="control-label" id="res-label">Image Resolution: 224 x 224</label>
+                                    <input type="range" class="control-slider" id="res-slider" min="1" max="4" value="1" step="1">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" id="patch-label">Patch Size P: 16 x 16</label>
+                                    <input type="range" class="control-slider" id="patch-slider" min="0" max="3" value="2" step="1">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" id="batch-label">Batch Size B: 32,768</label>
+                                    <input type="range" class="control-slider" id="batch-slider" min="1" max="6" value="4" step="1">
+                                </div>
+                            </div>
+                            <div class="playground-stats">
+                                <div class="stat-card">
+                                    <span class="stat-label">Token Count (N)</span>
+                                    <span class="stat-val" id="stat-n">196</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-label">Self-Attention Matrix</span>
+                                    <span class="stat-val" id="stat-matrix">38.4k entries</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-label">Quadratic Multiplier</span>
+                                    <span class="stat-val" id="stat-mult">1.0x (Baseline)</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-label">CLIP Softmax Memory</span>
+                                    <span class="stat-val" id="stat-clip" style="color: var(--accent-purple);">2.14 GB (AllGather)</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-label">SigLIP Tiled Memory</span>
+                                    <span class="stat-val" id="stat-siglip" style="color: var(--accent-green);">0.5 MB (Streamed)</span>
+                                </div>
+                            </div>
+                        </div>`;
+                        
+                        // Insert playground right before section 1
+                        const firstH2 = contentElem.querySelector('h2');
+                        if (firstH2) {
+                            firstH2.insertAdjacentHTML('beforebegin', playgroundHTML);
+                        } else {
+                            contentElem.insertAdjacentHTML('afterbegin', playgroundHTML);
                         }
+                        initPlayground();
                     }
 
                     // Render MathJax formulas
-                    if (window.MathJax && window.MathJax.typesetPromise) {
+                    if (window.MathJax) {
                         try {
-                            await MathJax.typesetPromise([contentElem]);
+                            if (window.MathJax.startup && window.MathJax.startup.promise) {
+                                await window.MathJax.startup.promise;
+                            }
+                            if (window.MathJax.typesetPromise) {
+                                await window.MathJax.typesetPromise([contentElem]);
+                            }
                         } catch (mathErr) {
                             console.warn("MathJax rendering warning:", mathErr);
                         }
                     }
-                    
-                    // Hide loading indicator, show content
-                    loadingElem.style.display = 'none';
-                    contentElem.style.display = 'block';
 
                     // Update document title dynamically based on first H1 or filename
                     const h1 = contentElem.querySelector('h1');
@@ -433,6 +573,53 @@
                 .catch(err => {
                     showError(err.message);
                 });
+
+            function initPlayground() {
+                const resValues = [224, 384, 512, 1024];
+                const patchValues = [8, 14, 16, 32];
+                const batchValues = [256, 1024, 8192, 32768, 131072, 524288];
+
+                const resSlider = document.getElementById('res-slider');
+                const patchSlider = document.getElementById('patch-slider');
+                const batchSlider = document.getElementById('batch-slider');
+
+                if (!resSlider || !patchSlider || !batchSlider) return;
+
+                function update() {
+                    const H = resValues[parseInt(resSlider.value) - 1];
+                    const P = patchValues[parseInt(patchSlider.value)];
+                    const B = batchValues[parseInt(batchSlider.value) - 1];
+
+                    document.getElementById('res-label').textContent = `Image Resolution: ${H} x ${H}`;
+                    document.getElementById('patch-label').textContent = `Patch Size P: ${P} x ${P}`;
+                    document.getElementById('batch-label').textContent = `Batch Size B: ${B.toLocaleString()}`;
+
+                    const N = Math.floor((H * H) / (P * P));
+                    const matrixEntries = N * N;
+                    const baselineN = Math.floor((224 * 224) / (16 * 16));
+                    const mult = (matrixEntries / (baselineN * baselineN)).toFixed(1);
+
+                    document.getElementById('stat-n').textContent = N.toLocaleString();
+                    document.getElementById('stat-matrix').textContent = matrixEntries > 1000000 ? `${(matrixEntries / 1000000).toFixed(2)}M entries` : `${(matrixEntries / 1000).toFixed(1)}k entries`;
+                    document.getElementById('stat-mult').textContent = `${mult}x (${mult > 1 ? '+' + ((mult - 1)*100).toFixed(0) + '%' : 'Baseline'})`;
+
+                    // Softmax memory: B x B x 2 bytes for FP16
+                    const clipBytes = B * B * 2;
+                    const clipMB = clipBytes / (1024 * 1024);
+                    const clipGB = clipMB / 1024;
+                    document.getElementById('stat-clip').textContent = clipGB >= 1 ? `${clipGB.toFixed(2)} GB (AllGather)` : `${clipMB.toFixed(1)} MB (AllGather)`;
+
+                    // SigLIP memory: local chunk 256 x local B x 2 bytes
+                    const siglipBytes = 256 * Math.min(B, 1024) * 2;
+                    const siglipMB = siglipBytes / (1024 * 1024);
+                    document.getElementById('stat-siglip').textContent = `${Math.max(0.5, siglipMB).toFixed(1)} MB (Streamed)`;
+                }
+
+                resSlider.addEventListener('input', update);
+                patchSlider.addEventListener('input', update);
+                batchSlider.addEventListener('input', update);
+                update();
+            }
 
             function showError(msg) {
                 loadingElem.style.display = 'none';

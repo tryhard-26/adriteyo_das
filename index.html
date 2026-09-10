@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adriteyo Das | Portfolio</title>
-    <link rel="stylesheet" href="index.css?v=5">
+    <link rel="stylesheet" href="index.css?v=8">
     <link rel="icon" type="image/jpeg" href="assets/img/razorbill.jpeg">
     <script>
         function applyTheme(theme) {
@@ -179,8 +179,8 @@
                 </p>
                 <p style="font-family: var(--font-mono); font-size: 14px; line-height: 1.6; color: var(--text-main);">
                     I used to play CTFs for <a href="https://cryptonitemit.in/" target="_blank"
-                        class="cryptonite-link">Cryptonite <img class="nite-img" src="assets/img/nite.png" alt=""
-                            style="display: inline-block; width: 24px; height: 24px; vertical-align: middle; margin-left: 4px;"></a>.
+                        class="cryptonite-link">Cryptonite <img class="nite-img" src="assets/img/nite.png?v=3" alt="Cryptonite Diamond"
+                            style="display: inline-block; width: 28px; height: 19px; vertical-align: middle; margin-left: 6px;"></a>.
                 </p>
             </section>
 
@@ -398,7 +398,7 @@
                     </li>
                     <li class="skill-pill" data-tooltip="Developed Android password manager PassRanger in Java.">Java
                     </li>
-                    <li class="skill-pill" data-tooltip="Used to build high-performance FeTorrent and emulator Irones.">
+                    <li class="skill-pill" data-tooltip="Used to build high-performance ParaOxidizer, Raya, Xerxes, FeTorrent, and Irones.">
                         Rust</li>
                     <li class="skill-pill"
                         data-tooltip="Engineered low-level networking and high-performance server microservices.">
@@ -456,6 +456,8 @@
             <div class="skill-category">
                 <h4>dfir & security</h4>
                 <ul class="skill-list">
+                    <li class="skill-pill" data-tooltip="Binary pattern-matching and heuristic malware rule engine in Raya.">
+                        YARA</li>
                     <li class="skill-pill" data-tooltip="Decompiled PE/ELF binaries for malware reverse engineering.">
                         IDA Pro</li>
                     <li class="skill-pill" data-tooltip="Analyzed suspicious binaries, malware, and firmware.">
@@ -676,8 +678,18 @@
                     <a href="https://github.com/tryhard-26/ParaOxidizer" target="_blank">github ↗</a>
                     <a href="https://crates.io/crates/paraoxidizer" target="_blank">crates.io ↗</a>
                 </div>
-                <p>Standalone Rust-native post-training quantizer &amp; inference engine for LLMs. Converts SafeTensors/GGUF to zero-copy memory-mapped .pox format with Metal compute shaders, AWQ/GPTQ, INT4/INT8, and Ed25519 cryptographic signatures.</p>
-                <div class="tags"><span class="tag">Rust</span><span class="tag">LLM Quantization</span><span class="tag">Metal GPU</span><span class="tag">AWQ/GPTQ</span><span class="tag">Inference</span></div>
+                <p>Standalone Rust-native post-training quantizer &amp; inference engine for LLMs without external Python/CUDA dependencies. Converts SafeTensors/GGUF to zero-copy memory-mapped <code>.pox</code> format with Apple Silicon Metal compute shaders, second-order AWQ/GPTQ calibration, INT4/INT8 SIMD, and Ed25519 cryptographic verification.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">LLM Quantization</span><span class="tag">Metal GPU</span><span class="tag">AWQ/GPTQ</span><span class="tag">Inference</span><span class="tag">Crates.io</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">Raya</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/raya" target="_blank">github ↗</a>
+                    <a href="https://crates.io/crates/raya" target="_blank">crates.io ↗</a>
+                </div>
+                <p>Rust-native static malware detection and binary pattern-matching engine. High-throughput multi-pattern Aho-Corasick scanning, recursive Pratt AST rule parser, deep PE32/PE32+ &amp; ELF inspection, x86/x64 instruction disassembly (iced-x86), and Shannon entropy analysis with structured evidence tracing.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">Malware Analysis</span><span class="tag">Aho-Corasick</span><span class="tag">iced-x86</span><span class="tag">PE/ELF Parser</span><span class="tag">Security</span><span class="tag">Crates.io</span></div>
             </div>
 
             <div class="project">
@@ -687,6 +699,34 @@
                 </div>
                 <p>High-performance asynchronous BitTorrent engine in Rust with a distributed stack: headless daemon, REST/WebSocket API layer, and CLI/Web dashboard controllers.</p>
                 <div class="tags"><span class="tag">Rust</span><span class="tag">BitTorrent</span><span class="tag">Async</span><span class="tag">WebSocket</span><span class="tag">P2P</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">MemHawk</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Memhawk" target="_blank">github ↗</a>
+                </div>
+                <p>AI-powered memory forensics platform integrating Volatility 3 with local LLMs (Ollama) for automated triage, anomaly detection, and interactive dump analysis.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">Volatility</span><span class="tag">Ollama</span><span class="tag">Electron</span><span class="tag">DFIR</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">Irones</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Irones" target="_blank">github ↗</a>
+                </div>
+                <p>Cycle-accurate Nintendo Entertainment System (NES) emulator in Rust with 6502 CPU emulation, PPU rendering, and SDL2 audiovisual output.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">SDL2</span><span class="tag">6502</span><span class="tag">Emulation</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">Xerxes</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/xerxes" target="_blank">github ↗</a>
+                    <a href="https://crates.io/crates/xerxes" target="_blank">crates.io ↗</a>
+                </div>
+                <p>High-performance filesystem navigation engine in Rust for macOS &amp; Linux. Provides instant directory jumping via fuzzy pattern matching, a frecency-based ranking algorithm, interactive selection, custom path aliases, and automated shell hooks.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">CLI</span><span class="tag">Frecency</span><span class="tag">Systems</span><span class="tag">Crates.io</span><span class="tag">macOS/Linux</span></div>
             </div>
 
             <div class="project">
@@ -700,39 +740,22 @@
             </div>
 
             <div class="project">
+                <div class="item-title">ChiefWarden</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/Cryptonite-Research-and-Development/tree/main/ChiefWarden"
+                        target="_blank">github ↗</a>
+                </div>
+                <p>Hybrid malware detection framework — Portable Executable (PE) static analysis combined with gradient boosting ML (98.89% accuracy).</p>
+                <div class="tags"><span class="tag">PyTorch</span><span class="tag">XGBoost</span><span class="tag">PE Malware</span><span class="tag">DFIR</span></div>
+            </div>
+
+            <div class="project">
                 <div class="item-title">BlueShift</div>
                 <div class="project-links">
                     <a href="https://github.com/tryhard-26/BlueShift" target="_blank">github ↗</a>
                 </div>
                 <p>Native macOS dual-pane SSH and remote file manager built in Swift and SwiftUI with differential delta transfers (rsync), keychain credential store, and multi-hop bastion jump host support.</p>
                 <div class="tags"><span class="tag">Swift</span><span class="tag">SwiftUI</span><span class="tag">macOS</span><span class="tag">SSH/SFTP</span><span class="tag">rsync</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">FermiURL</div>
-                <div class="project-links">
-                    <a href="https://github.com/tryhard-26/FermiURL" target="_blank">github ↗</a>
-                </div>
-                <p>High-throughput URL shortening service with distributed caching, QR code generator, real-time geolocated click analytics, and custom alias routing.</p>
-                <div class="tags"><span class="tag">React</span><span class="tag">Flask</span><span class="tag">MariaDB</span><span class="tag">Analytics</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">MemHawk</div>
-                <div class="project-links">
-                    <a href="https://github.com/tryhard-26/Memhawk" target="_blank">github ↗</a>
-                </div>
-                <p>AI-powered memory forensics platform integrating Volatility 3 with local LLMs (Ollama) for automated triage, anomaly detection, and interactive dump analysis.</p>
-                <div class="tags"><span class="tag">Python</span><span class="tag">Volatility</span><span class="tag">Ollama</span><span class="tag">Electron</span><span class="tag">DFIR</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">DropLAN</div>
-                <div class="project-links">
-                    <a href="https://github.com/tryhard-26/DropLAN" target="_blank">github ↗</a>
-                </div>
-                <p>Real-time local network file sharing service with zero-configuration peer discovery, streaming transfers, and QR connectivity.</p>
-                <div class="tags"><span class="tag">Flask</span><span class="tag">Socket.IO</span><span class="tag">Networking</span><span class="tag">WebSockets</span></div>
             </div>
 
             <div class="project">
@@ -745,13 +768,31 @@
             </div>
 
             <div class="project">
-                <div class="item-title">ChiefWarden</div>
+                <div class="item-title">PassRanger</div>
                 <div class="project-links">
-                    <a href="https://github.com/tryhard-26/Cryptonite-Research-and-Development/tree/main/ChiefWarden"
-                        target="_blank">github ↗</a>
+                    <a href="https://github.com/tryhard-26/PassRanger" target="_blank">github ↗</a>
                 </div>
-                <p>Hybrid malware detection framework — Portable Executable (PE) static analysis combined with gradient boosting ML (98.89% accuracy).</p>
-                <div class="tags"><span class="tag">PyTorch</span><span class="tag">XGBoost</span><span class="tag">PE Malware</span><span class="tag">DFIR</span></div>
+                <p>Android password manager in Java with encrypted local storage, optional Firebase sync, Autofill integration, and password entropy analysis using rule-based + ML scoring with HIBP k-anonymity checks.</p>
+                <div class="tags"><span class="tag">Android</span><span class="tag">Java</span><span
+                        class="tag">Cryptography</span><span class="tag">Security</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">DropLAN</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/DropLAN" target="_blank">github ↗</a>
+                </div>
+                <p>Real-time local network file sharing service with zero-configuration peer discovery, streaming transfers, and QR connectivity.</p>
+                <div class="tags"><span class="tag">Flask</span><span class="tag">Socket.IO</span><span class="tag">Networking</span><span class="tag">WebSockets</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">FermiURL</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/FermiURL" target="_blank">github ↗</a>
+                </div>
+                <p>High-throughput URL shortening service with distributed caching, QR code generator, real-time geolocated click analytics, and custom alias routing.</p>
+                <div class="tags"><span class="tag">React</span><span class="tag">Flask</span><span class="tag">MariaDB</span><span class="tag">Analytics</span></div>
             </div>
 
             <div class="project">
@@ -763,26 +804,6 @@
                 <p>Real-time stock trading simulator and portfolio tracker with Prophet time-series price forecasting and technical charts.</p>
                 <div class="tags"><span class="tag">React</span><span class="tag">Flask</span><span
                         class="tag">Docker</span><span class="tag">Finance</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">Irones</div>
-                <div class="project-links">
-                    <a href="https://github.com/tryhard-26/Irones" target="_blank">github ↗</a>
-                </div>
-                <p>Cycle-accurate Nintendo Entertainment System (NES) emulator in Rust with 6502 CPU emulation, PPU rendering, and SDL2 audiovisual output.</p>
-                <div class="tags"><span class="tag">Rust</span><span class="tag">SDL2</span><span
-                        class="tag">6502</span><span class="tag">Emulation</span></div>
-            </div>
-
-            <div class="project">
-                <div class="item-title">PassRanger</div>
-                <div class="project-links">
-                    <a href="https://github.com/tryhard-26/PassRanger" target="_blank">github ↗</a>
-                </div>
-                <p>Android password manager in Java with encrypted local storage, optional Firebase sync, Autofill integration, and password entropy analysis using rule-based + ML scoring with HIBP k-anonymity checks.</p>
-                <div class="tags"><span class="tag">Android</span><span class="tag">Java</span><span
-                        class="tag">Cryptography</span><span class="tag">Security</span></div>
             </div>
 
             <div class="project">
@@ -838,6 +859,18 @@
                 <p>Fixed out-of-bounds array access vulnerability in message.rs. Added proper bounds checking
                     for unknown_uuid_index, preventing crash risk on corrupted DSC files.</p>
                 <div class="tags"><span class="tag">Rust</span><span class="tag">Security</span></div>
+            </div>
+
+            <div class="oss-card">
+                <div class="oss-header">
+                    <span class="oss-repo">capa</span>
+                    <span class="oss-status approved">APPROVED</span>
+                </div>
+                <div class="oss-meta">mandiant/capa · +25 −2 · <a
+                        href="https://github.com/mandiant/capa/pull/3176" target="_blank">PR #3176
+                        ↗</a></div>
+                <p>Fixed bug in capa's PE feature extraction where module names for extensionless DLL imports (e.g. <code>ntdll</code>) were stripped by <code>rpartition()</code>, causing qualified import rule matching to silently fail. Added regression test suite.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">Mandiant</span><span class="tag">PE Format</span><span class="tag">DFIR</span><span class="tag">Malware Analysis</span></div>
             </div>
 
             <div class="oss-card">
@@ -979,7 +1012,7 @@
     </main>
     </div>
 
-    <script src="index.js?v=4"></script>
+    <script src="index.js?v=7"></script>
 
 </body>
 

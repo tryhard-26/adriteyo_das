@@ -428,12 +428,17 @@ body.light-theme .theme-toggle-btn .bulb-svg,
 }
 
 .cryptonite-link .nite-img {
-    width: 24px !important;
-    height: 24px !important;
+    width: 28px !important;
+    height: 19px !important;
     vertical-align: middle;
     object-fit: contain;
-    filter: drop-shadow(0 0 4px var(--accent-green));
-    transition: transform 0.2s ease;
+    filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.9)) brightness(1.25) contrast(1.15);
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.cryptonite-link:hover .nite-img {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 10px #00ff9d) brightness(1.4);
 }
 
 .cryptonite-link:hover {
@@ -791,7 +796,8 @@ body.light-theme .theme-toggle-btn .bulb-svg,
     border-radius: 2px;
 }
 
-.oss-status.merged {
+.oss-status.merged,
+.oss-status.approved {
     background: rgba(16, 185, 129, 0.15);
     color: var(--accent-green);
     border: 1px solid var(--accent-green);
@@ -1158,7 +1164,8 @@ button:hover {
 }
 
 /* Light mode OSS & PR Cards */
-[data-theme="light"] .oss-status.merged {
+[data-theme="light"] .oss-status.merged,
+[data-theme="light"] .oss-status.approved {
     background: #d6e8dc;
     color: #135632;
     border: 1px solid #7ab691;

@@ -9,6 +9,26 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'mermaid|language-mermaid'
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     
     <style>
         :root {
@@ -168,6 +188,212 @@
             margin: 1.5rem 0;
         }
 
+        /* Math and diagram styling */
+        .math-block {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 0.75rem 0;
+            margin: 1.2rem 0;
+            text-align: center;
+        }
+
+        mjx-container {
+            color: var(--text-main) !important;
+            outline: none !important;
+        }
+
+        mjx-container[display="true"] {
+            display: block !important;
+            margin: 1.2rem 0 !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+        }
+
+        /* Diagram styling */
+        .svg-diagram {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transition: border-color 0.25s ease;
+        }
+
+        .svg-diagram:hover {
+            border-color: #383552;
+        }
+
+        .diagram-svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .diagram-svg rect[rx], .diagram-svg circle {
+            transition: filter 0.2s ease;
+            cursor: pointer;
+        }
+
+        .diagram-svg rect[rx]:hover, .diagram-svg circle:hover {
+            filter: brightness(1.25);
+        }
+
+        /* Interactive Figure Styling (Arjun Virk Style) */
+        .interactive-fig {
+            margin: 2.5rem 0;
+            width: 100%;
+        }
+
+        .fig-card {
+            background: #090812;
+            border: 1px solid #262438;
+            border-radius: 8px;
+            padding: 1.25rem 1.25rem 1.4rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.25s ease;
+        }
+
+        .fig-card:hover {
+            border-color: #3b3858;
+        }
+
+        .fig-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #1a1829;
+        }
+
+        .fig-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+        }
+
+        .fig-status {
+            font-size: 11px;
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .fig-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0.6rem 0 1.1rem;
+        }
+
+        .fig-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-top: 0.9rem;
+            border-top: 1px solid #1a1829;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .btn-group {
+            display: inline-flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .fig-btn {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 0.3rem 0.65rem;
+            border-radius: 4px;
+            border: 1px solid #2d2a40;
+            background: #12101e;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .fig-btn:hover {
+            color: var(--text-main);
+            border-color: #4a456a;
+            background: #181628;
+        }
+
+        .fig-btn.active {
+            background: var(--text-main);
+            color: #0c0a15;
+            font-weight: 700;
+            border-color: var(--text-main);
+        }
+
+        .fig-slider {
+            accent-color: var(--accent-green);
+            cursor: pointer;
+            height: 5px;
+            background: #232234;
+            border-radius: 3px;
+            width: 130px;
+        }
+
+        .fig-caption {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 0.6rem;
+            line-height: 1.5;
+            font-family: var(--font-mono);
+            padding-left: 0.2rem;
+        }
+
+        /* Table styling */
+        .post-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 13px;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .post-content th, .post-content td {
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+        }
+
+        .post-content th {
+            background-color: var(--surface-color);
+            color: var(--accent-yellow);
+        }
+
+        .post-content tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
         .back-links {
             margin-top: 4rem;
             border-top: 1px solid var(--border-color);
@@ -214,6 +440,65 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Configure marked with a custom tokenizer that protects math blocks and inline math from markdown emphasis/italics
+            const inlineMath = {
+                name: 'inlineMath',
+                level: 'inline',
+                start(src) { return src.indexOf('$'); },
+                tokenizer(src) {
+                    const match = src.match(/^\$((?:[^\$\\]|\\.)+)\$/);
+                    if (match) {
+                        return {
+                            type: 'inlineMath',
+                            raw: match[0],
+                            text: match[1]
+                        };
+                    }
+                },
+                renderer(token) {
+                    return `$${token.text}$`;
+                }
+            };
+
+            const blockMath = {
+                name: 'blockMath',
+                level: 'block',
+                start(src) { return src.indexOf('$$'); },
+                tokenizer(src) {
+                    const match = src.match(/^\$\$([\s\S]+?)\$\$/);
+                    if (match) {
+                        return {
+                            type: 'blockMath',
+                            raw: match[0],
+                            text: match[1]
+                        };
+                    }
+                },
+                renderer(token) {
+                    return `<div class="math-block">$$${token.text}$$</div>`;
+                }
+            };
+
+            marked.use({ extensions: [blockMath, inlineMath] });
+
+            // Configure mermaid
+            if (typeof mermaid !== "undefined") {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'dark',
+                    themeVariables: {
+                        darkMode: true,
+                        background: '#0c0a15',
+                        primaryColor: '#10b981',
+                        primaryTextColor: '#f1f5f9',
+                        primaryBorderColor: '#2b2b2f',
+                        lineColor: '#06b6d4',
+                        secondaryColor: '#1a1a24',
+                        tertiaryColor: '#0c0a15'
+                    }
+                });
+            }
+
             // Get post source file from URL params
             const params = new URLSearchParams(window.location.search);
             const src = params.get('src');
@@ -230,28 +515,55 @@
 
             // Sanitize query to avoid directory traversal out of blog_src
             const cleanSrc = src.replace(/^.*[\\\/]/, '');
-            const targetPath = "/blogs/blog_src/" + cleanSrc;
+            const targetPath = "/blogs/blog_src/" + cleanSrc + "?t=" + Date.now();
 
             if (headerTitle) {
                 headerTitle.textContent = `/blogs/blog_src/${cleanSrc}`;
             }
 
-            // Fetch markdown content from the blog_src directory
-            fetch(targetPath)
+            // Fetch markdown content with cache buster
+            fetch(targetPath, { cache: "no-store" })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Could not find specified blog: ${cleanSrc} (HTTP status ${response.status})`);
                     }
                     return response.text();
                 })
-                .then(markdownText => {
+                .then(async markdownText => {
                     // Render using Marked
                     const htmlContent = marked.parse(markdownText);
                     contentElem.innerHTML = htmlContent;
-                    
-                    // Hide loading indicator, show content
+
+                    // Convert mermaid code blocks into mermaid divs
+                    const codeBlocks = contentElem.querySelectorAll('pre code.language-mermaid, pre code.lang-mermaid');
+                    codeBlocks.forEach(block => {
+                        const pre = block.parentElement;
+                        const div = document.createElement('div');
+                        div.className = 'mermaid';
+                        div.textContent = block.textContent;
+                        pre.replaceWith(div);
+                    });
+
+                    // Show content first so SVG layout engines and MathJax can measure element dimensions
                     loadingElem.style.display = 'none';
                     contentElem.style.display = 'block';
+
+                    // Initialize embedded interactive figures
+                    initInteractiveFigures();
+
+                    // Render MathJax formulas
+                    if (window.MathJax) {
+                        try {
+                            if (window.MathJax.startup && window.MathJax.startup.promise) {
+                                await window.MathJax.startup.promise;
+                            }
+                            if (window.MathJax.typesetPromise) {
+                                await window.MathJax.typesetPromise([contentElem]);
+                            }
+                        } catch (mathErr) {
+                            console.warn("MathJax rendering warning:", mathErr);
+                        }
+                    }
 
                     // Update document title dynamically based on first H1 or filename
                     const h1 = contentElem.querySelector('h1');
@@ -264,6 +576,443 @@
                 .catch(err => {
                     showError(err.message);
                 });
+
+            function initInteractiveFigures() {
+                initPatchScalingFig();
+                initRoPEExplorerFig();
+                initDinoExplorerFig();
+                initSiglipExplorerFig();
+            }
+
+            function initPatchScalingFig() {
+                const fig = document.getElementById('fig-patch-scaling');
+                if (!fig) return;
+
+                let patchSize = 16;
+                let resolution = 224;
+
+                const badge = fig.querySelector('#patch-stats-badge');
+                const svg = fig.querySelector('#patch-scaling-svg');
+                const patchBtns = fig.querySelectorAll('#patch-btn-group .fig-btn');
+                const resBtns = fig.querySelectorAll('#res-btn-group .fig-btn');
+
+                function render() {
+                    const nSide = Math.floor(resolution / patchSize);
+                    const N = nSide * nSide;
+                    const matrixCells = N * N;
+                    const baselineCells = 196 * 196;
+                    const mult = (matrixCells / baselineCells).toFixed(1);
+
+                    let statusText = `N = ${N.toLocaleString()} tokens · Matrix = `;
+                    if (matrixCells >= 1000000) {
+                        statusText += `${(matrixCells / 1000000).toFixed(2)}M cells`;
+                    } else {
+                        statusText += `${(matrixCells / 1000).toFixed(1)}k cells`;
+                    }
+                    statusText += ` · ${mult}× Baseline FLOPs`;
+                    if (badge) badge.textContent = statusText;
+
+                    const gridDim = Math.min(nSide, 14);
+                    const cellSize = 130 / gridDim;
+
+                    let gridCells = '';
+                    for (let r = 0; r < gridDim; r++) {
+                        for (let c = 0; c < gridDim; c++) {
+                            const isPicked = (r === 1 && c === 2);
+                            const fill = isPicked ? '#6366f1' : ((r + c) % 2 === 0 ? '#1e1b4b' : '#171427');
+                            const stroke = isPicked ? '#a5b4fc' : '#2e284a';
+                            gridCells += `<rect x="${35 + c * cellSize}" y="${45 + r * cellSize}" width="${cellSize - 1}" height="${cellSize - 1}" rx="1.5" fill="${fill}" stroke="${stroke}" stroke-width="${isPicked ? '1.5' : '0.5'}"/>`;
+                        }
+                    }
+
+                    let attnRep = '';
+                    if (nSide <= 14) {
+                        const attnCell = 130 / gridDim;
+                        for (let i = 0; i < gridDim; i++) {
+                            for (let j = 0; j < gridDim; j++) {
+                                const isDiag = (i === j);
+                                const fill = isDiag ? '#10b981' : ((i + j) % 3 === 0 ? '#312e81' : '#18152c');
+                                attnRep += `<rect x="${300 + j * attnCell}" y="${45 + i * attnCell}" width="${attnCell - 0.5}" height="${attnCell - 0.5}" fill="${fill}" opacity="${isDiag ? '0.9' : '0.65'}"/>`;
+                            }
+                        }
+                    } else {
+                        attnRep = `
+                            <defs>
+                                <radialGradient id="attnGlow" cx="40%" cy="40%" r="60%">
+                                    <stop offset="0%" stop-color="#ec4899" stop-opacity="0.9"/>
+                                    <stop offset="35%" stop-color="#8b5cf6" stop-opacity="0.8"/>
+                                    <stop offset="70%" stop-color="#3b82f6" stop-opacity="0.6"/>
+                                    <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.4"/>
+                                </radialGradient>
+                            </defs>
+                            <rect x="300" y="45" width="130" height="130" rx="4" fill="url(#attnGlow)"/>
+                            <line x1="300" y1="45" x2="430" y2="175" stroke="#34d399" stroke-width="2.5" stroke-dasharray="3 3"/>
+                        `;
+                    }
+
+                    const flopColor = mult > 8 ? '#f43f5e' : (mult > 1.5 ? '#f59e0b' : '#10b981');
+                    const flopBadgeText = mult > 8 ? 'QUADRATIC OOM RISK' : (mult > 1.5 ? 'HIGH COMPUTE LOAD' : 'EFFICIENT BASELINE');
+
+                    svg.innerHTML = `
+                        <rect x="20" y="20" width="160" height="210" rx="8" fill="#121020" stroke="#252042" stroke-width="1"/>
+                        <text x="100" y="38" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="monospace" font-weight="600">INPUT IMAGE ${resolution}×${resolution}</text>
+                        ${gridCells}
+                        <text x="100" y="195" text-anchor="middle" fill="#818cf8" font-size="11" font-family="monospace">${nSide}×${nSide} = ${N} patches</text>
+                        <text x="100" y="215" text-anchor="middle" fill="#64748b" font-size="10" font-family="monospace">P = ${patchSize}px</text>
+
+                        <path d="M 195 110 L 285 110" stroke="#6366f1" stroke-width="2"/>
+                        <polygon points="285,110 277,105 277,115" fill="#6366f1"/>
+                        <text x="240" y="98" text-anchor="middle" fill="#a5b4fc" font-size="10" font-family="monospace">Linear Proj E</text>
+                        <text x="240" y="128" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">z = X_p E + E_pos</text>
+
+                        <rect x="285" y="20" width="160" height="210" rx="8" fill="#121020" stroke="#252042" stroke-width="1"/>
+                        <text x="365" y="38" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="monospace" font-weight="600">ATTENTION MATRIX A</text>
+                        ${attnRep}
+                        <text x="365" y="195" text-anchor="middle" fill="#34d399" font-size="11" font-family="monospace">N × N = ${matrixCells >= 1e6 ? (matrixCells/1e6).toFixed(1) + 'M' : (matrixCells/1e3).toFixed(1) + 'k'} cells</text>
+                        <text x="365" y="215" text-anchor="middle" fill="#64748b" font-size="10" font-family="monospace">Softmax(QK^T / √d)</text>
+
+                        <rect x="460" y="20" width="200" height="210" rx="8" fill="#100e1c" stroke="#252042" stroke-width="1"/>
+                        <text x="560" y="38" text-anchor="middle" fill="#cbd5e1" font-size="11" font-family="monospace" font-weight="600">COMPUTE BOTTLENECK</text>
+
+                        <rect x="475" y="55" width="170" height="40" rx="5" fill="#17142b" stroke="#2e2850" stroke-width="0.8"/>
+                        <text x="485" y="70" fill="#94a3b8" font-size="9" font-family="monospace">SEQUENCE LENGTH (N)</text>
+                        <text x="485" y="88" fill="#ffffff" font-size="13" font-family="monospace" font-weight="700">${N.toLocaleString()} tokens</text>
+
+                        <rect x="475" y="105" width="170" height="40" rx="5" fill="#17142b" stroke="#2e2850" stroke-width="0.8"/>
+                        <text x="485" y="120" fill="#94a3b8" font-size="9" font-family="monospace">RELATIVE ATTN FLOPs</text>
+                        <text x="485" y="138" fill="${flopColor}" font-size="13" font-family="monospace" font-weight="700">${mult}× Baseline</text>
+
+                        <text x="475" y="165" fill="#94a3b8" font-size="9" font-family="monospace">PAIRWISE ACTIVATION</text>
+                        <rect x="475" y="172" width="170" height="12" rx="3" fill="#1a1829"/>
+                        <rect x="475" y="172" width="${Math.min(170, Math.max(8, (matrixCells / baselineCells) * 10))}" height="12" rx="3" fill="${flopColor}"/>
+                        
+                        <rect x="475" y="195" width="170" height="22" rx="4" fill="${flopColor}22" stroke="${flopColor}66" stroke-width="0.8"/>
+                        <text x="560" y="210" text-anchor="middle" fill="${flopColor}" font-size="9" font-family="monospace" font-weight="700">${flopBadgeText}</text>
+                    `;
+                }
+
+                patchBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        patchBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        patchSize = parseInt(btn.dataset.patch);
+                        render();
+                    });
+                });
+
+                resBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        resBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        resolution = parseInt(btn.dataset.res);
+                        render();
+                    });
+                });
+
+                render();
+            }
+
+            function initRoPEExplorerFig() {
+                const fig = document.getElementById('fig-rope-explorer');
+                if (!fig) return;
+
+                let shift = 0;
+                let dx = 2;
+
+                const badge = fig.querySelector('#rope-stats-badge');
+                const svg = fig.querySelector('#rope-svg');
+                const shiftBtns = fig.querySelectorAll('#rope-shift-group .fig-btn');
+                const dxSlider = fig.querySelector('#rope-dx-slider');
+
+                function render() {
+                    const theta = 0.40;
+                    const m = shift;
+                    const n = m + dx;
+                    const angleQ = m * theta;
+                    const angleK = n * theta;
+                    const deltaAngle = (n - m) * theta;
+                    const score = Math.cos(deltaAngle);
+
+                    const deltaDeg = (deltaAngle * 180 / Math.PI).toFixed(1);
+                    const qDeg = ((angleQ * 180 / Math.PI) % 360).toFixed(0);
+                    const kDeg = ((angleK * 180 / Math.PI) % 360).toFixed(0);
+
+                    if (badge) {
+                        badge.textContent = `Shift = +${shift} · Δx = ${dx} · Score = ${score.toFixed(4)} (Invariant)`;
+                    }
+
+                    const cx = 130, cy = 115, r = 70;
+                    const qx = cx + r * Math.cos(angleQ);
+                    const qy = cy - r * Math.sin(angleQ);
+                    const kx = cx + r * Math.cos(angleK);
+                    const ky = cy - r * Math.sin(angleK);
+
+                    const startA = Math.min(angleQ, angleK);
+                    const endA = Math.max(angleQ, angleK);
+                    const arcR = 38;
+                    const arcX1 = cx + arcR * Math.cos(startA);
+                    const arcY1 = cy - arcR * Math.sin(startA);
+                    const arcX2 = cx + arcR * Math.cos(endA);
+                    const arcY2 = cy - arcR * Math.sin(endA);
+                    const largeArc = (endA - startA) > Math.PI ? 1 : 0;
+                    const arcPath = `M ${arcX1} ${arcY1} A ${arcR} ${arcR} 0 ${largeArc} 0 ${arcX2} ${arcY2}`;
+
+                    svg.innerHTML = `
+                        <rect x="15" y="15" width="230" height="200" rx="8" fill="#121020" stroke="#252042" stroke-width="1"/>
+                        <text x="130" y="32" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="monospace" font-weight="600">COMPLEX UNIT CIRCLE (SO(2))</text>
+                        
+                        <line x1="${cx - r - 10}" y1="${cy}" x2="${cx + r + 10}" y2="${cy}" stroke="#2e2850" stroke-width="1"/>
+                        <line x1="${cx}" y1="${cy - r - 10}" x2="${cx}" y2="${cy + r + 10}" stroke="#2e2850" stroke-width="1"/>
+                        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2d264f" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+                        <path d="${arcPath}" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                        <text x="${cx + 10}" y="${cy - 12}" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="700">Δθ = ${deltaDeg}°</text>
+
+                        <line x1="${cx}" y1="${cy}" x2="${qx}" y2="${qy}" stroke="#10b981" stroke-width="2.5"/>
+                        <circle cx="${qx}" cy="${qy}" r="4" fill="#10b981"/>
+                        <text x="${qx + (qx > cx ? 6 : -28)}" y="${qy + (qy > cy ? 12 : -6)}" fill="#10b981" font-size="11" font-family="monospace" font-weight="700">q(m)</text>
+
+                        <line x1="${cx}" y1="${cy}" x2="${kx}" y2="${ky}" stroke="#818cf8" stroke-width="2.5"/>
+                        <circle cx="${kx}" cy="${ky}" r="4" fill="#818cf8"/>
+                        <text x="${kx + (kx > cx ? 6 : -28)}" y="${ky + (ky > cy ? 12 : -6)}" fill="#818cf8" font-size="11" font-family="monospace" font-weight="700">k(n)</text>
+
+                        <rect x="260" y="15" width="405" height="200" rx="8" fill="#100e1c" stroke="#252042" stroke-width="1"/>
+                        <text x="462" y="32" text-anchor="middle" fill="#cbd5e1" font-size="11" font-family="monospace" font-weight="600">ROTATIONAL PHASE CANCELLATION</text>
+
+                        <rect x="275" y="45" width="115" height="42" rx="4" fill="#161328" stroke="#2a244a" stroke-width="0.8"/>
+                        <text x="285" y="60" fill="#10b981" font-size="9" font-family="monospace">QUERY PHASE θ_m</text>
+                        <text x="285" y="77" fill="#ffffff" font-size="12" font-family="monospace" font-weight="700">${qDeg}°</text>
+
+                        <rect x="405" y="45" width="115" height="42" rx="4" fill="#161328" stroke="#2a244a" stroke-width="0.8"/>
+                        <text x="415" y="60" fill="#818cf8" font-size="9" font-family="monospace">KEY PHASE θ_n</text>
+                        <text x="415" y="77" fill="#ffffff" font-size="12" font-family="monospace" font-weight="700">${kDeg}°</text>
+
+                        <rect x="535" y="45" width="115" height="42" rx="4" fill="#102a24" stroke="#10b981" stroke-width="1"/>
+                        <text x="545" y="60" fill="#34d399" font-size="9" font-family="monospace">DIFFERENCE Δθ</text>
+                        <text x="545" y="77" fill="#34d399" font-size="12" font-family="monospace" font-weight="700">${deltaDeg}°</text>
+
+                        <rect x="275" y="98" width="375" height="52" rx="5" fill="#17142c" stroke="#2e2850" stroke-width="0.8"/>
+                        <text x="287" y="116" fill="#a5b4fc" font-size="10" font-family="monospace">Attention Logit: ⟨R_m q, R_n k⟩ = q^T R_(n-m) k</text>
+                        <text x="287" y="138" fill="#e2e8f0" font-size="11" font-family="monospace" font-weight="700">= cos((n - m) θ) = cos(${dx} · θ) = <tspan fill="#34d399">${score.toFixed(4)}</tspan></text>
+
+                        <rect x="275" y="160" width="375" height="42" rx="5" fill="#0d231e" stroke="#10b98166" stroke-width="0.8"/>
+                        <text x="462" y="177" text-anchor="middle" fill="#34d399" font-size="10" font-family="monospace" font-weight="700">TRANSLATION INVARIANCE CONFIRMED</text>
+                        <text x="462" y="193" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="monospace">Shift ${shift > 0 ? '+' + shift : '0'} rotated both vectors, but relative angle Δθ & inner product stayed identical.</text>
+                    `;
+                }
+
+                shiftBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        shiftBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        shift = parseInt(btn.dataset.shift);
+                        render();
+                    });
+                });
+
+                if (dxSlider) {
+                    dxSlider.addEventListener('input', () => {
+                        dx = parseInt(dxSlider.value);
+                        render();
+                    });
+                }
+
+                render();
+            }
+
+            function initDinoExplorerFig() {
+                const fig = document.getElementById('fig-dino-explorer');
+                if (!fig) return;
+
+                let isCenteringOn = true;
+                let tau = 0.04;
+
+                const badge = fig.querySelector('#dino-stats-badge');
+                const svg = fig.querySelector('#dino-svg');
+                const btnOn = fig.querySelector('#dino-btn-on');
+                const btnOff = fig.querySelector('#dino-btn-off');
+                const tempSlider = fig.querySelector('#dino-temp-slider');
+
+                function render() {
+                    const protoLabels = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8'];
+                    let logits = [];
+
+                    if (isCenteringOn) {
+                        logits = [1.2, 0.8, 3.4, 0.5, 2.1, 1.1, 1.7, 0.9];
+                        if (badge) badge.textContent = `Centering: ON · τ_t = ${tau} (Target Sharpened, Stable)`;
+                    } else {
+                        logits = [0.2, 0.1, 15.0, 0.1, 0.3, 0.2, 0.1, 0.1];
+                        if (badge) badge.textContent = `Centering: OFF · τ_t = ${tau} (MODE COLLAPSE: P3 Dominates)`;
+                    }
+
+                    const maxL = Math.max(...logits);
+                    const expVals = logits.map(l => Math.exp((l - maxL) / tau));
+                    const sumExp = expVals.reduce((a, b) => a + b, 0);
+                    const probs = expVals.map(e => e / sumExp);
+
+                    const barW = 24;
+                    const gap = 14;
+                    const startX = 40;
+                    let barsSvg = '';
+
+                    for (let i = 0; i < 8; i++) {
+                        const p = probs[i];
+                        const barH = Math.max(3, p * 110);
+                        const bx = startX + i * (barW + gap);
+                        const by = 160 - barH;
+                        const pctStr = (p * 100).toFixed(p > 0.95 ? 1 : 0);
+                        const isDominant = p > 0.4;
+                        const fill = isCenteringOn ? (isDominant ? '#6366f1' : '#3b82f6') : (isDominant ? '#ef4444' : '#334155');
+
+                        barsSvg += `
+                            <rect x="${bx}" y="${by}" width="${barW}" height="${barH}" rx="3" fill="${fill}"/>
+                            <text x="${bx + barW/2}" y="${by - 5}" text-anchor="middle" fill="${isDominant ? (isCenteringOn ? '#a5b4fc' : '#f87171') : '#64748b'}" font-size="9" font-family="monospace">${pctStr}%</text>
+                            <text x="${bx + barW/2}" y="175" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="monospace">${protoLabels[i]}</text>
+                        `;
+                    }
+
+                    const bannerFill = isCenteringOn ? '#0d231e' : '#2d1217';
+                    const bannerBorder = isCenteringOn ? '#10b98166' : '#ef444466';
+                    const bannerTitle = isCenteringOn ? 'PRE-TRAINING STABLE: NO COLLAPSE' : 'CRITICAL WARNING: MODE COLLAPSE DETECTED';
+                    const bannerColor = isCenteringOn ? '#34d399' : '#f87171';
+
+                    svg.innerHTML = `
+                        <rect x="15" y="15" width="340" height="200" rx="8" fill="#121020" stroke="#252042" stroke-width="1"/>
+                        <text x="185" y="32" text-anchor="middle" fill="#cbd5e1" font-size="11" font-family="monospace" font-weight="600">TEACHER PROBABILITY DISTRIBUTION P_t(x)</text>
+                        ${barsSvg}
+                        <line x1="30" y1="160" x2="335" y2="160" stroke="#2e2850" stroke-width="1"/>
+
+                        <rect x="370" y="15" width="295" height="200" rx="8" fill="#100e1c" stroke="#252042" stroke-width="1"/>
+                        <text x="517" y="32" text-anchor="middle" fill="#cbd5e1" font-size="11" font-family="monospace" font-weight="600">DISTILLATION EQUATION</text>
+
+                        <rect x="385" y="45" width="265" height="42" rx="4" fill="#17142c" stroke="#2e2850" stroke-width="0.8"/>
+                        <text x="395" y="60" fill="#a5b4fc" font-size="10" font-family="monospace">P_t(x) = Softmax((g_t(x) - c) / τ_t)</text>
+                        <text x="395" y="76" fill="#64748b" font-size="9" font-family="monospace">c ← m · c + (1 - m) · (1/B) Σ g_t(x)</text>
+
+                        <rect x="385" y="98" width="125" height="40" rx="4" fill="#161328" stroke="#2a244a" stroke-width="0.8"/>
+                        <text x="395" y="112" fill="#94a3b8" font-size="9" font-family="monospace">CENTERING BIAS</text>
+                        <text x="395" y="130" fill="${isCenteringOn ? '#34d399' : '#f87171'}" font-size="11" font-family="monospace" font-weight="700">${isCenteringOn ? 'c Active (-μ)' : 'c = 0 (Unbounded)'}</text>
+
+                        <rect x="525" y="98" width="125" height="40" rx="4" fill="#161328" stroke="#2a244a" stroke-width="0.8"/>
+                        <text x="535" y="112" fill="#94a3b8" font-size="9" font-family="monospace">TEMPERATURE</text>
+                        <text x="535" y="130" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="700">τ_t = ${tau}</text>
+
+                        <rect x="385" y="148" width="265" height="54" rx="5" fill="${bannerFill}" stroke="${bannerBorder}" stroke-width="0.8"/>
+                        <text x="517" y="165" text-anchor="middle" fill="${bannerColor}" font-size="9" font-family="monospace" font-weight="700">${bannerTitle}</text>
+                        <text x="517" y="180" text-anchor="middle" fill="#94a3b8" font-size="8.5" font-family="monospace">${isCenteringOn ? 'Stable representation learning' : 'All representations collapsed'}</text>
+                        <text x="517" y="193" text-anchor="middle" fill="#64748b" font-size="8" font-family="monospace">${isCenteringOn ? 'KoLeo regularizer prevents clustering' : 'Dirac delta on dimension P3'}</text>
+                    `;
+                }
+
+                if (btnOn) {
+                    btnOn.addEventListener('click', () => {
+                        btnOn.classList.add('active');
+                        if (btnOff) btnOff.classList.remove('active');
+                        isCenteringOn = true;
+                        render();
+                    });
+                }
+
+                if (btnOff) {
+                    btnOff.addEventListener('click', () => {
+                        btnOff.classList.add('active');
+                        if (btnOn) btnOn.classList.remove('active');
+                        isCenteringOn = false;
+                        render();
+                    });
+                }
+
+                if (tempSlider) {
+                    tempSlider.addEventListener('input', () => {
+                        tau = parseFloat(tempSlider.value);
+                        render();
+                    });
+                }
+
+                render();
+            }
+
+            function initSiglipExplorerFig() {
+                const fig = document.getElementById('fig-siglip-explorer');
+                if (!fig) return;
+
+                let batch = 32768;
+
+                const badge = fig.querySelector('#siglip-stats-badge');
+                const svg = fig.querySelector('#siglip-svg');
+                const batchBtns = fig.querySelectorAll('#siglip-batch-group .fig-btn');
+                const batchSlider = fig.querySelector('#siglip-batch-slider');
+
+                const batchPresets = [8192, 16384, 32768, 65536, 131072, 524288];
+
+                function render() {
+                    const B = batch;
+                    const clipBytes = 2 * B * B;
+                    const clipMB = clipBytes / (1024 * 1024);
+                    const clipGB = clipMB / 1024;
+
+                    let clipMemStr = '';
+                    if (clipGB >= 1) {
+                        clipMemStr = `${clipGB.toFixed(1)} GB`;
+                    } else {
+                        clipMemStr = `${clipMB.toFixed(0)} MB`;
+                    }
+
+                    if (badge) {
+                        badge.textContent = `Batch = ${B.toLocaleString()} · CLIP = ${clipMemStr} · SigLIP = 0.5 MB`;
+                    }
+
+                    const isOOM = clipGB >= 32;
+                    const clipColor = isOOM ? '#ef4444' : (clipGB >= 2 ? '#f59e0b' : '#6366f1');
+                    const clipBarWidth = Math.min(380, Math.max(15, (Math.log10(clipMB) / Math.log10(600000)) * 380));
+
+                    svg.innerHTML = `
+                        <rect x="15" y="15" width="650" height="92" rx="8" fill="#121020" stroke="#252042" stroke-width="1"/>
+                        <text x="30" y="34" fill="#f43f5e" font-size="11" font-family="monospace" font-weight="700">CLASSIC CLIP (InfoNCE Softmax with Global AllGather)</text>
+                        <text x="30" y="52" fill="#94a3b8" font-size="9" font-family="monospace">Distributed sync: ALL GPUs must exchange embeddings synchronously before computing loss</text>
+                        <text x="30" y="75" fill="#cbd5e1" font-size="10" font-family="monospace">Memory: 2 · B² = <tspan fill="${clipColor}" font-weight="700">${clipMemStr}</tspan></text>
+                        <rect x="230" y="63" width="415" height="16" rx="4" fill="#1b182b"/>
+                        <rect x="230" y="63" width="${clipBarWidth}" height="16" rx="4" fill="${clipColor}"/>
+                        <text x="${240 + clipBarWidth}" y="75" fill="${clipColor}" font-size="9" font-family="monospace" font-weight="700"> ${isOOM ? 'OOM / HARDWARE COLLAPSE' : (clipGB >= 2 ? 'NETWORK SATURATION' : 'SYNC BARRIER')}</text>
+                        <text x="30" y="94" fill="#64748b" font-size="9" font-family="monospace">Loss denominator: Σ_j exp(t · x_i^T y_j) couples all B samples across all workers</text>
+
+                        <rect x="15" y="118" width="650" height="95" rx="8" fill="#0c1815" stroke="#10b98144" stroke-width="1"/>
+                        <text x="30" y="138" fill="#10b981" font-size="11" font-family="monospace" font-weight="700">GOOGLE SigLIP (Streamed Pairwise Sigmoid)</text>
+                        <text x="30" y="156" fill="#94a3b8" font-size="9" font-family="monospace">Distributed sync: ZERO global AllGather collective! Ring-pass tiles stream asynchronously</text>
+                        <text x="30" y="179" fill="#cbd5e1" font-size="10" font-family="monospace">Memory: 2 · b² = <tspan fill="#34d399" font-weight="700">0.5 MB</tspan> (Constant)</text>
+                        <rect x="230" y="167" width="415" height="16" rx="4" fill="#142621"/>
+                        <rect x="230" y="167" width="25" height="16" rx="4" fill="#10b981"/>
+                        <text x="265" y="179" fill="#34d399" font-size="9" font-family="monospace" font-weight="700">CONSTANT TILE BUFFER (Scales to 1M+ pairs)</text>
+                        <text x="30" y="198" fill="#10b981aa" font-size="9" font-family="monospace">Loss: -log σ(z_ii) - Σ_j log σ(-z_ij) decouples every pair into independent binary decisions</text>
+                    `;
+                }
+
+                batchBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        batchBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        batch = parseInt(btn.dataset.batch);
+                        render();
+                    });
+                });
+
+                if (batchSlider) {
+                    batchSlider.addEventListener('input', () => {
+                        const idx = parseInt(batchSlider.value) - 1;
+                        batch = batchPresets[idx] || 32768;
+                        batchBtns.forEach(b => {
+                            if (parseInt(b.dataset.batch) === batch) {
+                                b.classList.add('active');
+                            } else {
+                                b.classList.remove('active');
+                            }
+                        });
+                        render();
+                    });
+                }
+
+                render();
+            }
 
             function showError(msg) {
                 loadingElem.style.display = 'none';

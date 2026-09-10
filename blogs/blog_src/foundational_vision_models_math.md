@@ -1,8 +1,8 @@
 # The Math behind Foundational Vision Models
 
-Modern vision models look very different from classical convolutional networks. Instead of baking spatial locality and translation equivariance directly into sliding kernels, models like ViT, DINOv2, SigLIP, NaViT, and PaliGemma 2 rely on sequence tokenization, self-supervised objectives, and contrastive or autoregressive loss formulations.
+Modern vision models look very different from classical convolutional networks. Instead of baking spatial locality and translation equivariance directly into sliding kernels, models like ViT, DINOv2, SAM, SigLIP, NaViT, and PaliGemma 2 rely on sequence tokenization, self-supervised distillation objectives, prompt-conditioned interactive segmentation, and unified autoregressive loss formulations.
 
-This post covers the mathematical formulation behind these architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, and how SigLIP replaces softmax normalizers with pairwise sigmoid loss to scale contrastive batches.
+This post walks through the mathematical machinery behind these architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, prompt Fourier encodings in Segment Anything, pairwise sigmoid loss in SigLIP, and how Vision-Language Models (VLMs) evolved from global vector pooling to unified token sequences.
 
 ---
 
@@ -60,7 +60,7 @@ Summing these terms gives the per-layer cost:
 
 $$\text{FLOPs}_{\text{layer}} \approx 8 N D^2 + 4 N^2 D$$
 
-Because $N = \frac{HW}{P^2}$, halving the patch size from $P=16$ to $P=8$ quadruples $N$. The $4 N^2 D$ attention term and training activation memory both increase by a factor of 16. For this reason, architectures like ViT-H and SigLIP keep $P=14$ or $P=16$ during pre-training, reserving smaller patch sizes like $P=8$ for fine-tuning.
+Because $N = \frac{HW}{P^2}$, halving the patch size from $P=16$ to $P=8$ quadruples $N$. The $4 N^2 D$ attention term and training activation memory both increase by a factor of 16. For this reason, architectures like ViT-H, SAM, and SigLIP keep $P=14$ or $P=16$ during pre-training, reserving smaller patch sizes like $P=8$ for fine-tuning.
 
 ---
 
@@ -89,7 +89,7 @@ graph LR
     B --> D["Apply Rotation R_y(m_y)"]
     C --> E["Concatenate Rotated Subspaces: q_rotated"]
     D --> E
-    E --> F["Inner Product <q_i, k_j> depends strictly on (m_i - m_j)"]
+    E --> F["Inner Product depends strictly on (m_i - m_j)"]
 ```
 
 For head dimension $d$, the channel space splits into two equal parts of size $d/2$: one for the horizontal axis $x$, and one for the vertical axis $y$.
@@ -155,9 +155,9 @@ This structure produces a block-diagonal attention map. Because self-attention i
 
 ---
 
-## 4. Self-supervised distillation: DINOv2 and collapse prevention
+## 4. Self-supervised distillation: DINO and DINOv2
 
-Supervised training optimizes for discrete class labels, which discards fine spatial details. Self-supervised distillation learns dense visual representations directly from data without human annotation. DINOv2 uses student-teacher distillation with explicit mechanisms to prevent representation collapse.
+Supervised training optimizes for discrete class labels, which discards fine spatial details. Self-supervised distillation learns dense visual representations directly from data without human annotation. DINO and DINOv2 use student-teacher distillation with explicit mechanisms to prevent representation collapse.
 
 ```mermaid
 sequenceDiagram
@@ -178,7 +178,7 @@ sequenceDiagram
 
 ### Student-teacher distillation
 
-DINOv2 feeds different augmented views of an image to two networks:
+DINO feeds different augmented views of an image to two networks:
 
 * Student network $g_{\theta_s}$: processes global and local crops, parameterized by weights $\theta_s$.
 * Teacher network $g_{\theta_t}$: processes global crops only, parameterized by weights $\theta_t$.
@@ -206,7 +206,7 @@ Without negative pairs, self-distillation can collapse in two ways:
 1. Uniform collapse: the distribution becomes completely flat across all outputs.
 2. One-hot collapse: the model outputs 100% probability on a single dimension regardless of input.
 
-DINOv2 balances these tendencies with centering and sharpening:
+DINO balances these tendencies with centering and sharpening:
 
 Subtracting the running mean $\mathbf{c}$ prevents any single coordinate from dominating:
 
@@ -216,7 +216,19 @@ If dimension $k$ activates frequently across a batch, $c^{(k)}$ increases, subtr
 
 Setting $\tau_t < \tau_s$ (for example, $\tau_t = 0.04$ and $\tau_s = 0.1$) sharpens the teacher output distribution, preventing the logits from decaying toward a uniform vector.
 
-### The KoLeo regularizer
+### DINOv2: patch-level MIM and the KoLeo regularizer
+
+DINOv2 extends DINOv1 in two major mathematical directions:
+
+#### 1. Patch-level Masked Image Modeling (iBOT)
+
+In addition to the global class token distillation loss, DINOv2 masks a random subset of patches in the student input with mask token $\mathbf{e}_{\text{mask}}$, and computes cross-entropy over patch representations against the unmasked teacher output:
+
+$$\mathcal{L}_{\text{patch}} = - \sum_{i \in \text{Masked}} \sum_{k=1}^K P_t(\mathbf{x}_i)^{(k)} \log P_s(\mathbf{x}_i)^{(k)}$$
+
+This forces individual patch embeddings to encode localized visual semantics rather than relying entirely on the global class token.
+
+#### 2. The KoLeo regularizer
 
 To keep patch embeddings distributed across the representation manifold, DINOv2 uses the Kozachenko-Leonenko (KoLeo) differential entropy estimator.
 
@@ -232,7 +244,82 @@ As two vectors draw closer together, $\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2 \
 
 ---
 
-## 5. Contrastive objectives: classic CLIP vs Google SigLIP
+## 5. Meta's Segment Anything Model (SAM)
+
+Meta AI introduced SAM to solve promptable visual segmentation. Unlike traditional segmentation models that predict fixed semantic categories, SAM evaluates arbitrary prompt conditions: points, bounding boxes, or rough mask sketches.
+
+```mermaid
+graph TD
+    Image["Input Image: 1024 x 1024"] --> Enc["ViT Image Encoder (MAE Init, 16x downsample)"]
+    Enc --> Feat["Image Embeddings: 64 x 64 x 256"]
+    
+    Points["Point / Box Prompts"] --> Fouri["Fourier Positional Encodings + Type Embeddings"]
+    MaskPrompt["Dense Mask Prompts"] --> Conv["Convolutional Downsampling"]
+    Fouri & Conv --> Prompts["Prompt Tokens"]
+
+    Feat & Prompts --> Dec["Two-Way Transformer Decoder"]
+    Dec --> Logits["Dynamic Mask Weights * Upscaled Features"]
+    Logits --> Out["Predicted Mask Candidates + IoU Score"]
+```
+
+### Image encoder architecture
+
+SAM processes an input image of size $1024 \times 1024$ through a standard Vision Transformer backbone pre-trained with Masked Autoencoders (MAE). To handle the computational weight of $64 \times 64 = 4096$ patch tokens, SAM alternates between windowed local self-attention (within $14 \times 14$ patch grids) and 4 global attention blocks distributed evenly through the network.
+
+The output image embedding is a spatial tensor:
+
+$$\mathbf{F} \in \mathbb{R}^{64 \times 64 \times 256}$$
+
+### Prompt encoder: Fourier positional embeddings
+
+Prompts fall into two categories:
+
+1. Sparse prompts (points and bounding boxes): a point coordinate $\mathbf{v} = (x, y)$ in $[0, 1]^2$ maps to a 256-dimensional vector using random Fourier feature positional encodings:
+
+$$\gamma(\mathbf{v}) = \left[ \sin(2\pi \mathbf{B}\mathbf{v}), \ \cos(2\pi \mathbf{B}\mathbf{v}) \right]^\top$$
+
+where $\mathbf{B} \in \mathbb{R}^{128 \times 2}$ is a static projection matrix with entries drawn from a Gaussian distribution $\mathcal{N}(0, \sigma^2)$.
+
+To distinguish positive foreground points from negative background points and bounding box corners, a learned prompt type embedding $\mathbf{e}_{\text{type}} \in \mathbb{R}^{256}$ is added to the Fourier vector:
+
+$$\mathbf{p}_{\text{sparse}} = \gamma(\mathbf{v}) + \mathbf{e}_{\text{type}}$$
+
+2. Dense prompts (input masks): an initial binary mask $\mathbf{M} \in \{0, 1\}^{1024 \times 1024}$ passes through four consecutive convolutional layers with $2\times$ downsampling and GELU activations, matching the $(64 \times 64 \times 256)$ spatial dimension of $\mathbf{F}$.
+
+### Two-way transformer mask decoder
+
+The decoder runs two cross-attention layers that update prompt tokens and image tokens symmetrically:
+
+1. Prompt-to-image cross-attention: prompt tokens attend to image patch embeddings $\mathbf{F}$.
+2. Image-to-prompt cross-attention: image patch embeddings $\mathbf{F}$ attend back to the updated prompt tokens.
+
+After the two-way attention layers, the updated output token passes through a 3-layer MLP that outputs dynamic classification weights $\mathbf{w}_{\text{mask}} \in \mathbb{R}^{32}$.
+
+Concurrently, the image feature map $\mathbf{F}$ is upscaled by $4\times$ via transposed convolutions to dimension $256 \times 256 \times 32$. The final mask logits evaluate as a spatial inner product:
+
+$$\text{Logits}(x, y) = \mathbf{w}_{\text{mask}}^\top \mathbf{F}_{\text{upscaled}}(x, y)$$
+
+### Loss formulation: Focal Loss and Dice Loss
+
+SAM trains on its dynamic segmentation predictions using a weighted combination of Focal Loss and Dice Loss:
+
+$$\mathcal{L}_{\text{SAM}} = 20 \cdot \mathcal{L}_{\text{focal}} + \mathcal{L}_{\text{dice}}$$
+
+Focal loss compensates for the extreme imbalance between background pixels and small target masks:
+
+$$\mathcal{L}_{\text{focal}} = - \frac{1}{HW} \sum_{i=1}^{HW} \alpha_t (1 - p_{t, i})^\gamma \log(p_{t, i})$$
+
+where $p_{t, i} = \sigma(\text{logit}_i)$ if ground truth $y_i = 1$, and $1 - \sigma(\text{logit}_i)$ otherwise, with focusing parameter $\gamma = 2$.
+
+Dice loss directly optimizes the soft Intersection-over-Union (IoU) between predicted probability map $\mathbf{P}$ and binary ground truth $\mathbf{Y}$:
+
+$$\mathcal{L}_{\text{dice}} = 1 - \frac{2 \sum_{i=1}^{HW} y_i p_i + \epsilon}{\sum_{i=1}^{HW} y_i + \sum_{i=1}^{HW} p_i + \epsilon}$$
+
+To resolve geometric ambiguity (for example, a single point click could refer to a person's shirt, the person, or the entire scene), SAM predicts 3 candidate masks (subpart, part, whole) along with an estimated IoU score trained with Mean Squared Error (MSE) against the real mask IoU.
+
+---
+
+## 6. Contrastive foundations: classic CLIP vs Google SigLIP
 
 Contrastive pre-training maps image and text representations into a shared vector space.
 
@@ -263,9 +350,9 @@ For normalized image representations $\mathbf{X} \in \mathbb{R}^{B \times D}$ an
 
 The InfoNCE loss treats diagonal pairs $(i, i)$ as positives and off-diagonal pairs $(i, j)$ ($j \neq i$) as negatives:
 
-$$\mathcal{L}_{\text{image}\to\text{text}} = - \frac{1}{B} \sum_{i=1}^B \log \frac{\exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_i)}{\sum_{j=1}^B \exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_j)}$$
+$$\mathcal{L}_{\text{image}\to\text{text}} = - \frac{1}{B} \sum_{i=1}^{B} \log \frac{\exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_i)}{\sum_{j=1}^B \exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_j)}$$
 
-$$\mathcal{L}_{\text{text}\to\text{image}} = - \frac{1}{B} \sum_{i=1}^B \log \frac{\exp(t \cdot \mathbf{y}_i^\top \mathbf{x}_i)}{\sum_{j=1}^B \exp(t \cdot \mathbf{y}_j^\top \mathbf{x}_i)}$$
+$$\mathcal{L}_{\text{text}\to\text{image}} = - \frac{1}{B} \sum_{i=1}^{B} \log \frac{\exp(t \cdot \mathbf{y}_i^\top \mathbf{x}_i)}{\sum_{j=1}^B \exp(t \cdot \mathbf{y}_j^\top \mathbf{x}_i)}$$
 
 $$\mathcal{L}_{\text{CLIP}} = \frac{1}{2} \left( \mathcal{L}_{\text{image}\to\text{text}} + \mathcal{L}_{\text{text}\to\text{image}} \right)$$
 
@@ -307,69 +394,87 @@ $$\mathcal{L}_{\text{SigLIP}} = \frac{1}{|B|} \sum_{i=1}^{|B|} \left[ \log(1 + e
 
 ---
 
-## 6. Multimodal projection: PaliGemma 2 and cross-modal adapters
+## 7. How Vision-Language Models (VLMs) came about
 
-Vision-language models map visual representations into the token space of an autoregressive language model.
+Vision-Language Models did not appear all at once. They evolved across four distinct architectural stages as researchers resolved the interface between continuous visual patches and discrete autoregressive language tokens.
 
 ```mermaid
-graph LR
-    I["Input Image"] --> S["SigLIP-So400M Visual Encoder"]
-    S --> Patch["N Visual Tokens in R^D_v"]
-    Patch --> Proj["Cross-Modal Projection: Linear / MLP"]
-    Proj --> Trans["Aligned Tokens in R^D_llm"]
-    Text["Text Tokens"] --> Emb["Text Embedding Layer"]
-    Emb --> LLM["Autoregressive LLM (e.g. Gemma 2)"]
-    Trans --> LLM
-    LLM --> Out["Next-Token Probabilities"]
+graph TD
+    S1["Stage 1: Dual Encoders (CLIP, ALIGN)"] --> D1["Global vector pooling, zero spatial tokens"]
+    D1 --> S2["Stage 2: Cross-Attention Conditioning (Flamingo, PaLI)"]
+    S2 --> D2["Gated cross-attention + Perceiver Resampler"]
+    D2 --> S3["Stage 3: Direct Visual Token Injection (LLaVA)"]
+    S3 --> D3["Linear / MLP projections into LLM vocabulary space"]
+    D3 --> S4["Stage 4: Unified Autoregressive Foundations (PaliGemma 2)"]
+    S4 --> D4["Native SigLIP encoder + Gemma autoregressive pre-training"]
 ```
 
-### Projection methods
+### Stage 1: Dual encoders and global vector pooling (CLIP, ALIGN)
 
-To pass visual features $\mathbf{Z}_v \in \mathbb{R}^{N \times D_v}$ into language embedding space $\mathbb{R}^{N \times D_{\text{llm}}}$, models use one of three common projection layers:
+Early vision-language work trained two separate encoders (one for images, one for text) using contrastive loss. The visual encoder passed its patch representations through an attention pooling layer or took the `[CLS]` token, collapsing the entire 2D image into a single 1D vector $\mathbf{z}_v \in \mathbb{R}^D$.
 
-1. Linear projection (PaliGemma style):
+While effective for classification and image retrieval, collapsing the spatial grid to a single vector destroyed coordinate information. The model could identify that an image contained an object, but could not describe spatial relations or generate free-form text about specific regions.
 
-$$\mathbf{H}_v = \mathbf{Z}_v \mathbf{W}_{\text{proj}} + \mathbf{b}_{\text{proj}}, \quad \mathbf{W}_{\text{proj}} \in \mathbb{R}^{D_v \times D_{\text{llm}}}$$
+### Stage 2: Cross-attention conditioning and Perceiver Resamplers (Flamingo, PaLI)
 
-When the visual backbone (such as SigLIP-So400M) is pre-trained with contrastive alignment, a single linear map preserves spatial positions while projecting feature dimensions.
+DeepMind's Flamingo preserved individual patch tokens by keeping a pre-trained vision encoder and a pre-trained language model frozen.
 
-2. Two-layer MLP (LLaVA style):
+To inject visual context into the language decoder without retraining the entire LLM, Flamingo introduced Gated Cross-Attention layers into the transformer blocks:
 
-$$\mathbf{H}_v = \text{GELU}(\mathbf{Z}_v \mathbf{W}_1 + \mathbf{b}_1) \mathbf{W}_2 + \mathbf{b}_2$$
+$$\mathbf{y} = \mathbf{x} + \tanh(\alpha) \cdot \text{CrossAttention}(\mathbf{Q} = \mathbf{x}, \ \mathbf{K} = \mathbf{H}_v, \ \mathbf{V} = \mathbf{H}_v)$$
 
-3. Perceiver query resampler (Flamingo and PaLI):
+where $\alpha$ is a learnable scalar initialized to 0, ensuring that at the start of training the language model behaves identically to its frozen state.
 
-At higher resolutions ($896 \times 896$), an image produces $64 \times 64 = 4096$ patch tokens. To reduce sequence length before the language model, $M$ learnable query tokens $\mathbf{Q}_{\text{learn}} \in \mathbb{R}^{M \times D_{\text{llm}}}$ ($M \ll N$, such as $M = 64$) extract compressed features through cross-attention:
+Because high-resolution images produce thousands of patch tokens, feeding raw visual sequences into cross-attention creates latency bottlenecks. Flamingo introduced the Perceiver Resampler: a set of $M$ learnable latent query vectors $\mathbf{Q}_{\text{learn}} \in \mathbb{R}^{M \times D_{\text{llm}}}$ ($M \ll N$, typically $M = 64$) queries the visual features $\mathbf{Z}_v \in \mathbb{R}^{N \times D_v}$ via cross-attention:
 
 $$\mathbf{H}_v = \text{softmax}\left( \frac{(\mathbf{Q}_{\text{learn}} \mathbf{W}_Q)(\mathbf{Z}_v \mathbf{W}_K)^\top}{\sqrt{d}} \right) (\mathbf{Z}_v \mathbf{W}_V)$$
 
-### The autoregressive training objective
+This compresses arbitrary image resolutions into a fixed budget of 64 visual tokens.
 
-Visual tokens $\mathbf{H}_v$ and text prompt tokens $\mathbf{H}_t$ concatenate into a single sequence:
+### Stage 3: Direct visual token injection (LLaVA)
 
-$$\mathbf{S} = [\mathbf{h}_1^v, \dots, \mathbf{h}_M^v, \ \mathbf{h}_1^t, \dots, \mathbf{h}_K^t]$$
+LLaVA demonstrated that cross-attention layers were not required. Instead, visual tokens could be projected directly into the language model word embedding space and concatenated with the prompt text tokens.
 
-The model trains by minimizing cross-entropy over target text tokens:
+Two projection choices emerged:
+
+1. Linear projection:
+
+$$\mathbf{H}_v = \mathbf{Z}_v \mathbf{W}_{\text{proj}} + \mathbf{b}_{\text{proj}}, \quad \mathbf{W}_{\text{proj}} \in \mathbb{R}^{D_v \times D_{\text{llm}}}$$
+
+2. Two-layer Multi-Layer Perceptron (MLP):
+
+$$\mathbf{H}_v = \text{GELU}(\mathbf{Z}_v \mathbf{W}_1 + \mathbf{b}_1) \mathbf{W}_2 + \mathbf{b}_2$$
+
+The language model treats each projected vector $\mathbf{h}_i^v$ as if it were a word embedding in its dictionary. The model attends across both image tokens and text tokens using standard causal self-attention.
+
+### Stage 4: Unified autoregressive foundations (PaliGemma, PaliGemma 2)
+
+Google's PaliGemma and PaliGemma 2 removed the separation between pre-trained components. Instead of stitching together frozen models with an adapter, the entire architecture trains end-to-end:
+
+* Vision backbone: SigLIP-So400M, providing dense semantic representations pre-trained with pairwise sigmoid loss.
+* Resolution flexibility: NaViT Patch 'n' Pack handles arbitrary native aspect ratios without distortion or padding.
+* Language model: Gemma and Gemma 2 autoregressive decoders.
+
+The visual tokens $\mathbf{H}_v = \{\mathbf{h}_1^v, \dots, \mathbf{h}_N^v\}$ and text prompt tokens $\mathbf{H}_t = \{\mathbf{h}_1^t, \dots, \mathbf{h}_K^t\}$ are concatenated into a unified sequence:
+
+$$\mathbf{S} = [\mathbf{h}_1^v, \dots, \mathbf{h}_N^v, \ \mathbf{h}_1^t, \dots, \mathbf{h}_K^t]$$
+
+The entire system trains by minimizing standard next-token cross-entropy over target response tokens:
 
 $$\mathcal{L}_{\text{VLM}}(\theta) = - \sum_{i=1}^{T} \log \left( \frac{\exp(\mathbf{w}_{y_i}^\top \mathbf{u}_i)}{\sum_{w \in \mathcal{V}} \exp(\mathbf{w}_w^\top \mathbf{u}_i)} \right)$$
 
-where $\mathbf{u}_i$ is the decoder hidden state at step $i$ and $\mathcal{V}$ is the vocabulary.
+where $\mathbf{u}_i$ is the language decoder hidden state at token position $i$, and $\mathcal{V}$ is the text vocabulary.
 
 ---
 
-## 7. Architecture comparison
+## 8. Architecture comparison
 
 | Model | Positional Encoding | Objective Function | Scaling Advantage | Tradeoff |
 | :--- | :--- | :--- | :--- | :--- |
 | **Vanilla ViT** (Dosovitskiy et al.) | 1D learned embeddings | Softmax Cross-Entropy | Direct transformer transfer to image patches | Quadratic self-attention complexity $O(N^2)$ |
-| **DINOv2** (Oquab et al.) | Patch + `[CLS]`, 2D interpolation | Student-Teacher distillation + KoLeo regularizer | Dense feature maps without manual labels | Requires training two networks with EMA synchronization |
+| **DINOv2** (Oquab et al.) | Patch + `[CLS]`, 2D interpolation | Distillation + iBOT patch MIM + KoLeo regularizer | Dense feature maps without manual labels | Dual network training with EMA synchronization |
+| **SAM** (Meta AI) | 2D Fourier random features + learned type embeddings | $20 \times \text{Focal Loss} + \text{Dice Loss}$ | Promptable real-time interactive mask generation | Heavy $1024 \times 1024$ encoder requires windowed attention |
 | **Classic CLIP** (Radford et al.) | 1D learned embeddings | Symmetric InfoNCE Loss | Unified multimodal vector space | $O(B^2)$ memory and `AllGather` communication bottlenecks |
 | **SigLIP** (Google DeepMind) | 2D learned embeddings | Pairwise Sigmoid Loss | Decoupled normalizer, batch scaling past $1\text{M}$ | Requires tuning initial bias $b$ and temperature $t$ |
 | **NaViT** (Google Research) | Continuous coordinates $(x, y) \in [0, 1]^2$ | Contrastive or Masked Autoencoding | Native aspect ratios without zero-padding | Requires sequence packing logic and masked attention |
 | **PaliGemma 2** (Google) | SigLIP-So400M backbone | Autoregressive Next-Token Cross-Entropy | Stable spatial grounding with linear projection | Linear adapter restricts projection capacity |
-
----
-
-## Practical takeaways
-
-Linear patch projection converts continuous spatial images into sequence tokens, where computational complexity scales as $O(N^2) = O\left(\left(\frac{HW}{P^2}\right)^2\right)$. Replacing 1D positional vectors with 2D rotary rotations maintains relative displacement across variable grid resolutions. In self-supervised distillation, balancing centering and sharpening prevents mode and uniform collapse without negative samples. At the contrastive level, replacing global softmax normalizers with pairwise sigmoid loss eliminates all-to-all communication barriers, allowing distributed vision pre-training to scale to arbitrarily large batch sizes.

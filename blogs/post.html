@@ -8,11 +8,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension/lib/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'mermaid|language-mermaid'
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     
     <style>
         :root {
@@ -173,11 +189,24 @@
         }
 
         /* Math and diagram styling */
-        .katex-display {
+        .math-block {
             overflow-x: auto;
             overflow-y: hidden;
             padding: 0.75rem 0;
             margin: 1.2rem 0;
+            text-align: center;
+        }
+
+        mjx-container {
+            color: var(--text-main) !important;
+            outline: none !important;
+        }
+
+        mjx-container[display="true"] {
+            display: block !important;
+            margin: 1.2rem 0 !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
         }
 
         .mermaid {
@@ -189,6 +218,11 @@
             margin: 1.5rem 0;
             border-radius: 4px;
             overflow-x: auto;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
         }
 
         /* Table styling */
@@ -262,10 +296,46 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Configure marked with KaTeX extension if available
-            if (typeof markedKatex !== "undefined") {
-                marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
-            }
+            // Configure marked with a custom tokenizer that protects math blocks and inline math from markdown emphasis/italics
+            const inlineMath = {
+                name: 'inlineMath',
+                level: 'inline',
+                start(src) { return src.indexOf('$'); },
+                tokenizer(src) {
+                    const match = src.match(/^\$((?:[^\$\\]|\\.)+)\$/);
+                    if (match) {
+                        return {
+                            type: 'inlineMath',
+                            raw: match[0],
+                            text: match[1]
+                        };
+                    }
+                },
+                renderer(token) {
+                    return `$${token.text}$`;
+                }
+            };
+
+            const blockMath = {
+                name: 'blockMath',
+                level: 'block',
+                start(src) { return src.indexOf('$$'); },
+                tokenizer(src) {
+                    const match = src.match(/^\$\$([\s\S]+?)\$\$/);
+                    if (match) {
+                        return {
+                            type: 'blockMath',
+                            raw: match[0],
+                            text: match[1]
+                        };
+                    }
+                },
+                renderer(token) {
+                    return `<div class="math-block">$$${token.text}$$</div>`;
+                }
+            };
+
+            marked.use({ extensions: [blockMath, inlineMath] });
 
             // Configure mermaid
             if (typeof mermaid !== "undefined") {
@@ -333,9 +403,18 @@
                     // Render mermaid diagrams
                     if (typeof mermaid !== "undefined" && contentElem.querySelectorAll('.mermaid').length > 0) {
                         try {
-                            await mermaid.run({ nodes: contentElem.querySelectorAll('.mermaid') });
+                            await mermaid.run({ querySelector: '.mermaid' });
                         } catch (mErr) {
                             console.warn("Mermaid rendering warning:", mErr);
+                        }
+                    }
+
+                    // Render MathJax formulas
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        try {
+                            await MathJax.typesetPromise([contentElem]);
+                        } catch (mathErr) {
+                            console.warn("MathJax rendering warning:", mathErr);
                         }
                     }
                     

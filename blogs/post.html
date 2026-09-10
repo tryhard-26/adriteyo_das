@@ -209,23 +209,23 @@
             overflow-y: hidden !important;
         }
 
-        /* Diagram styling & animation */
+        /* Diagram styling & live animations */
         .svg-diagram {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
             padding: 1.5rem 1rem;
-            margin: 1.8rem 0;
-            border-radius: 6px;
+            margin: 2rem 0;
+            border-radius: 8px;
             overflow-x: auto;
             display: flex;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            transition: border-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .svg-diagram:hover {
             border-color: var(--accent-green);
-            transform: translateY(-1px);
+            box-shadow: 0 6px 30px rgba(16, 185, 129, 0.15);
         }
 
         .diagram-svg {
@@ -233,60 +233,282 @@
             height: auto;
         }
 
-        /* Interactive Architecture Playground */
-        .interactive-playground {
-            background: #08070e;
-            border: 1px solid var(--accent-green);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 2.5rem 0;
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+        /* Continuous animated flow along connection arrows */
+        .diagram-svg path[stroke-width],
+        .diagram-svg line[stroke-width] {
+            stroke-dasharray: 6 4;
+            animation: diagramFlow 20s linear infinite;
         }
 
-        .playground-title {
-            color: var(--accent-green);
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
+        @keyframes diagramFlow {
+            from { stroke-dashoffset: 200; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Interactive hover glow on diagram nodes */
+        .diagram-svg rect[rx] {
+            transition: filter 0.2s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .diagram-svg rect[rx]:hover {
+            filter: brightness(1.3) drop-shadow(0 0 8px currentColor);
+        }
+
+        /* Concept Check / Intuition Callout */
+        .concept-check {
+            background: #0d0b16;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 6px;
+            padding: 1.2rem 1.4rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .concept-check-header {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
         }
 
-        .playground-desc {
-            color: var(--text-muted);
+        .concept-check-q {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+            line-height: 1.55;
+            font-weight: 500;
+        }
+
+        .concept-check details {
+            margin-top: 0.5rem;
+        }
+
+        .concept-check details summary {
+            cursor: pointer;
             font-size: 12px;
+            color: var(--accent-yellow);
+            font-family: var(--font-mono);
+            user-select: none;
+            transition: color 0.2s ease;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .concept-check details summary:hover {
+            color: var(--accent-green);
+        }
+
+        .concept-check details[open] summary {
+            margin-bottom: 0.7rem;
+            color: var(--accent-green);
+        }
+
+        .concept-check-ans {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.65;
+            padding-top: 0.6rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        /* Live Vision Architecture & Scaling Simulator */
+        .vision-simulator {
+            background: #08070e;
+            border: 1px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 1.6rem;
+            margin: 2.5rem 0;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.18);
+        }
+
+        .simulator-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .simulator-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: bold;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .simulator-title {
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .simulator-desc {
+            color: var(--text-muted);
+            font-size: 12.5px;
+            line-height: 1.55;
             margin-bottom: 1.5rem;
         }
 
-        .playground-controls {
+        .simulator-grid-view {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: 1fr 140px;
+            gap: 1.5rem;
             margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        @media (max-width: 650px) {
+            .simulator-grid-view {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .simulator-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.35rem;
+        }
+
+        .control-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
         }
 
         .control-label {
-            font-size: 12px;
             color: var(--accent-yellow);
-            font-weight: 500;
+            font-weight: 600;
+        }
+
+        .control-val {
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            font-weight: 700;
         }
 
         .control-slider {
             accent-color: var(--accent-green);
             cursor: pointer;
+            width: 100%;
         }
 
-        .playground-stats {
+        .patch-preview-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #0e0c18;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.8rem;
+        }
+
+        .patch-preview-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .patch-grid-svg {
+            width: 100px;
+            height: 100px;
+            background: #06050a;
+            border: 1px solid #2d2a3e;
+            border-radius: 4px;
+        }
+
+        .patch-grid-svg rect {
+            transition: fill 0.15s ease;
+        }
+
+        .patch-grid-svg rect:hover {
+            fill: #10b981 !important;
+        }
+
+        /* Dual Memory Comparison Bar */
+        .memory-compare-box {
+            background: #0e0c18;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .memory-compare-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.8rem;
+        }
+
+        .memory-bar-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .memory-bar-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .memory-bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            margin-bottom: 0.3rem;
+            font-family: var(--font-mono);
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 8px;
+            background: #1b1928;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill-clip {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #f43f5e);
+            border-radius: 4px;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-fill-siglip {
+            height: 100%;
+            background: #10b981;
+            border-radius: 4px;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .simulator-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.8rem;
             background: #0e0c18;
             border: 1px solid var(--border-color);
             padding: 1rem;
@@ -300,15 +522,17 @@
         }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
         .stat-val {
             font-size: 1.15rem;
             font-weight: bold;
             color: var(--accent-blue);
+            transition: color 0.2s ease;
         }
 
         /* Table styling */
@@ -490,62 +714,97 @@
                     loadingElem.style.display = 'none';
                     contentElem.style.display = 'block';
 
-                    // If viewing the foundational vision models post, mount interactive playground after the intro
-                    if (cleanSrc === 'foundational_vision_models_math.md' && !document.getElementById('vision-playground')) {
-                        const playgroundHTML = `
-                        <div class="interactive-playground" id="vision-playground">
-                            <div class="playground-title">
-                                <span>⚡ Interactive Vision Scaling & Architecture Playground</span>
+                    // If viewing the foundational vision models post, mount live simulator after the intro
+                    if (cleanSrc === 'foundational_vision_models_math.md' && !document.getElementById('vision-simulator')) {
+                        const simulatorHTML = `
+                        <div class="vision-simulator" id="vision-simulator">
+                            <div class="simulator-header">
+                                <span class="simulator-badge">Live Simulator</span>
+                                <span class="simulator-title">Vision Architecture & Scaling Explorer</span>
                             </div>
-                            <div class="playground-desc">
-                                Adjust resolution, patch size, and batch size to see real-time FLOP explosion, token count, and SigLIP vs Softmax memory scaling.
+                            <div class="simulator-desc">
+                                Drag the sliders below to explore how image resolution and patch granularity drive the quadratic attention bottleneck, and how pairwise sigmoid loss in SigLIP dismantles the distributed all-gather memory wall.
                             </div>
-                            <div class="playground-controls">
-                                <div class="control-group">
-                                    <label class="control-label" id="res-label">Image Resolution: 224 x 224</label>
-                                    <input type="range" class="control-slider" id="res-slider" min="1" max="4" value="1" step="1">
+                            <div class="simulator-grid-view">
+                                <div class="simulator-controls">
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <span class="control-label">Image Resolution (H × W)</span>
+                                            <span class="control-val" id="res-val">224 × 224 px</span>
+                                        </div>
+                                        <input type="range" class="control-slider" id="res-slider" min="1" max="4" value="1" step="1">
+                                    </div>
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <span class="control-label">Patch Granularity (P × P)</span>
+                                            <span class="control-val" id="patch-val">16 × 16 px</span>
+                                        </div>
+                                        <input type="range" class="control-slider" id="patch-slider" min="0" max="3" value="2" step="1">
+                                    </div>
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <span class="control-label">Global Batch Size (B)</span>
+                                            <span class="control-val" id="batch-val">32,768 pairs</span>
+                                        </div>
+                                        <input type="range" class="control-slider" id="batch-slider" min="1" max="6" value="4" step="1">
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" id="patch-label">Patch Size P: 16 x 16</label>
-                                    <input type="range" class="control-slider" id="patch-slider" min="0" max="3" value="2" step="1">
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" id="batch-label">Batch Size B: 32,768</label>
-                                    <input type="range" class="control-slider" id="batch-slider" min="1" max="6" value="4" step="1">
+                                <div class="patch-preview-card">
+                                    <span class="patch-preview-title">Patch Grid</span>
+                                    <svg class="patch-grid-svg" id="patch-svg" viewBox="0 0 100 100"></svg>
                                 </div>
                             </div>
-                            <div class="playground-stats">
+
+                            <div class="memory-compare-box">
+                                <div class="memory-compare-title">Distributed Communication & Memory Footprint</div>
+                                <div class="memory-bar-item">
+                                    <div class="memory-bar-labels">
+                                        <span style="color: #f43f5e;">Classic CLIP (Softmax AllGather)</span>
+                                        <span id="clip-bar-text" style="color: #f43f5e; font-weight: bold;">2.1 GB</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill-clip" id="clip-bar-fill" style="width: 25%;"></div>
+                                    </div>
+                                </div>
+                                <div class="memory-bar-item">
+                                    <div class="memory-bar-labels">
+                                        <span style="color: #10b981;">Google SigLIP (Streamed Pairwise)</span>
+                                        <span id="siglip-bar-text" style="color: #10b981; font-weight: bold;">0.5 MB</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill-siglip" id="siglip-bar-fill" style="width: 2%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="simulator-stats">
                                 <div class="stat-card">
-                                    <span class="stat-label">Token Count (N)</span>
+                                    <span class="stat-label">Sequence Tokens (N)</span>
                                     <span class="stat-val" id="stat-n">196</span>
                                 </div>
                                 <div class="stat-card">
-                                    <span class="stat-label">Self-Attention Matrix</span>
+                                    <span class="stat-label">Attention Matrix Size</span>
                                     <span class="stat-val" id="stat-matrix">38.4k entries</span>
                                 </div>
                                 <div class="stat-card">
-                                    <span class="stat-label">Quadratic Multiplier</span>
-                                    <span class="stat-val" id="stat-mult">1.0x (Baseline)</span>
+                                    <span class="stat-label">Attention FLOP Scale</span>
+                                    <span class="stat-val" id="stat-mult">1.0× Baseline</span>
                                 </div>
                                 <div class="stat-card">
-                                    <span class="stat-label">CLIP Softmax Memory</span>
-                                    <span class="stat-val" id="stat-clip" style="color: var(--accent-purple);">2.14 GB (AllGather)</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-label">SigLIP Tiled Memory</span>
-                                    <span class="stat-val" id="stat-siglip" style="color: var(--accent-green);">0.5 MB (Streamed)</span>
+                                    <span class="stat-label">Distributed Network Sync</span>
+                                    <span class="stat-val" id="stat-sync" style="color: #10b981; font-size: 1rem;">Zero AllGather</span>
                                 </div>
                             </div>
                         </div>`;
                         
-                        // Insert playground right before section 1
+                        // Insert simulator right before section 1
                         const firstH2 = contentElem.querySelector('h2');
                         if (firstH2) {
-                            firstH2.insertAdjacentHTML('beforebegin', playgroundHTML);
+                            firstH2.insertAdjacentHTML('beforebegin', simulatorHTML);
                         } else {
-                            contentElem.insertAdjacentHTML('afterbegin', playgroundHTML);
+                            contentElem.insertAdjacentHTML('afterbegin', simulatorHTML);
                         }
-                        initPlayground();
+                        initSimulator();
                     }
 
                     // Render MathJax formulas
@@ -574,7 +833,7 @@
                     showError(err.message);
                 });
 
-            function initPlayground() {
+            function initSimulator() {
                 const resValues = [224, 384, 512, 1024];
                 const patchValues = [8, 14, 16, 32];
                 const batchValues = [256, 1024, 8192, 32768, 131072, 524288];
@@ -582,37 +841,70 @@
                 const resSlider = document.getElementById('res-slider');
                 const patchSlider = document.getElementById('patch-slider');
                 const batchSlider = document.getElementById('batch-slider');
+                const patchSvg = document.getElementById('patch-svg');
 
-                if (!resSlider || !patchSlider || !batchSlider) return;
+                if (!resSlider || !patchSlider || !batchSlider || !patchSvg) return;
 
                 function update() {
                     const H = resValues[parseInt(resSlider.value) - 1];
                     const P = patchValues[parseInt(patchSlider.value)];
                     const B = batchValues[parseInt(batchSlider.value) - 1];
 
-                    document.getElementById('res-label').textContent = `Image Resolution: ${H} x ${H}`;
-                    document.getElementById('patch-label').textContent = `Patch Size P: ${P} x ${P}`;
-                    document.getElementById('batch-label').textContent = `Batch Size B: ${B.toLocaleString()}`;
+                    document.getElementById('res-val').textContent = `${H} × ${H} px`;
+                    document.getElementById('patch-val').textContent = `${P} × ${P} px`;
+                    document.getElementById('batch-val').textContent = `${B.toLocaleString()} pairs`;
 
+                    const gridDim = Math.min(Math.floor(H / P), 32);
                     const N = Math.floor((H * H) / (P * P));
                     const matrixEntries = N * N;
                     const baselineN = Math.floor((224 * 224) / (16 * 16));
                     const mult = (matrixEntries / (baselineN * baselineN)).toFixed(1);
 
                     document.getElementById('stat-n').textContent = N.toLocaleString();
-                    document.getElementById('stat-matrix').textContent = matrixEntries > 1000000 ? `${(matrixEntries / 1000000).toFixed(2)}M entries` : `${(matrixEntries / 1000).toFixed(1)}k entries`;
-                    document.getElementById('stat-mult').textContent = `${mult}x (${mult > 1 ? '+' + ((mult - 1)*100).toFixed(0) + '%' : 'Baseline'})`;
+                    document.getElementById('stat-matrix').textContent = matrixEntries >= 1000000 ? `${(matrixEntries / 1000000).toFixed(2)}M cells` : `${(matrixEntries / 1000).toFixed(1)}k cells`;
+                    document.getElementById('stat-mult').textContent = `${mult}× (${mult > 1 ? '+' + ((mult - 1)*100).toFixed(0) + '%' : 'Baseline'})`;
 
-                    // Softmax memory: B x B x 2 bytes for FP16
-                    const clipBytes = B * B * 2;
+                    // Render mini SVG patch grid
+                    const cellSize = 100 / Math.min(gridDim, 16);
+                    const displayDim = Math.min(gridDim, 16);
+                    let svgContent = '';
+                    for (let r = 0; r < displayDim; r++) {
+                        for (let c = 0; c < displayDim; c++) {
+                            const isAlt = (r + c) % 2 === 0;
+                            const fill = isAlt ? '#141224' : '#1e1a34';
+                            svgContent += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize - 0.5}" height="${cellSize - 0.5}" fill="${fill}"/>`;
+                        }
+                    }
+                    patchSvg.innerHTML = svgContent;
+
+                    // Memory calculations
+                    const clipBytes = B * B * 2; // FP16 2 bytes
                     const clipMB = clipBytes / (1024 * 1024);
                     const clipGB = clipMB / 1024;
-                    document.getElementById('stat-clip').textContent = clipGB >= 1 ? `${clipGB.toFixed(2)} GB (AllGather)` : `${clipMB.toFixed(1)} MB (AllGather)`;
+                    const maxDisplayGB = 128;
+                    const clipPct = Math.min(100, Math.max(3, (clipGB / maxDisplayGB) * 100));
 
-                    // SigLIP memory: local chunk 256 x local B x 2 bytes
+                    const clipBarFill = document.getElementById('clip-bar-fill');
+                    const clipBarText = document.getElementById('clip-bar-text');
+                    clipBarFill.style.width = `${clipPct}%`;
+
+                    if (clipGB >= 16) {
+                        clipBarText.textContent = `${clipGB.toFixed(1)} GB (ALLGATHER OOM RISK)`;
+                        clipBarFill.style.background = '#ef4444';
+                    } else if (clipGB >= 1) {
+                        clipBarText.textContent = `${clipGB.toFixed(2)} GB (AllGather barrier)`;
+                        clipBarFill.style.background = 'linear-gradient(90deg, #6366f1, #f43f5e)';
+                    } else {
+                        clipBarText.textContent = `${clipMB.toFixed(1)} MB (AllGather)`;
+                        clipBarFill.style.background = 'linear-gradient(90deg, #6366f1, #f43f5e)';
+                    }
+
                     const siglipBytes = 256 * Math.min(B, 1024) * 2;
                     const siglipMB = siglipBytes / (1024 * 1024);
-                    document.getElementById('stat-siglip').textContent = `${Math.max(0.5, siglipMB).toFixed(1)} MB (Streamed)`;
+                    const siglipBarFill = document.getElementById('siglip-bar-fill');
+                    const siglipBarText = document.getElementById('siglip-bar-text');
+                    siglipBarFill.style.width = '3%';
+                    siglipBarText.textContent = `${Math.max(0.5, siglipMB).toFixed(1)} MB (Tiled Streaming)`;
                 }
 
                 resSlider.addEventListener('input', update);

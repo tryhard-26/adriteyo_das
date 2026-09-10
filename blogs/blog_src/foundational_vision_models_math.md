@@ -1,8 +1,8 @@
 # The Math behind Foundational Vision Models
 
-Modern vision models look very different from classical convolutional networks. Instead of baking spatial locality and translation equivariance directly into sliding kernels, models like ViT, DINOv2, SAM, SigLIP, NaViT, and PaliGemma 2 rely on sequence tokenization, self-supervised distillation objectives, prompt-conditioned interactive segmentation, and unified autoregressive loss formulations.
+Modern vision models look very different from classical convolutional networks. Instead of baking spatial locality and translation equivariance directly into sliding kernels, architectures like ViT, DINOv2, SAM, SigLIP, NaViT, and PaliGemma 2 rely on sequence tokenization, self-supervised distillation, promptable segmentation, and unified autoregressive loss formulations.
 
-This guide walks through the mathematical machinery, physical intuition, and step-by-step toy calculations behind these architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, prompt Fourier encodings in Segment Anything, pairwise sigmoid loss in SigLIP, and how Vision-Language Models (VLMs) evolved from global vector pooling to unified token sequences.
+This guide walks through the core mathematical machinery, physical intuition, and concrete worked-out calculations behind modern vision architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, prompt Fourier encodings in Segment Anything, pairwise sigmoid loss in SigLIP, and how Vision-Language Models (VLMs) evolved from global vector pooling to unified token sequences.
 
 ## 1. Spatial tokenization: patch projection geometry
 
@@ -84,9 +84,9 @@ $$4(4N)^2 D = 16 \cdot (4 N^2 D)$$
 
 A $2\times$ reduction in patch granularity increases attention computation and intermediate activation memory by a factor of 16. That is why backbones like ViT-H, SAM, and SigLIP pre-train at $P=14$ or $P=16$, using $P=8$ only for dense fine-tuning.
 
-### Toy numerical walkthrough: patch projection & FLOP explosion
+### Stepping through the numbers: how patch size blows up FLOPs
 
-Consider a tiny toy image with height $H=4$, width $W=4$, and channels $C=3$. Let the transformer hidden dimension be $D=6$.
+Let us calculate an explicit case with actual numbers: take an input image with height $H=4$, width $W=4$, and channels $C=3$, feeding into a transformer with hidden dimension $D=6$.
 
 First, choose patch size $P=2$:
 
@@ -105,6 +105,17 @@ Now cut the patch size in half to $P=1$:
 * The attention FLOP cost jumps:
   $$4 N^2 D = 4(16^2)(6) = 4(256)(6) = 6144 \text{ FLOPs}$$
   Notice that $6144 / 384 = 16$. The attention computation scaled by an exact factor of 16.
+
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">If an autonomous driving camera upgrades from 1080p to 4K resolution, why does standard ViT self-attention explode by 16× rather than 4×?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      4K has $4\times$ as many total pixels as 1080p ($3840 \times 2160 \approx 8.3\text{M}$ vs $1920 \times 1080 \approx 2.1\text{M}$). Because patch size $P$ remains constant (such as $14 \times 14$), the sequence length quadruples ($N \to 4N$). Because self-attention calculates pairwise affinities between every token and every other token, the attention matrix scales quadratically as $(4N)^2 = 16N^2$. Compute and activation memory increase sixteen-fold.
+    </div>
+  </details>
+</div>
 
 ## 2. 2D positional geometry: learned embeddings vs 2D-RoPE
 
@@ -174,7 +185,7 @@ $$\Delta \mathbf{p} = (u_x - v_x, \ u_y - v_y)$$
 
 The attention operation retains translation equivariance across the 2D plane regardless of input image dimensions.
 
-### Toy numerical walkthrough: 2D-RoPE relative cancellation
+### Stepping through the numbers: verifying coordinate cancellation
 
 Let head dimension $d=4$. The subspace for $x$ has dimension 2, and the subspace for $y$ has dimension 2.
 
@@ -200,6 +211,17 @@ $$\mathbf{R}_{y, \mathbf{u}}^\top \mathbf{R}_{y, \mathbf{v}} = \begin{pmatrix} 0
 Notice that $\begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix}$ is the exact rotation matrix for angle $\Delta y \cdot \theta = (3 - 1) \frac{\pi}{2} = \pi$.
 
 Even if both patches shift by 100 pixels along the image (say to $(100, 101)$ and $(102, 103)$), the difference remains $(2, 2)$, and the resulting attention score is identical.
+
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">Why can't we simply flatten 2D vision patches into a 1D sequence and use standard 1D RoPE?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      In a flattened raster-order grid of width $W$, vertically adjacent patches at $(x, y)$ and $(x, y+1)$ are separated by $W/P$ tokens in the 1D sequence. Standard 1D RoPE measures scalar distance along the sequence index, so it treats vertically adjacent patches as far apart, destroying 2D spatial locality. 2D-RoPE decomposes the head dimension into independent $x$ and $y$ rotational subspaces, preserving Euclidean geometry along both axes.
+    </div>
+  </details>
+</div>
 
 ## 3. Google's NaViT: Patch 'n' Pack and arbitrary aspect ratios
 
@@ -246,7 +268,7 @@ $$\mathbf{A}_{i, j} = \begin{cases} \frac{\mathbf{q}_i^\top \mathbf{k}_j}{\sqrt{
 
 This structure produces a block-diagonal attention map. Because self-attention is permutation-equivariant up to position encodings, the network processes different images and aspect ratios concurrently in a single forward pass without padding overhead.
 
-### Toy numerical walkthrough: block-diagonal packing matrix
+### Stepping through the numbers: the block-diagonal packing mask
 
 Suppose we pack two images into a shared buffer of length $L=5$:
 
@@ -268,6 +290,17 @@ s_{21} & s_{22} & -\infty & -\infty & -\infty \\
 When computing softmax along row 1:
 $$\text{softmax}([s_{11}, s_{12}, -\infty, -\infty, -\infty]) = [p_{11}, p_{12}, 0, 0, 0]$$
 Because $e^{-\infty} = 0$, attention weights for tokens from Image 2 evaluate to zero. Both images process inside the exact same matrix multiplication with zero padding tokens.
+
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">How does NaViT prevent batch fragmentation when processing hundreds of variable-sized web images?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      NaViT packs patch tokens from different images into fixed-length sequence buffers using first-fit bin packing. Instead of padding each image out to the maximum sequence length, multiple images share a single buffer. By combining block-diagonal attention masking with FlashAttention variable-length kernels, GPU matrix engines maintain near 100% computational efficiency with zero wasted padding FLOPs.
+    </div>
+  </details>
+</div>
 
 ## 4. Self-supervised distillation: DINO and DINOv2
 
@@ -362,9 +395,9 @@ $$\frac{\partial \mathcal{L}_{\text{KoLeo}}}{\partial \mathbf{z}_i} = - \frac{1}
 
 The intuition: as two vectors draw closer together, $\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2 \to 0$, the gradient magnitude increases inversely with squared distance. Like electrostatic repulsion between electrons on a sphere, the vectors push apart until they tile the unit hypersphere $\mathbb{S}^{D-1}$ uniformly.
 
-### Toy numerical walkthrough: centering, sharpening, and KoLeo repulsion
+### Stepping through the numbers: centering, sharpening, and repulsion in action
 
-Consider a toy dimension $K=3$.
+Take an embedding space of dimension $K=3$.
 
 Suppose raw teacher logits for an image are:
 $$\mathbf{g}_t = [4.0, \ 1.0, \ 1.0]$$
@@ -394,6 +427,17 @@ $$\|\mathbf{z}_1 - \mathbf{z}_2\|_2^2 = 0.04^2 + (-0.28)^2 = 0.0016 + 0.0784 = 0
 The repulsive gradient on $\mathbf{z}_1$ evaluates to:
 $$\frac{\partial \mathcal{L}}{\partial \mathbf{z}_1} \propto - \frac{[0.04, \ -0.28]}{0.08} = [-0.5, \ 3.5]$$
 The gradient pushes $\mathbf{z}_1$ in direction $[-0.5, 3.5]$, repelling it directly away from $\mathbf{z}_2$.
+
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">What happens if you run self-distillation without teacher centering?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      Without centering vector $\mathbf{c}$, a single dominant logit index quickly accumulates higher probability across all images. Because there are no negative samples to pull it back, the teacher and student rapidly collapse into a trivial one-hot distribution where every image outputs the exact same class index. Centering prevents this by dynamically subtracting the running mean, functioning like a repulsive force on frequent logits.
+    </div>
+  </details>
+</div>
 
 ## 5. Meta's Segment Anything Model (SAM)
 
@@ -478,7 +522,7 @@ $$\mathcal{L}_{\text{dice}} = 1 - \frac{2 \sum_{i=1}^{HW} y_i p_i + \epsilon}{\s
 
 To resolve geometric ambiguity (for example, a single point click could refer to a person's shirt, the person, or the entire scene), SAM predicts 3 candidate masks (subpart, part, whole) along with an estimated IoU score trained with Mean Squared Error (MSE) against the real mask IoU.
 
-### Toy numerical walkthrough: SAM dynamic dot-product segmentation
+### Stepping through the numbers: how a prompt carves out a mask
 
 Let the upscaled image features at coordinate $(x, y)$ be a 4-dimensional vector:
 $$\mathbf{f}_{(x, y)} = [1.2, \ -0.5, \ 2.0, \ 0.1]$$
@@ -498,6 +542,17 @@ Now compute Focal Loss on this pixel if true label $y = 1$:
 $$p_t = 0.984$$
 $$\mathcal{L}_{\text{focal}} = - (1 - 0.984)^2 \log(0.984) = - (0.016)^2 (-0.0161) \approx (0.000256)(0.0161) \approx 0.0000041$$
 Because the prediction was confident and correct, the focal loss term $(1 - p_t)^2 = 0.000256$ shrunk the gradient by nearly 4000 times.
+
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">Why can SAM generate masks in under 50 milliseconds in a web browser despite using a massive 632M parameter ViT-H backbone?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      The heavy ViT-H backbone runs only once per image to produce an embedding tensor of shape $64 \times 64 \times 256$. That image embedding is cached. When a user clicks or drags a bounding box, only the lightweight prompt encoder and mask decoder execute. The decoder has fewer than 4 million parameters and takes only a few matrix multiplications to output the binary mask, easily running at 20+ FPS on a laptop CPU or browser WebGPU context.
+    </div>
+  </details>
+</div>
 
 ## 6. Contrastive foundations: classic CLIP vs Google SigLIP
 
@@ -569,7 +624,7 @@ $$\mathcal{L}_{\text{SigLIP}} = \frac{1}{|B|} \sum_{i=1}^{|B|} \left[ \log(1 + e
 3. Batch scalability: without a competitive softmax denominator, batch sizes can scale past 1,000,000 samples without gradient instability.
 4. Bias parameter $b$: negative pairs outnumber positive pairs by $B^2 - B$ to $B$. Without offset $b$, negative gradients dominate training. Initializing $b$ to approximately $-10$ sets the baseline prior probability $\sigma(b) \approx 0.000045$, matching the low proportion of positive pairs in large batches.
 
-### Toy numerical walkthrough: InfoNCE vs SigLIP calculation
+### Stepping through the numbers: why SigLIP breaks free of the batch wall
 
 Consider a small batch of $B=2$ image-text pairs:
 * Pair 1: Image 1 and Caption 1 (matching positive, cosine similarity $s_{11} = 0.8$).
@@ -596,6 +651,17 @@ Let temperature $t = 2.0$ and learned bias $b = -0.5$.
   $$\text{Loss}_{12} = - \log \sigma(-0.1) = \log(1 + e^{-0.1}) = \log(1 + 0.904) = \log(1.904) \approx 0.644$$
 
 Pair $(1, 1)$ and pair $(1, 2)$ evaluate completely independently. Neither calculation requires a global sum, allowing GPU 1 to stream through tiles of negative captions stored in local memory.
+
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">Why does classic CLIP require an expensive AllGather collective across all GPU ranks while SigLIP does not?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      InfoNCE softmax contains a normalizer $\sum_{j=1}^B \exp(t \mathbf{x}_i^\top \mathbf{y}_j)$ across the entire global batch $B$. If batch items are split across 1,024 GPUs, every GPU needs embeddings from all 1,023 other GPUs to evaluate the denominator. SigLIP replaces softmax with independent pairwise sigmoid classifications: each cell $(i, j)$ depends only on $\mathbf{x}_i$ and $\mathbf{y}_j$. A GPU can stream negative captions in local tiles without ever running a synchronous global AllGather.
+    </div>
+  </details>
+</div>
 
 ## 7. How Vision-Language Models (VLMs) came about
 
@@ -693,13 +759,24 @@ $$\mathcal{L}_{\text{VLM}}(\theta) = - \sum_{i=1}^{T} \log \left( \frac{\exp(\ma
 
 where $\mathbf{u}_i$ is the language decoder hidden state at token position $i$, and $\mathcal{V}$ is the text vocabulary.
 
+<div class="concept-check">
+  <div class="concept-check-header">CHECK YOUR INTUITION</div>
+  <div class="concept-check-q">Why did modern VLMs abandon gated cross-attention (Flamingo) in favor of direct sequence concatenation (LLaVA, PaliGemma)?</div>
+  <details>
+    <summary>Reveal explanation</summary>
+    <div class="concept-check-ans">
+      Gated cross-attention requires inserting custom cross-attention layers into every transformer block of the language model, creating non-standard network topologies and complicating KV caching. Direct projection converts image patch vectors directly into the language model's embedding dimension, allowing standard autoregressive decoder stacks and existing highly optimized LLM inference engines (like vLLM and TensorRT-LLM) to run multimodal inputs without modifying the core transformer code.
+    </div>
+  </details>
+</div>
+
 ## 8. Architecture comparison
 
 | Model | Positional Encoding | Objective Function | Scaling Advantage | Tradeoff |
 | :--- | :--- | :--- | :--- | :--- |
 | **Vanilla ViT** (Dosovitskiy et al.) | 1D learned embeddings | Softmax Cross-Entropy | Direct transformer transfer to image patches | Quadratic self-attention complexity $O(N^2)$ |
 | **DINOv2** (Oquab et al.) | Patch + `[CLS]`, 2D interpolation | Distillation + iBOT patch MIM + KoLeo regularizer | Dense feature maps without manual labels | Dual network training with EMA synchronization |
-| **SAM** (Meta AI) | 2D Fourier random features + learned type embeddings | $20 \times \text{Focal Loss} + \text{Dice Loss}$ | Promptable real-time interactive mask generation | Heavy $1024 \times 1024$ encoder requires windowed attention |
+| **SAM** (Meta AI) | 2D Fourier random features + learned type embeddings | $20 \times \text{Focal Loss} + \text{Dice Loss}$ | Prompt-driven real-time mask generation | Heavy $1024 \times 1024$ encoder requires windowed attention |
 | **Classic CLIP** (Radford et al.) | 1D learned embeddings | Symmetric InfoNCE Loss | Unified multimodal vector space | $O(B^2)$ memory and `AllGather` communication bottlenecks |
 | **SigLIP** (Google DeepMind) | 2D learned embeddings | Pairwise Sigmoid Loss | Decoupled normalizer, batch scaling past $1\text{M}$ | Requires tuning initial bias $b$ and temperature $t$ |
 | **NaViT** (Google Research) | Continuous coordinates $(x, y) \in [0, 1]^2$ | Contrastive or Masked Autoencoding | Native aspect ratios without zero-padding | Requires sequence packing logic and masked attention |

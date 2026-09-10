@@ -1,20 +1,14 @@
-# The Math Behind Foundational Vision Models
+# The Math behind Foundational Vision Models
 
-## Introduction
+Modern vision models look very different from classical convolutional networks. Instead of baking spatial locality and translation equivariance directly into sliding kernels, models like ViT, DINOv2, SigLIP, NaViT, and PaliGemma 2 rely on sequence tokenization, self-supervised objectives, and contrastive or autoregressive loss formulations.
 
-Computer vision underwent a seismic shift over the last four years. We went from handcrafted convolutional inductive biases (spatial locality, translation equivariance) to massive, scale-driven foundational vision models. Models like ViT, DINOv2, Google's SigLIP, NaViT, and PaliGemma 2 do not process pixels the way classical vision algorithms did. They treat visual information as raw continuous tokens, optimize self-supervised energy landscapes, and align visual representations with language embeddings using statistical mechanics.
-
-This post digs into the exact mathematical machinery under the hood of modern foundational vision models. We will break down patch projection geometry, 2D rotary position embeddings, the mathematics of self-distillation collapse prevention, and why Google's SigLIP formulation fundamentally broke the batch size ceiling that held back standard contrastive learning.
+This post covers the mathematical formulation behind these architectures: patch projection geometry, 2D rotary position embeddings, the dynamics of self-distillation collapse prevention, and how SigLIP replaces softmax normalizers with pairwise sigmoid loss to scale contrastive batches.
 
 ---
 
-## 1. Spatial Tokenization: The Geometry of Patch Projections
+## 1. Spatial tokenization: patch projection geometry
 
-A convolutional layer operates under two hard physical assumptions:
-1. **Local connectivity:** Nearby pixels correlate far more strongly than distant pixels.
-2. **Translation equivariance:** A feature detected at coordinate $(x, y)$ can be detected at $(x + \Delta x, y + \Delta y)$ using identical kernel weights.
-
-Vision Transformers (ViT) throw away both assumptions at the architecture level and force the model to learn them from data.
+A standard 2D convolution assumes that nearby pixels have stronger statistical dependencies than distant pixels (locality) and that patterns appear identically across spatial shifts (translation equivariance). Vision Transformers drop both structural constraints from the layer definition. The network learns spatial correlations directly from training data.
 
 ```mermaid
 graph TD
@@ -25,12 +19,12 @@ graph TD
     E --> F["Sequence of Tokens fed to Transformer Encoder"]
 ```
 
-### The Linear Projection Equation
+### The linear projection equation
 
-Given an input image $\mathbf{X} \in \mathbb{R}^{H \times W \times C}$, where $H$ is height, $W$ is width, and $C$ is channel depth (typically 3 for RGB):
+Take an input image $\mathbf{X} \in \mathbb{R}^{H \times W \times C}$, where $H$ is height, $W$ is width, and $C$ is channel depth (3 for standard RGB):
 
-1. The image is segmented into non-overlapping patches of spatial dimension $P \times P$.
-2. The total sequence length $N$ (number of patch tokens) is given by:
+1. The image is split into non-overlapping patches of spatial dimension $P \times P$.
+2. The sequence length $N$ (the number of patch tokens) is:
 
 $$N = \frac{H \cdot W}{P^2}$$
 
@@ -38,59 +32,55 @@ $$N = \frac{H \cdot W}{P^2}$$
 
 $$\mathbf{x}_p^{(i)} \in \mathbb{R}^{P^2 \cdot C}, \quad i \in \{1, \dots, N\}$$
 
-4. The flattened vector is mapped into the transformer hidden dimension $D$ using a learnable projection matrix $\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}$ plus an optional bias $\mathbf{b}_e \in \mathbb{R}^D$:
+4. The flattened vector maps into hidden dimension $D$ through a projection matrix $\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}$ and optional bias $\mathbf{b}_e \in \mathbb{R}^D$:
 
 $$\mathbf{z}_0 = \left[ \mathbf{x}_{\text{class}}; \ \mathbf{x}_p^{(1)}\mathbf{E}; \ \mathbf{x}_p^{(2)}\mathbf{E}; \ \dots; \ \mathbf{x}_p^{(N)}\mathbf{E} \right] + \mathbf{E}_{\text{pos}}$$
 
-Where $\mathbf{x}_{\text{class}} \in \mathbb{R}^D$ is the prepended learnable `[CLS]` token, and $\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N + 1) \times D}$ represents the positional encoding matrix.
+Here $\mathbf{x}_{\text{class}} \in \mathbb{R}^D$ is the prepended learnable `[CLS]` token, and $\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N + 1) \times D}$ is the positional encoding matrix.
 
-### Computational Complexity and the Quadratic Bottleneck
+### Computational complexity and the quadratic bottleneck
 
-In multi-head self-attention (MHSA), queries $\mathbf{Q}$, keys $\mathbf{K}$, and values $\mathbf{V}$ are computed via projection matrices $\mathbf{W}_Q, \mathbf{W}_K, \mathbf{W}_V \in \mathbb{R}^{D \times D}$:
+In multi-head self-attention (MHSA), queries $\mathbf{Q}$, keys $\mathbf{K}$, and values $\mathbf{V}$ come from projection matrices $\mathbf{W}_Q, \mathbf{W}_K, \mathbf{W}_V \in \mathbb{R}^{D \times D}$:
 
 $$\mathbf{Q} = \mathbf{Z} \mathbf{W}_Q, \quad \mathbf{K} = \mathbf{Z} \mathbf{W}_K, \quad \mathbf{V} = \mathbf{Z} \mathbf{W}_V$$
 
-The scaled dot-product attention equation is:
+The attention equation is:
 
 $$\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left( \frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} \right) \mathbf{V}$$
 
-Let us analyze the computational FLOPs for sequence length $N$ and hidden dimension $D$:
+For sequence length $N$ and hidden dimension $D$, the FLOP cost per layer breaks down as follows:
 
-* **Projection FLOPs:** Computing $\mathbf{Q}, \mathbf{K}, \mathbf{V}$ requires $3 \times (2 N D^2) = 6 N D^2$ floating point operations.
-* **Attention Matrix $\mathbf{Q}\mathbf{K}^\top$:** Requires multiplying $(N \times D)$ with $(D \times N)$, which costs $2 N^2 D$ FLOPs.
-* **Softmax and Scaling:** Costs approximately $3 N^2$ operations.
-* **Context Aggregation $(\mathbf{A}\mathbf{V})$:** Multiplying $(N \times N)$ attention weights by $(N \times D)$ values costs $2 N^2 D$ FLOPs.
-* **Output Projection:** Costs $2 N D^2$ FLOPs.
+* Projections for $\mathbf{Q}, \mathbf{K}, \mathbf{V}$ require $3 \times (2 N D^2) = 6 N D^2$ floating point operations.
+* The attention matrix product $\mathbf{Q}\mathbf{K}^\top$ multiplies $(N \times D)$ by $(D \times N)$, costing $2 N^2 D$ FLOPs.
+* Softmax scaling requires roughly $3 N^2$ operations.
+* Multiplying attention weights by values, $\mathbf{A}\mathbf{V}$, costs $2 N^2 D$ FLOPs.
+* The final output projection adds $2 N D^2$ FLOPs.
 
-Total per-layer FLOPs roughly equal:
+Summing these terms gives the per-layer cost:
 
 $$\text{FLOPs}_{\text{layer}} \approx 8 N D^2 + 4 N^2 D$$
 
-Notice the dependency on patch size $P$. Because $N = \frac{HW}{P^2}$, halving the patch size (say from $P=16$ to $P=8$) quadruples $N$ ($N \to 4N$). Consequently:
-* The $4 N^2 D$ term scales by a factor of $16$.
-* Activation memory during training explodes by a factor of $16$.
-
-This exact mathematical scaling barrier is why foundational vision backbones often freeze at $P=14$ or $P=16$ during pre-training, reserving $P=8$ strictly for dense downstream fine-tuning.
+Because $N = \frac{HW}{P^2}$, halving the patch size from $P=16$ to $P=8$ quadruples $N$. The $4 N^2 D$ attention term and training activation memory both increase by a factor of 16. For this reason, architectures like ViT-H and SigLIP keep $P=14$ or $P=16$ during pre-training, reserving smaller patch sizes like $P=8$ for fine-tuning.
 
 ---
 
-## 2. 2D Positional Geometry: From 1D Embeddings to 2D-RoPE
+## 2. 2D positional geometry: learned embeddings vs 2D-RoPE
 
-In NLP, sequence tokens follow a strict 1D temporal order ($t_1, t_2, t_3$). In computer vision, a 1D sequence mapping destroys crucial spatial geometry: patch $(i, j)$ has vertical neighbors $(i-1, j)$ and $(i+1, j)$ that are separated in the flattened 1D sequence by an arbitrary step length of $W/P$.
+In language models, tokens follow a 1D sequence index. In vision, flattening a 2D grid into a 1D sequence separates vertically adjacent patches: patch $(i, j)$ and patch $(i+1, j)$ end up separated by an offset of $W/P$ tokens in the sequence.
 
-### 1D Absolute Learned vs Bicubic Interpolation
+### 1D learned embeddings and bicubic interpolation
 
-Early ViT used 1D learned vectors $\mathbf{e}_i \in \mathbb{R}^D$ added directly to the input tokens. When changing image resolutions during fine-tuning (for example, from $224 \times 224$ to $448 \times 448$), the sequence length grows from $14 \times 14 = 196$ to $28 \times 28 = 784$.
+Standard ViT adds learned 1D vectors $\mathbf{e}_i \in \mathbb{R}^D$ to input tokens. When input resolution increases during fine-tuning (for example, moving from $224 \times 224$ to $448 \times 448$), the sequence length expands from 196 to 784 tokens.
 
-To reuse pre-trained positional embeddings, standard ViT performs 2D bicubic spline interpolation over the grid of learned embeddings:
+To adapt pre-trained positional embeddings to the larger grid, ViT applies 2D bicubic spline interpolation:
 
 $$\mathbf{E}_{\text{pos}}^{2D}(x, y) = \sum_{k=0}^3 \sum_{l=0}^3 a_{k, l} \, x^k y^l$$
 
-While functional, this is an ad-hoc fix. The network learns positional relationships tied to specific coordinates rather than relative spatial displacements.
+This interpolation fits new coordinates to the learned grid, but the representation remains tied to absolute coordinates rather than relative spatial distance.
 
-### 2D Rotary Position Embeddings (2D-RoPE)
+### 2D rotary position embeddings (2D-RoPE)
 
-Modern vision backbones adapt Rotary Position Embeddings (RoPE) to two dimensions. Instead of adding a vector to input embeddings, 2D-RoPE rotates query and key vectors in the complex plane according to their 2D grid coordinates $(m_x, m_y)$.
+Modern backbones adapt Rotary Position Embeddings (RoPE) to two dimensions. Instead of adding vectors to token inputs, 2D-RoPE rotates query and key vectors in the complex plane based on their 2D coordinates $(m_x, m_y)$.
 
 ```mermaid
 graph LR
@@ -102,35 +92,33 @@ graph LR
     E --> F["Inner Product <q_i, k_j> depends strictly on (m_i - m_j)"]
 ```
 
-Let the attention head dimension be $d$. We split the channel dimensions into two equal halves of size $d/2$: one dedicated to the horizontal axis $x$, and one to the vertical axis $y$.
+For head dimension $d$, the channel space splits into two equal parts of size $d/2$: one for the horizontal axis $x$, and one for the vertical axis $y$.
 
-For coordinate $(m_x, m_y)$, the 2D rotary operator $\mathbf{R}_{(m_x, m_y)}$ is a block-diagonal matrix:
+For coordinate $(m_x, m_y)$, the 2D rotary operator $\mathbf{R}_{(m_x, m_y)}$ forms a block-diagonal matrix:
 
 $$\mathbf{R}_{(m_x, m_y)} = \begin{pmatrix} \mathbf{R}_{m_x} & \mathbf{0} \\ \mathbf{0} & \mathbf{R}_{m_y} \end{pmatrix}$$
 
-Where each sub-matrix $\mathbf{R}_{m}$ rotates consecutive 2D pairs by angle $m \theta_k$:
+Each sub-matrix $\mathbf{R}_{m}$ rotates consecutive coordinate pairs by angle $m \theta_k$:
 
 $$\mathbf{R}_m^{(k)} = \begin{pmatrix} \cos(m \theta_k) & -\sin(m \theta_k) \\ \sin(m \theta_k) & \cos(m \theta_k) \end{pmatrix}, \quad \theta_k = 10000^{-2(k-1)/d_s}$$
 
-When computing the self-attention score between query $\mathbf{q}$ at position $\mathbf{u} = (u_x, u_y)$ and key $\mathbf{k}$ at position $\mathbf{v} = (v_x, v_y)$:
+Evaluating attention between query $\mathbf{q}$ at position $\mathbf{u} = (u_x, u_y)$ and key $\mathbf{k}$ at position $\mathbf{v} = (v_x, v_y)$ yields:
 
 $$\langle \mathbf{R}_{\mathbf{u}} \mathbf{q}, \ \mathbf{R}_{\mathbf{v}} \mathbf{k} \rangle = (\mathbf{R}_{\mathbf{u}} \mathbf{q})^\top (\mathbf{R}_{\mathbf{v}} \mathbf{k}) = \mathbf{q}^\top \mathbf{R}_{\mathbf{u}}^\top \mathbf{R}_{\mathbf{v}} \mathbf{k} = \mathbf{q}^\top \mathbf{R}_{\mathbf{u} - \mathbf{v}} \mathbf{k}$$
 
-Because rotation matrices form an orthogonal Lie group $\text{SO}(2)$ with the property $\mathbf{R}_\mathbf{u}^\top \mathbf{R}_\mathbf{v} = \mathbf{R}_{\mathbf{v} - \mathbf{u}} = \mathbf{R}_{-(\mathbf{u} - \mathbf{v})}$, the inner product depends exclusively on the relative spatial distance vector:
+Because 2D rotation matrices belong to the orthogonal group $\text{SO}(2)$ where $\mathbf{R}_\mathbf{u}^\top \mathbf{R}_\mathbf{v} = \mathbf{R}_{\mathbf{u} - \mathbf{v}}$, the inner product depends strictly on the spatial offset vector:
 
 $$\Delta \mathbf{p} = (u_x - v_x, \ u_y - v_y)$$
 
-This guarantees strict translation invariance across the 2D plane regardless of image resolution changes.
+The attention operation retains translation equivariance across the 2D plane regardless of input image dimensions.
 
 ---
 
-## 3. Google's NaViT: Patch 'n' Pack and Arbitrary Aspect Ratios
+## 3. Google's NaViT: Patch 'n' Pack and arbitrary aspect ratios
 
-Standard vision architectures force every image into a fixed square aspect ratio ($1:1$, typically $224 \times 224$ or $384 \times 384$). This introduces two major problems:
-1. **Geometric distortion:** Non-square inputs (e.g. panoramic $16:9$ or tall $9:16$) get squashed, altering natural object ratios.
-2. **Computational waste:** Padding non-square inputs with zeros wastes up to 40% of attention FLOPs on empty border pixels.
+Standard vision models process square inputs ($224 \times 224$ or $384 \times 384$). Non-square inputs either get resized, which distorts object aspect ratios, or padded with zeros, which wastes attention operations on empty space.
 
-Google Research introduced **NaViT (Native Resolution ViT)** to bypass square processing entirely through an algorithm called **Patch 'n' Pack**.
+Google Research designed NaViT (Native Resolution ViT) around an approach called Patch 'n' Pack, which processes variable aspect ratios without padding.
 
 ```mermaid
 graph TD
@@ -149,31 +137,27 @@ graph TD
     end
 ```
 
-### The Patch 'n' Pack Mathematical Formulation
+### The Patch 'n' Pack formulation
 
-Instead of processing one image per batch slot, multiple images $I_1, I_2, \dots, I_K$ with varying resolutions and aspect ratios are tokenized into patch sets of lengths $n_1, n_2, \dots, n_K$.
-
-These tokens are packed into a single continuous sequence of fixed length $L$:
+Instead of allocating one image per batch index, multiple images $I_1, I_2, \dots, I_K$ with patch counts $n_1, n_2, \dots, n_K$ are packed into a single sequence buffer of length $L$:
 
 $$\sum_{k=1}^K n_k \le L$$
 
-Each patch token retains its true native 2D continuous coordinates $(x_i, y_i) \in [0, 1]^2$, normalized relative to the original image dimensions:
+Each patch token receives continuous 2D coordinates $(x_i, y_i) \in [0, 1]^2$, normalized to the original image dimensions:
 
 $$x_i = \frac{c_i \cdot P}{W_{\text{orig}}}, \quad y_i = \frac{r_i \cdot P}{H_{\text{orig}}}$$
 
-To prevent cross-image information leakage within the shared sequence buffer, the self-attention affinity matrix is masked with an indicator function:
+To prevent tokens from different images attending to each other within the shared sequence, the attention matrix applies an indicator mask:
 
 $$\mathbf{A}_{i, j} = \begin{cases} \frac{\mathbf{q}_i^\top \mathbf{k}_j}{\sqrt{d_k}} & \text{if } \text{img\_id}(i) = \text{img\_id}(j) \\ -\infty & \text{if } \text{img\_id}(i) \neq \text{img\_id}(j) \end{cases}$$
 
-This transforms the dense $(L \times L)$ attention map into an exact block-diagonal matrix. Because self-attention is permutation-equivariant up to position embeddings, multiple images are processed concurrently inside a single forward pass with zero padding waste.
+This structure produces a block-diagonal attention map. Because self-attention is permutation-equivariant up to position encodings, the network processes different images and aspect ratios concurrently in a single forward pass.
 
 ---
 
-## 4. Self-Supervised Distillation: DINOv2 and Collapse Prevention
+## 4. Self-supervised distillation: DINOv2 and collapse prevention
 
-Supervised pre-training forces models to discard dense spatial details in favor of coarse label abstractions. Self-supervised visual representations preserve fine-grained semantic segmentation masks and localized patch similarities without a single human label.
-
-The gold standard for self-supervised representation learning is **DINOv2 (Self-distillation with no labels)**.
+Supervised training optimizes for discrete class labels, which discards fine spatial details. Self-supervised distillation learns dense visual representations directly from data without human annotation. DINOv2 uses student-teacher distillation with explicit mechanisms to prevent representation collapse.
 
 ```mermaid
 sequenceDiagram
@@ -192,69 +176,65 @@ sequenceDiagram
     Student-->>Teacher: Exponential Moving Average Update
 ```
 
-### The Student-Teacher Framework
+### Student-teacher distillation
 
-DINOv2 passes different augmented views of an image to two networks:
-* **Student network** $g_{\theta_s}$: Receives global and local crops. Parameterized by weights $\theta_s$.
-* **Teacher network** $g_{\theta_t}$: Receives global crops only. Parameterized by weights $\theta_t$.
+DINOv2 feeds different augmented views of an image to two networks:
 
-The teacher weights are not updated via gradient descent. They follow an Exponential Moving Average (EMA) of the student parameters:
+* Student network $g_{\theta_s}$: processes global and local crops, parameterized by weights $\theta_s$.
+* Teacher network $g_{\theta_t}$: processes global crops only, parameterized by weights $\theta_t$.
+
+Teacher weights do not receive gradients. They update using an Exponential Moving Average (EMA) of the student weights:
 
 $$\theta_t \leftarrow \lambda \theta_t + (1 - \lambda) \theta_s, \quad \lambda \in [0.996, 1.0]$$
 
-Both networks output a feature representation projected into a $K$-dimensional probability simplex using temperature-scaled softmax:
+Each network projects features into a $K$-dimensional probability distribution using temperature-scaled softmax:
 
 $$P_s(x)^{(k)} = \frac{\exp\left( g_{\theta_s}(x)^{(k)} / \tau_s \right)}{\sum_{j=1}^K \exp\left( g_{\theta_s}(x)^{(j)} / \tau_s \right)}$$
 
 $$P_t(x)^{(k)} = \frac{\exp\left( (g_{\theta_t}(x)^{(k)} - c^{(k)}) / \tau_t \right)}{\sum_{j=1}^K \exp\left( (g_{\theta_t}(x)^{(j)} - c^{(j)}) / \tau_t \right)}$$
 
-Where:
-* $\tau_s, \tau_t$ are temperature scaling parameters ($\tau_t < \tau_s$, creating a sharpening effect on teacher outputs).
-* $\mathbf{c} \in \mathbb{R}^K$ is a dynamic centering vector.
+Here $\tau_s$ and $\tau_t$ are temperature parameters, and $\mathbf{c} \in \mathbb{R}^K$ is a dynamic centering vector.
 
-The learning objective minimizes the cross-entropy between student predictions and teacher targets:
+The objective minimizes cross-entropy between the student prediction and the teacher distribution:
 
 $$\mathcal{L}_{\text{DINO}} = - \sum_{k=1}^K P_t(x)^{(k)} \log P_s(x)^{(k)}$$
 
-### Mathematical Mechanics of Centering and Sharpening
+### Centering and sharpening mechanics
 
-In self-distillation without negative pairs, two degenerate failure modes exist:
-1. **Mode Collapse (Uniform Output):** Output distributions become completely flat, maximizing entropy regardless of input.
-2. **Dirac Collapse (One-Hot Collapse):** The model assigns 100% probability to a single fixed class token across all inputs.
+Without negative pairs, self-distillation can collapse in two ways:
 
-DINOv2 prevents collapse through opposing mathematical forces:
+1. Uniform collapse: the distribution becomes completely flat across all outputs.
+2. One-hot collapse: the model outputs 100% probability on a single dimension regardless of input.
 
-* **Centering pushes toward uniform distribution:**
-  Subtracting the running mean vector $\mathbf{c}$ prevents any single dimension from dominating the output space:
+DINOv2 balances these tendencies with centering and sharpening:
+
+Subtracting the running mean $\mathbf{c}$ prevents any single coordinate from dominating:
 
 $$\mathbf{c} \leftarrow m \mathbf{c} + (1 - m) \frac{1}{B} \sum_{i=1}^B g_{\theta_t}(x_i)$$
 
-  If dimension $k$ fires constantly across a batch, $c^{(k)}$ increases, which directly penalizes $g_{\theta_t}(x)^{(k)} - c^{(k)}$ in subsequent passes.
+If dimension $k$ activates frequently across a batch, $c^{(k)}$ increases, subtracting value from that logit in subsequent iterations.
 
-* **Sharpening pushes toward concentrated distribution:**
-  Enforcing $\tau_t \ll \tau_s$ (e.g., $\tau_t = 0.04$ while $\tau_s = 0.1$) exponentiates dominant logit activations, preventing the distribution from decaying into a uniform blob.
+Setting $\tau_t < \tau_s$ (for example, $\tau_t = 0.04$ and $\tau_s = 0.1$) sharpens the teacher output distribution, preventing the logits from decaying toward a uniform vector.
 
-The equilibrium between centering (entropy maximization) and sharpening (entropy minimization) stabilizes self-supervised training without requiring contrastive negative pairs.
+### The KoLeo regularizer
 
-### The KoLeo Regularizer: Preserving Dense Dimensional Entropy
+To keep patch embeddings distributed across the representation manifold, DINOv2 uses the Kozachenko-Leonenko (KoLeo) differential entropy estimator.
 
-To enforce uniform feature distribution across the embedding manifold and prevent patch representations from collapsing into a low-rank subspace, DINOv2 incorporates the **Kozachenko-Leonenko (KoLeo)** differential entropy estimator.
-
-Given a batch of normalized vectors $\{\mathbf{z}_1, \dots, \mathbf{z}_n\}$, the KoLeo loss minimizes the log Euclidean distance between each vector and its nearest distinct neighbor:
+For normalized feature vectors $\{\mathbf{z}_1, \dots, \mathbf{z}_n\}$, the KoLeo loss maximizes the Euclidean distance between each vector and its nearest distinct neighbor:
 
 $$\mathcal{L}_{\text{KoLeo}} = - \frac{1}{n} \sum_{i=1}^n \log \left( \min_{j \neq i} \| \mathbf{z}_i - \mathbf{z}_j \|_2 \right)$$
 
-Let us understand the mathematical gradient of this loss. For a given sample $\mathbf{z}_i$ with nearest neighbor $\mathbf{z}_{n(i)}$:
+The gradient with respect to sample $\mathbf{z}_i$ and its nearest neighbor $\mathbf{z}_{n(i)}$ is:
 
 $$\frac{\partial \mathcal{L}_{\text{KoLeo}}}{\partial \mathbf{z}_i} = - \frac{1}{n} \frac{\mathbf{z}_i - \mathbf{z}_{n(i)}}{\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2^2}$$
 
-This gradient acts as an inverse-square repulsive force: as two representations approach each other ($\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2 \to 0$), the repulsive gradient vector diverges toward infinity, pushing the vectors apart across the hypersphere $\mathbb{S}^{D-1}$.
+As two vectors draw closer together, $\| \mathbf{z}_i - \mathbf{z}_{n(i)} \|_2 \to 0$, the gradient magnitude increases inversely with squared distance, repelling duplicate representations across the unit sphere $\mathbb{S}^{D-1}$.
 
 ---
 
-## 5. Contrastive Foundations: Classic CLIP vs Google SigLIP
+## 5. Contrastive objectives: classic CLIP vs Google SigLIP
 
-Contrastive Language-Image Pre-training aligns vision and text encoders into a shared latent space.
+Contrastive pre-training maps image and text representations into a shared vector space.
 
 ```mermaid
 graph TD
@@ -277,11 +257,11 @@ graph TD
     end
 ```
 
-### Classic CLIP and the InfoNCE Loss
+### Classic CLIP and InfoNCE loss
 
-Given a normalized vision batch $\mathbf{X} \in \mathbb{R}^{B \times D}$ and text batch $\mathbf{Y} \in \mathbb{R}^{B \times D}$ with cosine similarity $S_{i, j} = \mathbf{x}_i^\top \mathbf{y}_j$ and learnable logit temperature scale $t = \exp(\tau)$:
+For normalized image representations $\mathbf{X} \in \mathbb{R}^{B \times D}$ and text representations $\mathbf{Y} \in \mathbb{R}^{B \times D}$ with similarity $S_{i, j} = \mathbf{x}_i^\top \mathbf{y}_j$ and temperature $t = \exp(\tau)$:
 
-The classic InfoNCE loss treats the diagonal pairs $(i, i)$ as positives and all off-diagonal pairs $(i, j)$ ($j \neq i$) as negatives:
+The InfoNCE loss treats diagonal pairs $(i, i)$ as positives and off-diagonal pairs $(i, j)$ ($j \neq i$) as negatives:
 
 $$\mathcal{L}_{\text{image}\to\text{text}} = - \frac{1}{B} \sum_{i=1}^B \log \frac{\exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_i)}{\sum_{j=1}^B \exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_j)}$$
 
@@ -289,54 +269,47 @@ $$\mathcal{L}_{\text{text}\to\text{image}} = - \frac{1}{B} \sum_{i=1}^B \log \fr
 
 $$\mathcal{L}_{\text{CLIP}} = \frac{1}{2} \left( \mathcal{L}_{\text{image}\to\text{text}} + \mathcal{L}_{\text{text}\to\text{image}} \right)$$
 
-### The Fatal Bottleneck of Softmax Normalization
+The denominator $\sum_{j=1}^B \exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_j)$ introduces a global normalizer over all $B$ items. In distributed training:
 
-The denominator $\sum_{j=1}^B \exp(t \cdot \mathbf{x}_i^\top \mathbf{y}_j)$ introduces a global partition function. This causes three critical issues in distributed training:
+* All GPU ranks must collect text embeddings from every other rank via an `AllGather` collective before evaluating the denominator.
+* Two identical concepts in the same batch act as false negatives, penalizing valid representations.
+* Computing the full $(B \times B)$ matrix requires $O(B^2)$ memory on a single rank, which caps practical batch sizes around 32,768 to 65,536 items.
 
-1. **Global GPU Synchronization:** Every GPU rank must aggregate all text embeddings from all other ranks via an `AllGather` communication collective before computing softmax probabilities.
-2. **Coupled Normalization:** A single false negative (for example, two different images of dogs in the same batch with similar descriptions) skews the normalization denominator for every other item in the batch.
-3. **Memory Scaling:** Computing the $(B \times B)$ matrix in a single global tensor demands $O(B^2)$ memory, capping practical batch sizes around $32,768$ to $65,536$.
+### Google SigLIP: pairwise sigmoid loss
 
-### Google SigLIP: The Sigmoid Loss Revolution
+In 2023, Google DeepMind (Zhai et al.) replaced the softmax normalizer with independent binary logistic regressions for each pair in the batch.
 
-In 2023, Google DeepMind researchers (Zhai et al.) re-evaluated the fundamentals of contrastive vision pre-training and replaced the softmax formulation with pairwise binary logistic regressions.
+Each cell $(i, j)$ in the similarity matrix is treated as a separate binary classification problem:
 
-Instead of computing a competitive multinomial probability distribution over candidates, SigLIP frames every cell $(i, j)$ in the similarity matrix as an independent binary classification task:
-* Is $(i, j)$ a matching pair? If $i = j$, label $z_{i, j} = 1$.
-* Is $(i, j)$ a non-matching pair? If $i \neq j$, label $z_{i, j} = -1$.
+* $z_{i, j} = 1$ when $i = j$ (matching pair)
+* $z_{i, j} = -1$ when $i \neq j$ (non-matching pair)
 
-The **SigLIP loss function** is formulated as:
+The SigLIP loss function is:
 
 $$\mathcal{L}_{\text{SigLIP}} = - \frac{1}{|B|} \sum_{i=1}^{|B|} \sum_{j=1}^{|B|} \log \sigma \left( z_{i, j} \cdot (t \cdot \mathbf{x}_i^\top \mathbf{y}_j + b) \right)$$
 
-Where:
-* $\sigma(z) = \frac{1}{1 + e^{-z}}$ is the standard sigmoid function.
-* $t$ is a learnable temperature scaling factor.
-* $b$ is a learnable scalar bias parameter.
-* $z_{i, j} \in \{+1, -1\}$ is the binary target indicator:
+Here $\sigma(z) = \frac{1}{1 + e^{-z}}$, $t$ is a learnable temperature, and $b$ is a learnable scalar bias.
 
-$$z_{i, j} = \begin{cases} +1 & \text{if } i = j \\ -1 & \text{if } i \neq j \end{cases}$$
-
-Expanding the equation into explicit positive and negative components:
+Writing out positive and negative terms explicitly:
 
 $$\mathcal{L}_{\text{SigLIP}} = - \frac{1}{|B|} \sum_{i=1}^{|B|} \left[ \log \sigma(t \cdot \mathbf{x}_i^\top \mathbf{y}_i + b) + \sum_{j \neq i} \log \sigma(- (t \cdot \mathbf{x}_i^\top \mathbf{y}_j + b)) \right]$$
 
-Using the identity $\log \sigma(-u) = \log(1 - \sigma(u)) = -u - \log(1 + e^{-u})$:
+Applying $\log \sigma(-u) = -u - \log(1 + e^{-u})$ yields:
 
 $$\mathcal{L}_{\text{SigLIP}} = \frac{1}{|B|} \sum_{i=1}^{|B|} \left[ \log(1 + e^{-(t \mathbf{x}_i^\top \mathbf{y}_i + b)}) + \sum_{j \neq i} \log(1 + e^{t \mathbf{x}_i^\top \mathbf{y}_j + b}) \right]$$
 
-### Mathematical Advantages of the Sigmoid Loss
+### Computational properties of the sigmoid loss
 
-1. **No Global Normalizer:** Because there is no cross-sample partition function $\sum_k e^{S_{i, k}}$, computing the loss does not require gathering the complete batch on a single rank.
-2. **Chunked Streaming Computation:** The double summation can be split across arbitrary memory blocks. GPUs can compute pairwise dot-products block by block in a ring buffer, dropping memory overhead from $O(B^2)$ to $O(B_{\text{local}} \cdot B_{\text{chunk}})$.
-3. **Massive Scaling Without Numerical Instability:** Standard CLIP collapses if the batch size exceeds GPU capacity because softmax gradients become exponentially sharp. SigLIP scales gracefully to batch sizes of $1,000,000$ and beyond.
-4. **The Role of the Learnable Bias $b$:** In contrastive learning, negative pairs vastly outnumber positive pairs ($B^2 - B$ negatives vs $B$ positives). Without the bias term $b$, the negative gradients would overwhelm the positive signal. In practice, $b$ initializes to a negative value (typically around $-10$), setting the base prior probability $\sigma(b) \approx \frac{1}{1 + e^{10}} \approx 0.000045$, which matches the natural ratio of positive to negative pairs in a large batch.
+1. No global partition function: because the loss sums independent pairwise terms, devices do not need to gather the entire batch before loss computation.
+2. Chunked evaluation: similarity calculations can run block by block in memory, reducing the memory requirement from $O(B^2)$ to $O(B_{\text{local}} \cdot B_{\text{chunk}})$.
+3. Batch scalability: without a competitive softmax denominator, batch sizes can scale past 1,000,000 samples without gradient instability.
+4. Bias parameter $b$: negative pairs outnumber positive pairs by $B^2 - B$ to $B$. Without offset $b$, negative gradients dominate training. Initializing $b$ to approximately $-10$ sets the baseline prior probability $\sigma(b) \approx 0.000045$, matching the low proportion of positive pairs in large batches.
 
 ---
 
-## 6. Vision-Language Foundations: PaliGemma 2 and Cross-Modal Projections
+## 6. Multimodal projection: PaliGemma 2 and cross-modal adapters
 
-Vision models serve as the sensory front-end for modern multi-modal architectures (such as Google's PaliGemma 2, PaLI, and PaLM-E). The core challenge is bridging the semantic gap between visual token geometry and autoregressive language embeddings.
+Vision-language models map visual representations into the token space of an autoregressive language model.
 
 ```mermaid
 graph LR
@@ -350,66 +323,53 @@ graph LR
     LLM --> Out["Next-Token Probabilities"]
 ```
 
-### Projection Architectures
+### Projection methods
 
-How do we project visual features $\mathbf{Z}_v \in \mathbb{R}^{N \times D_v}$ into language embedding space $\mathbb{R}^{N \times D_{\text{llm}}}$?
+To pass visual features $\mathbf{Z}_v \in \mathbb{R}^{N \times D_v}$ into language embedding space $\mathbb{R}^{N \times D_{\text{llm}}}$, models use one of three common projection layers:
 
-#### 1. Linear Projection (PaliGemma style)
-A single linear map projects visual dimension $D_v$ directly to language dimension $D_{\text{llm}}$:
+1. Linear projection (PaliGemma style):
 
 $$\mathbf{H}_v = \mathbf{Z}_v \mathbf{W}_{\text{proj}} + \mathbf{b}_{\text{proj}}, \quad \mathbf{W}_{\text{proj}} \in \mathbb{R}^{D_v \times D_{\text{llm}}}$$
 
-Because the visual encoder (typically SigLIP-So400M) is pre-trained with high semantic alignment, a linear layer avoids overfitting while retaining spatial coordinate mappings.
+When the visual backbone (such as SigLIP-So400M) is pre-trained with contrastive alignment, a single linear map preserves spatial positions while projecting feature dimensions.
 
-#### 2. Two-Layer Multi-Layer Perceptron (LLaVA style)
-Uses a non-linear GELU activation between two linear projections:
+2. Two-layer MLP (LLaVA style):
 
 $$\mathbf{H}_v = \text{GELU}(\mathbf{Z}_v \mathbf{W}_1 + \mathbf{b}_1) \mathbf{W}_2 + \mathbf{b}_2$$
 
-#### 3. Resampler / Perceiver Query Compression (Flamingo / PaLI)
-If sequence length $N$ is too large (for example, high-resolution $896 \times 896$ generates $64 \times 64 = 4096$ tokens), feeding all tokens to the language model causes extreme latency.
+3. Perceiver query resampler (Flamingo and PaLI):
 
-A set of $M$ learnable query tokens $\mathbf{Q}_{\text{learn}} \in \mathbb{R}^{M \times D_{\text{llm}}}$ ($M \ll N$, e.g. $M = 64$) extracts compressed visual representations via cross-attention:
+At higher resolutions ($896 \times 896$), an image produces $64 \times 64 = 4096$ patch tokens. To reduce sequence length before the language model, $M$ learnable query tokens $\mathbf{Q}_{\text{learn}} \in \mathbb{R}^{M \times D_{\text{llm}}}$ ($M \ll N$, such as $M = 64$) extract compressed features through cross-attention:
 
 $$\mathbf{H}_v = \text{softmax}\left( \frac{(\mathbf{Q}_{\text{learn}} \mathbf{W}_Q)(\mathbf{Z}_v \mathbf{W}_K)^\top}{\sqrt{d}} \right) (\mathbf{Z}_v \mathbf{W}_V)$$
 
-This compresses 4,096 spatial tokens into 64 semantic tokens with minimal information loss.
+### The autoregressive training objective
 
-### The Autoregressive Multimodal Objective
-
-Once visual tokens $\mathbf{H}_v = \{\mathbf{h}_1^v, \dots, \mathbf{h}_M^v\}$ and text prompt tokens $\mathbf{H}_t = \{\mathbf{h}_1^t, \dots, \mathbf{h}_K^t\}$ are concatenated into a unified sequence:
+Visual tokens $\mathbf{H}_v$ and text prompt tokens $\mathbf{H}_t$ concatenate into a single sequence:
 
 $$\mathbf{S} = [\mathbf{h}_1^v, \dots, \mathbf{h}_M^v, \ \mathbf{h}_1^t, \dots, \mathbf{h}_K^t]$$
 
-The entire model trains by minimizing the standard autoregressive cross-entropy loss on target text tokens:
+The model trains by minimizing cross-entropy over target text tokens:
 
-$$\mathcal{L}_{\text{VLM}}(\theta) = - \sum_{i=1}^{T} \log P_\theta \left( y_i \mid \mathbf{H}_v, \ \mathbf{y}_{<i} \right) = - \sum_{i=1}^{T} \log \left( \frac{\exp(\mathbf{w}_{y_i}^\top \mathbf{u}_i)}{\sum_{w \in \mathcal{V}} \exp(\mathbf{w}_w^\top \mathbf{u}_i)} \right)$$
+$$\mathcal{L}_{\text{VLM}}(\theta) = - \sum_{i=1}^{T} \log \left( \frac{\exp(\mathbf{w}_{y_i}^\top \mathbf{u}_i)}{\sum_{w \in \mathcal{V}} \exp(\mathbf{w}_w^\top \mathbf{u}_i)} \right)$$
 
-Where $\mathbf{u}_i$ is the output activation vector of the language decoder at step $i$, and $\mathcal{V}$ is the text vocabulary.
+where $\mathbf{u}_i$ is the decoder hidden state at step $i$ and $\mathcal{V}$ is the vocabulary.
 
 ---
 
-## 7. Comparative Mathematical Architecture Matrix
+## 7. Architecture comparison
 
-The table below summarizes the core mathematical distinctions across today's foundational vision architectures:
-
-| Model | Tokenization / Positional Encoding | Core Optimization Loss | Primary Mathematical Benefit | Primary Weakness |
+| Model | Positional Encoding | Objective Function | Scaling Advantage | Tradeoff |
 | :--- | :--- | :--- | :--- | :--- |
-| **Vanilla ViT** (Dosovitskiy et al.) | $P \times P$ linear projection, 1D learned embeddings | Supervised Softmax Cross-Entropy | Direct transformer transfer to images | High quadratic complexity $O(N^2)$, weak inductive bias |
-| **DINOv2** (Oquab et al.) | Patch + `[CLS]` token, 1D/2D interpolation | Student-Teacher Cross-Entropy + KoLeo entropy regularizer | Self-supervised dense spatial features, zero label requirements | Computationally expensive student-teacher synchronization |
-| **Classic CLIP** (Radford et al.) | Patch + 1D learned embeddings | Symmetric InfoNCE Loss (Softmax normalizer) | Unified vision-language latent space | $O(B^2)$ all-gather memory scaling bottleneck across GPUs |
-| **SigLIP** (Google DeepMind) | Patch + 2D learned / continuous embeddings | Pairwise Sigmoid Binary Cross-Entropy | Decoupled normalization, arbitrary batch sizes ($1\text{M}+$)| Requires careful temperature $t$ and bias $b$ initialization |
-| **NaViT** (Google Research) | Patch 'n' Pack, continuous normalized coordinates $(x, y) \in [0, 1]^2$ | Contrastive or Masked Autoencoding with factorized attention masking | Native resolution and arbitrary aspect ratios with 0% padding waste | Complex sequence packing implementation and mask logic |
-| **PaliGemma 2** (Google) | SigLIP-So400M backbone + Linear cross-modal projection | Autoregressive token generation loss | Direct token grounding, high fine-tuning stability | Linear projector bounds cross-modal expressive power |
+| **Vanilla ViT** (Dosovitskiy et al.) | 1D learned embeddings | Softmax Cross-Entropy | Direct transformer transfer to image patches | Quadratic self-attention complexity $O(N^2)$ |
+| **DINOv2** (Oquab et al.) | Patch + `[CLS]`, 2D interpolation | Student-Teacher distillation + KoLeo regularizer | Dense feature maps without manual labels | Requires training two networks with EMA synchronization |
+| **Classic CLIP** (Radford et al.) | 1D learned embeddings | Symmetric InfoNCE Loss | Unified multimodal vector space | $O(B^2)$ memory and `AllGather` communication bottlenecks |
+| **SigLIP** (Google DeepMind) | 2D learned embeddings | Pairwise Sigmoid Loss | Decoupled normalizer, batch scaling past $1\text{M}$ | Requires tuning initial bias $b$ and temperature $t$ |
+| **NaViT** (Google Research) | Continuous coordinates $(x, y) \in [0, 1]^2$ | Contrastive or Masked Autoencoding | Native aspect ratios without zero-padding | Requires sequence packing logic and masked attention |
+| **PaliGemma 2** (Google) | SigLIP-So400M backbone | Autoregressive Next-Token Cross-Entropy | Stable spatial grounding with linear projection | Linear adapter restricts projection capacity |
 
 ---
 
-## Conclusion
+## Practical takeaways
 
-Foundational vision models are not just standard transformers run on image pixels. They are the result of specific mathematical solutions designed to handle the realities of visual data:
-* Linear patch projection solves the continuous signal problem.
-* 2D-RoPE and continuous coordinates solve the spatial translation and resolution scaling problems.
-* DINOv2's centering, sharpening, and KoLeo regularizers solve the feature collapse problem in self-supervised learning.
-* Google's SigLIP replaces global softmax normalization with pairwise logistic units, solving the distributed contrastive batch scaling problem.
-
-Understanding these mathematical foundations is essential whether you are pre-training a new vision backbone from scratch, building multimodal VLMs, or building mechanistic interpretability pipelines on top of transformer vision models.
+Linear patch projection converts continuous spatial images into sequence tokens, where computational complexity scales as $O(N^2) = O\left(\left(\frac{HW}{P^2}\right)^2\right)$. Replacing 1D positional vectors with 2D rotary rotations maintains relative displacement across variable grid resolutions. In self-supervised distillation, balancing centering and sharpening prevents mode and uniform collapse without negative samples. At the contrastive level, replacing global softmax normalizers with pairwise sigmoid loss eliminates all-to-all communication barriers, allowing distributed vision pre-training to scale to arbitrarily large batch sizes.

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adriteyo Das | Portfolio</title>
-    <link rel="stylesheet" href="index.css?v=5">
+    <link rel="stylesheet" href="index.css?v=6">
     <link rel="icon" type="image/jpeg" href="assets/img/razorbill.jpeg">
     <script>
         function applyTheme(theme) {
@@ -398,7 +398,7 @@
                     </li>
                     <li class="skill-pill" data-tooltip="Developed Android password manager PassRanger in Java.">Java
                     </li>
-                    <li class="skill-pill" data-tooltip="Used to build high-performance FeTorrent and emulator Irones.">
+                    <li class="skill-pill" data-tooltip="Used to build high-performance ParaOxidizer, Raya, FeTorrent, and Irones.">
                         Rust</li>
                     <li class="skill-pill"
                         data-tooltip="Engineered low-level networking and high-performance server microservices.">
@@ -456,6 +456,8 @@
             <div class="skill-category">
                 <h4>dfir & security</h4>
                 <ul class="skill-list">
+                    <li class="skill-pill" data-tooltip="Binary pattern-matching and heuristic malware rule engine in Raya.">
+                        YARA</li>
                     <li class="skill-pill" data-tooltip="Decompiled PE/ELF binaries for malware reverse engineering.">
                         IDA Pro</li>
                     <li class="skill-pill" data-tooltip="Analyzed suspicious binaries, malware, and firmware.">
@@ -676,8 +678,18 @@
                     <a href="https://github.com/tryhard-26/ParaOxidizer" target="_blank">github ↗</a>
                     <a href="https://crates.io/crates/paraoxidizer" target="_blank">crates.io ↗</a>
                 </div>
-                <p>Standalone Rust-native post-training quantizer &amp; inference engine for LLMs. Converts SafeTensors/GGUF to zero-copy memory-mapped .pox format with Metal compute shaders, AWQ/GPTQ, INT4/INT8, and Ed25519 cryptographic signatures.</p>
-                <div class="tags"><span class="tag">Rust</span><span class="tag">LLM Quantization</span><span class="tag">Metal GPU</span><span class="tag">AWQ/GPTQ</span><span class="tag">Inference</span></div>
+                <p>Standalone Rust-native post-training quantizer &amp; inference engine for LLMs without external Python/CUDA dependencies. Converts SafeTensors/GGUF to zero-copy memory-mapped <code>.pox</code> format with Apple Silicon Metal compute shaders, second-order AWQ/GPTQ calibration, INT4/INT8 SIMD, and Ed25519 cryptographic verification.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">LLM Quantization</span><span class="tag">Metal GPU</span><span class="tag">AWQ/GPTQ</span><span class="tag">Inference</span><span class="tag">Crates.io</span></div>
+            </div>
+
+            <div class="project">
+                <div class="item-title">Raya</div>
+                <div class="project-links">
+                    <a href="https://github.com/tryhard-26/raya" target="_blank">github ↗</a>
+                    <a href="https://crates.io/crates/raya" target="_blank">crates.io ↗</a>
+                </div>
+                <p>Rust-native static malware detection and binary pattern-matching engine. High-throughput multi-pattern Aho-Corasick scanning, recursive Pratt AST rule parser, deep PE32/PE32+ &amp; ELF inspection, x86/x64 instruction disassembly (iced-x86), and Shannon entropy analysis with structured evidence tracing.</p>
+                <div class="tags"><span class="tag">Rust</span><span class="tag">Malware Analysis</span><span class="tag">Aho-Corasick</span><span class="tag">iced-x86</span><span class="tag">PE/ELF Parser</span><span class="tag">Security</span><span class="tag">Crates.io</span></div>
             </div>
 
             <div class="project">
@@ -979,7 +991,7 @@
     </main>
     </div>
 
-    <script src="index.js?v=4"></script>
+    <script src="index.js?v=5"></script>
 
 </body>
 

@@ -106,16 +106,39 @@ Now cut the patch size in half to $P=1$:
   $$4 N^2 D = 4(16^2)(6) = 4(256)(6) = 6144 \text{ FLOPs}$$
   Notice that $6144 / 384 = 16$. The attention computation scaled by an exact factor of 16.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">If an autonomous driving camera upgrades from 1080p to 4K resolution, why does standard ViT self-attention explode by 16× rather than 4×?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      4K has $4\times$ as many total pixels as 1080p ($3840 \times 2160 \approx 8.3\text{M}$ vs $1920 \times 1080 \approx 2.1\text{M}$). Because patch size $P$ remains constant (such as $14 \times 14$), the sequence length quadruples ($N \to 4N$). Because self-attention calculates pairwise affinities between every token and every other token, the attention matrix scales quadratically as $(4N)^2 = 16N^2$. Compute and activation memory increase sixteen-fold.
+<figure class="interactive-fig" id="fig-patch-scaling">
+  <div class="fig-card">
+    <div class="fig-header">
+      <span class="fig-title">Patch Granularity & Quadratic Attention Cost</span>
+      <span class="fig-status" id="patch-stats-badge">N = 196 tokens · Matrix = 38.4k cells</span>
     </div>
-  </details>
-</div>
+    <svg id="patch-scaling-svg" viewBox="0 0 680 260" class="fig-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rendered dynamically by script -->
+    </svg>
+    <div class="fig-toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Patch Size (P)</span>
+        <div class="btn-group" id="patch-btn-group">
+          <button type="button" class="fig-btn" data-patch="32">32×32</button>
+          <button type="button" class="fig-btn active" data-patch="16">16×16</button>
+          <button type="button" class="fig-btn" data-patch="8">8×8</button>
+          <button type="button" class="fig-btn" data-patch="4">4×4</button>
+        </div>
+      </div>
+      <div class="toolbar-group">
+        <span class="toolbar-label">Resolution</span>
+        <div class="btn-group" id="res-btn-group">
+          <button type="button" class="fig-btn active" data-res="224">224px</button>
+          <button type="button" class="fig-btn" data-res="384">384px</button>
+          <button type="button" class="fig-btn" data-res="512">512px</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-caption">Fig 1.1: Halving patch size quadruples sequence length N and scales pairwise self-attention memory by sixteen-fold.</figcaption>
+</figure>
+
+This 16-fold scaling explosion explains why training Vision Transformers on high-resolution images is computationally brutal. Suppose an autonomous driving camera upgrades from 1080p ($1920 \times 1080 \approx 2.1\text{M}$ pixels) to 4K ($3840 \times 2160 \approx 8.3\text{M}$ pixels). The raw pixel count quadruples ($4\times$). But because patch size $P$ stays fixed at $14 \times 14$, the token count also quadruples ($N \to 4N$). Because standard self-attention evaluates pairwise affinities between every token and every other token, the attention matrix scales quadratically: $(4N)^2 = 16N^2$. Compute and intermediate activation memory do not increase four-fold; they explode sixteen-fold. This is the physical reason why architectures like ViT, SAM, and SigLIP keep patch sizes relatively large during pre-training, or rely on windowed local attention.
 
 ## 2. 2D positional geometry: learned embeddings vs 2D-RoPE
 
@@ -212,16 +235,34 @@ Notice that $\begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix}$ is the exact rotati
 
 Even if both patches shift by 100 pixels along the image (say to $(100, 101)$ and $(102, 103)$), the difference remains $(2, 2)$, and the resulting attention score is identical.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">Why can't we simply flatten 2D vision patches into a 1D sequence and use standard 1D RoPE?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      In a flattened raster-order grid of width $W$, vertically adjacent patches at $(x, y)$ and $(x, y+1)$ are separated by $W/P$ tokens in the 1D sequence. Standard 1D RoPE measures scalar distance along the sequence index, so it treats vertically adjacent patches as far apart, destroying 2D spatial locality. 2D-RoPE decomposes the head dimension into independent $x$ and $y$ rotational subspaces, preserving Euclidean geometry along both axes.
+<figure class="interactive-fig" id="fig-rope-explorer">
+  <div class="fig-card">
+    <div class="fig-header">
+      <span class="fig-title">2D Rotary Embeddings: Translation Equivariance in SO(2)</span>
+      <span class="fig-status" id="rope-stats-badge">Δp = (2, 2) · Inner Product = Invariant</span>
     </div>
-  </details>
-</div>
+    <svg id="rope-svg" viewBox="0 0 680 230" class="fig-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rendered dynamically by script -->
+    </svg>
+    <div class="fig-toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Absolute Canvas Translation</span>
+        <div class="btn-group" id="rope-shift-group">
+          <button type="button" class="fig-btn active" data-shift="0">Baseline (0, 0)</button>
+          <button type="button" class="fig-btn" data-shift="10">+10 Offset</button>
+          <button type="button" class="fig-btn" data-shift="50">+50 Offset</button>
+        </div>
+      </div>
+      <div class="toolbar-group">
+        <span class="toolbar-label">Relative Displacement Δx</span>
+        <input type="range" class="fig-slider" id="rope-dx-slider" min="1" max="5" value="2" step="1">
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-caption">Fig 2.1: In 2D-RoPE, rotating query and key vectors in complex planes cancels absolute coordinates out completely, making attention strictly dependent on relative offset Δp.</figcaption>
+</figure>
+
+This cancellation is what gives 2D-RoPE its translation invariance. Why can we not simply flatten the 2D grid into a 1D sequence and use standard language-model 1D RoPE? In a 2D image of width $W$, vertically adjacent patches at $(x, y)$ and $(x, y+1)$ end up separated by $W/P$ steps in sequence order. Standard 1D RoPE measures scalar distance along the token index, so it views vertically neighboring patches as distant tokens, destroying 2D spatial locality. 2D-RoPE decomposes each head's channels into independent $x$ and $y$ rotational sub-planes. Because complex multiplication subtracts angles, the attention logit between two patches depends purely on their 2D displacement vector $\Delta \mathbf{p} = (u_x - v_x, u_y - v_y)$, preserving true Euclidean geometry regardless of aspect ratio or resolution.
 
 ## 3. Google's NaViT: Patch 'n' Pack and arbitrary aspect ratios
 
@@ -291,16 +332,7 @@ When computing softmax along row 1:
 $$\text{softmax}([s_{11}, s_{12}, -\infty, -\infty, -\infty]) = [p_{11}, p_{12}, 0, 0, 0]$$
 Because $e^{-\infty} = 0$, attention weights for tokens from Image 2 evaluate to zero. Both images process inside the exact same matrix multiplication with zero padding tokens.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">How does NaViT prevent batch fragmentation when processing hundreds of variable-sized web images?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      NaViT packs patch tokens from different images into fixed-length sequence buffers using first-fit bin packing. Instead of padding each image out to the maximum sequence length, multiple images share a single buffer. By combining block-diagonal attention masking with FlashAttention variable-length kernels, GPU matrix engines maintain near 100% computational efficiency with zero wasted padding FLOPs.
-    </div>
-  </details>
-</div>
+This packing mechanism directly eliminates GPU idle bubbles during pre-training. Standard vision architectures force every image into a uniform batch shape, which either distorts rectangular frames into squashed squares or wastes up to 40% of the training compute budget calculating attention over useless zero-padding tokens. By packing patch tokens from variable-sized images into continuous fixed-length sequence buffers using first-fit bin packing, NaViT ensures that GPU tensor cores operate at maximum saturation. With FlashAttention-style variable-length masking, the $-\infty$ mask ensures that attention never leaks across image boundaries, giving the network full multi-aspect native resolution with zero padding overhead.
 
 ## 4. Self-supervised distillation: DINO and DINOv2
 
@@ -428,16 +460,34 @@ The repulsive gradient on $\mathbf{z}_1$ evaluates to:
 $$\frac{\partial \mathcal{L}}{\partial \mathbf{z}_1} \propto - \frac{[0.04, \ -0.28]}{0.08} = [-0.5, \ 3.5]$$
 The gradient pushes $\mathbf{z}_1$ in direction $[-0.5, 3.5]$, repelling it directly away from $\mathbf{z}_2$.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">What happens if you run self-distillation without teacher centering?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      Without centering vector $\mathbf{c}$, a single dominant logit index quickly accumulates higher probability across all images. Because there are no negative samples to pull it back, the teacher and student rapidly collapse into a trivial one-hot distribution where every image outputs the exact same class index. Centering prevents this by dynamically subtracting the running mean, functioning like a repulsive force on frequent logits.
+<figure class="interactive-fig" id="fig-dino-explorer">
+  <div class="fig-card">
+    <div class="fig-header">
+      <span class="fig-title">DINO Distillation: Centering, Sharpening & Collapse Dynamics</span>
+      <span class="fig-status" id="dino-stats-badge">Centering: ON · τ_t = 0.04 (Target Sharpened)</span>
     </div>
-  </details>
-</div>
+    <svg id="dino-svg" viewBox="0 0 680 230" class="fig-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rendered dynamically by script -->
+    </svg>
+    <div class="fig-toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Centering Negative Feedback</span>
+        <div class="btn-group" id="dino-center-group">
+          <button type="button" class="fig-btn active" id="dino-btn-on">Centering ON</button>
+          <button type="button" class="fig-btn" id="dino-btn-off">Centering OFF (Collapse)</button>
+        </div>
+      </div>
+      <div class="toolbar-group">
+        <span class="toolbar-label">Teacher Temp (τ_t)</span>
+        <input type="range" class="fig-slider" id="dino-temp-slider" min="0.02" max="0.30" value="0.04" step="0.02">
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-caption">Fig 4.1: Subtracting running center vector c prevents mode collapse to a single dominant class, while low teacher temperature sharpens the target probabilities.</figcaption>
+</figure>
+
+This balance between centering and sharpening solves the fundamental failure modes of self-supervised learning without contrastive pairs. Without negative samples to push divergent views apart, the student and teacher naturally collapse into one of two dead ends: uniform collapse, where all logits decay into flat zero entropy, or one-hot collapse, where a single arbitrary dimension fires strongly once and enters a self-reinforcing loop until every image in the universe outputs the exact same class index.
+Centering acts as an automatic brake on logit monopolization. By tracking the running average $\mathbf{c}$ and subtracting it from teacher activations, any logit that fires too frequently gets penalized in subsequent iterations. Meanwhile, sharpening ($\tau_t < \tau_s$) acts as an accelerator, cooling the softmax distribution into sharp, confident probability targets. When DINOv2 adds the KoLeo regularizer, it enforces an explicit electrostatic repulsive gradient proportional to $1 / d^2$ between nearest neighbors, ensuring that feature vectors spread out and tile the unit hypersphere uniformly rather than collapsing into low-dimensional subspaces.
 
 ## 5. Meta's Segment Anything Model (SAM)
 
@@ -543,16 +593,9 @@ $$p_t = 0.984$$
 $$\mathcal{L}_{\text{focal}} = - (1 - 0.984)^2 \log(0.984) = - (0.016)^2 (-0.0161) \approx (0.000256)(0.0161) \approx 0.0000041$$
 Because the prediction was confident and correct, the focal loss term $(1 - p_t)^2 = 0.000256$ shrunk the gradient by nearly 4000 times.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">Why can SAM generate masks in under 50 milliseconds in a web browser despite using a massive 632M parameter ViT-H backbone?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      The heavy ViT-H backbone runs only once per image to produce an embedding tensor of shape $64 \times 64 \times 256$. That image embedding is cached. When a user clicks or drags a bounding box, only the lightweight prompt encoder and mask decoder execute. The decoder has fewer than 4 million parameters and takes only a few matrix multiplications to output the binary mask, easily running at 20+ FPS on a laptop CPU or browser WebGPU context.
-    </div>
-  </details>
-</div>
+This dynamic dot-product architecture is the secret behind SAM's real-time interactive speed. How can a model with a massive 632M parameter ViT-H backbone segment objects in under 50 milliseconds directly in a web browser?
+The computational workload is strictly decoupled. The expensive ViT-H encoder processes the high-resolution $1024 \times 1024$ image exactly once on the backend, generating a downsampled $64 \times 64 \times 256$ spatial feature tensor that is cached in client or server RAM.
+When a user interactively clicks a point, moves their cursor, or drags a bounding box, only the tiny prompt encoder and lightweight mask decoder run. Because the mask decoder contains fewer than 4 million parameters and only performs two transformer layers followed by the dynamic dot product, it finishes in milliseconds even on a laptop CPU or browser WebGPU runtime, giving users instantaneous, fluid mask feedback.
 
 ## 6. Contrastive foundations: classic CLIP vs Google SigLIP
 
@@ -652,16 +695,37 @@ Let temperature $t = 2.0$ and learned bias $b = -0.5$.
 
 Pair $(1, 1)$ and pair $(1, 2)$ evaluate completely independently. Neither calculation requires a global sum, allowing GPU 1 to stream through tiles of negative captions stored in local memory.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">Why does classic CLIP require an expensive AllGather collective across all GPU ranks while SigLIP does not?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      InfoNCE softmax contains a normalizer $\sum_{j=1}^B \exp(t \mathbf{x}_i^\top \mathbf{y}_j)$ across the entire global batch $B$. If batch items are split across 1,024 GPUs, every GPU needs embeddings from all 1,023 other GPUs to evaluate the denominator. SigLIP replaces softmax with independent pairwise sigmoid classifications: each cell $(i, j)$ depends only on $\mathbf{x}_i$ and $\mathbf{y}_j$. A GPU can stream negative captions in local tiles without ever running a synchronous global AllGather.
+<figure class="interactive-fig" id="fig-siglip-explorer">
+  <div class="fig-card">
+    <div class="fig-header">
+      <span class="fig-title">Distributed Batch Scaling: Softmax AllGather vs SigLIP Streaming</span>
+      <span class="fig-status" id="siglip-stats-badge">Batch = 32,768 · CLIP = 2.1 GB · SigLIP = 0.5 MB</span>
     </div>
-  </details>
-</div>
+    <svg id="siglip-svg" viewBox="0 0 680 230" class="fig-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rendered dynamically by script -->
+    </svg>
+    <div class="fig-toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Global Batch Size (B)</span>
+        <div class="btn-group" id="siglip-batch-group">
+          <button type="button" class="fig-btn" data-batch="8192">8,192</button>
+          <button type="button" class="fig-btn active" data-batch="32768">32,768</button>
+          <button type="button" class="fig-btn" data-batch="131072">131,072</button>
+          <button type="button" class="fig-btn" data-batch="524288">524,288</button>
+        </div>
+      </div>
+      <div class="toolbar-group">
+        <span class="toolbar-label">Continuous Batch Slider</span>
+        <input type="range" class="fig-slider" id="siglip-batch-slider" min="1" max="6" value="4" step="1">
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-caption">Fig 6.1: Classic CLIP requires an AllGather collective across all GPUs to evaluate the global softmax denominator, causing an O(B²) barrier. SigLIP's pairwise sigmoid loss allows linear chunked streaming without inter-GPU communication.</figcaption>
+</figure>
+
+This independence is the architectural breakthrough that broke the batch size barrier. Classic CLIP's InfoNCE loss is bound by its global partition function: the denominator $\sum_{j=1}^B \exp(t \mathbf{x}_i^\top \mathbf{y}_j)$ sums over all samples in the entire global batch. When pre-training across a cluster of 512 or 1,024 GPUs, each worker GPU is physically blocked from computing its loss until it executes a synchronous `AllGather` collective, transmitting its local text embeddings to every other GPU and receiving thousands of remote vectors in return.
+At batch sizes of 32,768 or 65,536, network interconnect bandwidth saturates, and storing the full cross-similarity matrix triggers an $O(B^2)$ memory explosion.
+SigLIP completely removes the global denominator. Because every pair $(i, j)$ is formulated as an independent binary classification, each worker GPU can load its local image embeddings and stream through chunks of negative text embeddings in small local tiles. No worker ever needs to pause for a cluster-wide `AllGather`. This allows distributed vision-language pre-training to scale gracefully to batches of 1,000,000+ image-text pairs with constant local memory overhead.
 
 ## 7. How Vision-Language Models (VLMs) came about
 
@@ -759,16 +823,9 @@ $$\mathcal{L}_{\text{VLM}}(\theta) = - \sum_{i=1}^{T} \log \left( \frac{\exp(\ma
 
 where $\mathbf{u}_i$ is the language decoder hidden state at token position $i$, and $\mathcal{V}$ is the text vocabulary.
 
-<div class="concept-check">
-  <div class="concept-check-header">CHECK YOUR INTUITION</div>
-  <div class="concept-check-q">Why did modern VLMs abandon gated cross-attention (Flamingo) in favor of direct sequence concatenation (LLaVA, PaliGemma)?</div>
-  <details>
-    <summary>Reveal explanation</summary>
-    <div class="concept-check-ans">
-      Gated cross-attention requires inserting custom cross-attention layers into every transformer block of the language model, creating non-standard network topologies and complicating KV caching. Direct projection converts image patch vectors directly into the language model's embedding dimension, allowing standard autoregressive decoder stacks and existing highly optimized LLM inference engines (like vLLM and TensorRT-LLM) to run multimodal inputs without modifying the core transformer code.
-    </div>
-  </details>
-</div>
+This transition from gated cross-attention to unified token sequences explains why the modern VLM ecosystem consolidated so rapidly around autoregressive decoders.
+In early VLMs like Flamingo, incorporating vision required splicing custom gated cross-attention layers into every single transformer layer of the pre-trained language model. While this left the pre-trained weights frozen, it created an awkward hybrid architecture that broke standard high-throughput serving stacks, complicated KV cache management, and required customized kernel backends.
+Direct sequence injection (pioneered by LLaVA and unified end-to-end in PaliGemma and PaliGemma 2) realized that vision patches do not need special attention pathways. Once a lightweight linear projector or two-layer MLP maps visual patch features into the LLM's text embedding dimension, they are simply tokens. Standard autoregressive causal decoders process them alongside text using standard causal attention. Existing production LLM serving frameworks (like vLLM, TensorRT-LLM, and SGLang) can execute high-throughput multimodal inference out of the box with zero architectural changes.
 
 ## 8. Architecture comparison
 

@@ -1,80 +1,33 @@
+# MemLabs Lab 6: The Reckoning
 
-## Introduction to MemLabs
+Lab 6 from Abhiram Kumar's MemLabs series is one of the more involved scenarios in the challenge set. It provides a raw memory dump captured from an associate of an alleged crime ring operator (David Benjamin) and tasks us with recovering a two-part flag. The briefing notes that the suspect coordinated over the internet, pointing the investigation directly toward browser activity, external download links, network caches, and process artifacts.
 
-Before we dive into the challenge, let me introduce you to **MemLabs** - an excellent collection of CTF-style memory forensics challenges created by Abhiram Kumar ([@stuxnet999](https://github.com/stuxnet999)). MemLabs is specifically designed for those who want to practice and hone their memory analysis skills in a structured, progressively challenging environment.
+### Challenge Details
 
-The project features six main labs (Lab 1 through Lab 6), each presenting unique scenarios ranging from basic process analysis to complex multi-stage investigations. What makes MemLabs special is its educational approach - the challenges are realistic, well-documented, and perfect for both beginners and intermediate practitioners.
-
-**MemLabs Repository**: [https://github.com/stuxnet999/MemLabs](https://github.com/stuxnet999/MemLabs/tree/master)
-
-Today, we'll be tackling **Lab 6: The Reckoning** - widely considered one of the most comprehensive and challenging scenarios in the collection. This challenge will test our ability to correlate artifacts across multiple sources, think like an investigator, and leverage various Volatility plugins to reconstruct a complete narrative.
-
----
-
-## Challenge Overview: Lab 6 - The Reckoning
-
-### The Scenario
-
-We've received a memory dump from the Intelligence Bureau Department. According to their briefing, this evidence might contain secrets belonging to **David Benjamin**, an underworld gangster who's been on law enforcement's radar for quite some time. 
-
-The memory dump was captured from one of David's associates - a worker who was apprehended by the FBI earlier this week. Our role as digital forensic investigators is to analyze this memory snapshot and uncover any incriminating evidence that could help build a case against the criminal organization.
-
-The FBI has provided us with one crucial lead: **David communicated with his workers via the internet**. This hint suggests we should pay special attention to network artifacts, browser activity, and online communication channels.
-
-### Challenge Specifications
-
-- **Challenge Name**: MemLabs Lab 6 - The Reckoning
-- **File**: MemoryDump_Lab6.raw
-- **File Hash (MD5)**: `405985dc8ab7651c65cdbc04cb22961c`
-- **Flag Format**: `inctf{s0me_l33t_Str1ng}`
-- **Flag Structure**: The flag is split into 2 parts that must be combined
-- **Difficulty**: Advanced
-
-### Challenge Description (Official)
-
-> *"We received this memory dump from the Intelligence Bureau Department. They say this evidence might hold some secrets of the underworld gangster David Benjamin. This memory dump was taken from one of his workers whom the FBI busted earlier this week. Your job is to go through the memory dump and see if you can figure something out. FBI also says that David communicated with his workers via the internet so that might be a good place to start."*
->
-> *Note: This challenge is composed of 1 flag split into 2 parts.*
+* **File**: `MemoryDump_Lab6.raw`
+* **MD5**: `405985dc8ab7651c65cdbc04cb22961c`
+* **Format**: `inctf{...}` (two parts combined)
+* **Target Architecture**: Windows x64
 
 ---
 
-## Investigation Strategy
+## Operating System Profile
 
-Before we begin our analysis, let's outline our investigative approach. Based on the scenario and our knowledge of the available plugins, here's our game plan:
-
-1. **System Identification**: Determine the OS profile using `windows.info`
-2. **Process Survey**: Get an overview of running processes with `pslist` and `pstree`
-3. **Internet Activity Focus**: Since the hint mentions internet communication, we'll prioritize:
-   - Browser processes (Chrome, Firefox, IE, Edge)
-   - Network connections with `netscan`
-   - Browser history and artifacts
-4. **Suspicious Process Investigation**: Examine any unusual processes with `cmdline` and `handles`
-5. **File Analysis**: Look for interesting files using `filescan` and extract them with `dumpfiles`
-6. **Environmental Clues**: Check environment variables with `envars` for hidden data
-7. **Artifact Correlation**: Connect the dots between different pieces of evidence
-
-Let's begin our investigation!
-
----
-
-## Part 1: Finding the First Flag Fragment
-
-
-As with any memory forensics investigation, we start by identifying the operating system profile:
+First step is identifying the kernel profile and symbols for Volatility 3:
 
 ```bash
 vol -f MemoryDump_Lab6.raw windows.info
 ```
 
- The system is running **Windows 7 SP1 x64**. This information is crucial as it tells us we're dealing with a 64-bit architecture and helps Volatility correctly parse kernel structures.
+The dump comes from a 64-bit Windows 7 SP1 machine (build 7601). Knowing the exact architecture is essential because virtual memory address translation (PML4 paging) and kernel offsets for `EPROCESS` structures depend directly on whether we are parsing x86 or x64 memory layouts.
 
 ![os-info](https://hackmd.io/_uploads/B1RUrLXlWl.png)
 
-
 ---
 
+## Process Enumeration
 
-Let's get a comprehensive view of what processes were running at the time of capture:
+Next, we inspect running tasks to map active processes and parent-child relationships:
 
 ```bash
 vol -f MemoryDump_Lab6.raw windows.pslist
@@ -138,288 +91,228 @@ PID     PPID    ImageFileName   Offset(V)       Threads Handles SessionId       
 864     2256    GoogleCrashHan  0xfa80035e3700  1       1279459345      0       False   2019-08-19 14:42:41.000000 UTC N/A      Disabled
 ```
 
-Scanning through the output, several processes immediately catch our attention:
+The process listing shows clear points of interest:
 
-- **chrome.exe** (PID: 1804) - Google Chrome browser
-- **firefox.exe** (PID: 2648) - Mozilla Firefox browser  
-- **WinRAR.exe** (PID: 3012) - Archive compression utility
-- **cmd.exe** (PID: 1648) - Command prompt
+* `chrome.exe` (Parent PID 2124 spawning multiple renderers and utility workers)
+* `firefox.exe` (PID 2080 with worker processes)
+* `WinRAR.exe` (PID 3716)
+* `cmd.exe` (PID 880)
+* `DumpIt.exe` (PID 4084, the tool used to acquire this memory dump)
 
-The presence of two different browsers is interesting, it suggests the user may have been compartmentalizing their activities or switching between browsers for different purposes. The WinRAR process indicates file compression/extraction activity, and the cmd.exe process suggests command-line operations were performed.
-
-Given the FBI's hint about internet communication, the browser processes are our primary targets. However, WinRAR is also noteworthy - criminals often use archives to package data for exfiltration or to receive encrypted materials.
+The presence of both Chrome and Firefox indicates user compartmentalization. Meanwhile, WinRAR suggests archive manipulation or compressed file staging.
 
 ---
 
+## Carving In-Memory Browser History
 
-Since we identified Chrome as one of the active browsers, let's investigate its browsing history. For this, we'll use a specialized Volatility plugin called **chromehistory**.
+Because the challenge briefing notes online communication, Chrome is our first target. While Chrome commits browsing records into SQLite databases on disk (`History`), active processes maintain in-memory SQLite page buffers, URL strings, and visited tab metadata in virtual memory.
 
-#### Understanding the ChromeHistory Plugin
-
-The `chromehistory` plugin is a community-contributed tool that specifically targets Google Chrome's in-memory artifacts. Here's how it works:
-
-- Chrome stores browsing history in an SQLite database (`History` file)
-- When Chrome is running, portions of this database are loaded into memory
-- The plugin locates the chrome.exe process in memory
-- It scans for SQLite database structures and Chrome-specific data patterns
-- Extracts URLs, visit times, page titles, and transition types
-- Reconstructs the browsing timeline
-
- Even if the user cleared their browser history from disk, the in-memory cached data might still be recoverable from a memory dump, making this technique invaluable for investigations.
-
-**Installation Note**: ChromeHistory is a third-party plugin. You can obtain it from community repositories:
-```bash
-git clone https://github.com/superponible/volatility-plugins
-volatility --plugins=/path/to/plugins -f dump.raw --profile=Win7SP1x64 chromehistory
-```
-
-For Volatility 3, similar functionality can be achieved through custom plugins or by using Volatility 2 for this specific task.
-
-Let's run the plugin:
+Using the `chromehistory` plugin against the dump:
 
 ```bash
-volatility --plugins=/path/to/vplug -f MemoryDump_Lab6.raw --profile=Win7SP1x64 chromehistory
+volatility --plugins=/path/to/plugins -f MemoryDump_Lab6.raw --profile=Win7SP1x64 chromehistory
 ```
 
-We analyse the output and this reveals a visit to a Pastebin-like URL:
+The plugin recovers a visited Pastebin URL:
 
 ```
 https://pastebin.com/RSGSi1hk
 ```
 
-
-
-This URL is our first major lead. Let's see what's in that paste.
-
----
-
-
-When we access the Pastebin link (or if we extract it from memory strings), we discover it contains another URL - a Google Docs link:
+Accessing the paste content exposes an outbound redirect:
 
 ```
 https://www.google.com/url?q=https://docs.google.com/document/d/1lptcksPt1l_w7Y29V4o6vkEnHToAPqiCkgNNZfS9rCk/edit?usp%3Dsharing&sa=D&source=hangouts&ust=1566208765722000&usg=AFQjCNHXd6Ck6F22MNQEsxdZo21JayPKug
 ```
 
----
-
-### Step 5: Examining the Google Document
-
-Following the Google Docs link, we find a document that contains yet another clue - a **Mega.nz cloud storage link**:
+Following this link reveals a Google Document containing a cloud storage pointer:
 
 ```
 https://mega.nz/#!SrxQxYTQ
 ```
-**But there's a problem**: The Mega link is incomplete. Mega.nz uses a specific URL format:
+
+The document also includes a short message:
+> "But David sent the key in mail. The key is... :("
+
+---
+
+## String Carving for the Mega Decryption Key
+
+The Mega URL is truncated. Standard Mega links follow the structure:
+
 ```
 https://mega.nz/#!<file_id>!<decryption_key>
 ```
 
-We have the file ID (`SrxQxYTQ`) but we're missing the decryption key that comes after the second exclamation mark. Without this key, we cannot decrypt and download the file from Mega.
+We have the file identifier (`SrxQxYTQ`), but Mega uses client-side AES decryption where the 128-bit master key is passed in the URL fragment. Without the key after the second exclamation mark, the service cannot decrypt the file payload.
 
-The document also contains a cryptic message:
-> *"But David sent the key in mail. The key is... :("*
-
- The decryption key was supposedly sent via email, but we don't have access to the email client's memory or messages. We need to find this key somewhere in the memory dump.
-
----
-
-
-At this point, we've hit a roadblock. Traditional Volatility plugins haven't revealed the decryption key. 
-
-The document mentioned "The key is..." - let's search for that exact phrase in the raw memory dump:
+Because the associate read the email in a webmail tab or messaging client, the message text had to reside in physical RAM when the memory was captured. We can search raw memory strings directly for the string pattern referenced in the note:
 
 ```bash
-strings MemoryDump_Lab6.raw | grep -i "The key is"
+strings -a -e l MemoryDump_Lab6.raw | grep -i "The key is"
+# Or searching single-byte ASCII:
+strings -a MemoryDump_Lab6.raw | grep -i "The key is"
 ```
 
+The command yields:
 
- The grep command returns:
-
-```bash
+```text
 The key is: zyWxCjCYYSEMA-hZe552qWVXiPwa5TecODbjnsscMIU
 ```
-When David's associate opened the email containing the key, the email client (likely webmail in a browser) loaded the message into memory. Even though we can't access the structured email data, the raw text remained in memory and was captured in the dump.
 
- This demonstrates a crucial concept in memory forensics - *persistence of data*. Data doesn't immediately disappear from RAM when it's closed or deleted. It remains until that memory region is overwritten by other processes.
-
----
-
-
-Now armed with the complete Mega.nz URL, we can download the file:
+Appending this key completes the URL:
 
 ```
 https://mega.nz/#!SrxQxYTQ!zyWxCjCYYSEMA-hZe552qWVXiPwa5TecODbjnsscMIU
 ```
 
-The file downloads as: **flag1.png**
+Downloading the resource yields `flag1.png`.
 
-However,  The image won't open! The file appears to be corrupted.
+---
+
+## Repairing Corrupted PNG Magic Bytes
+
+Attempting to view `flag1.png` in an image viewer produces a decoding error. The file header is damaged.
 
 ![corrupt](https://hackmd.io/_uploads/ry-YBUQe-x.png)
 
----
-
-
-When a file won't open, the first thing to check is the file header (also called "magic bytes"). Let's examine the PNG file with a hex editor:
+We inspect the binary header with `xxd`:
 
 ```bash
-xxd flag_.png | head -20
+xxd flag1.png | head -n 5
 ```
-
 
 ![hex_corrupted](https://hackmd.io/_uploads/Hyw9rUQg-l.png)
 
+The PNG file specification requires an 8-byte file signature followed immediately by the 4-byte length and 4-byte chunk type for the Image Header (`IHDR`):
 
-A valid PNG file should have this header structure:
-```
-89 50 4E 47 0D 0A 1A 0A  [PNG signature - 8 bytes]
-00 00 00 0D 49 48 44 52  [IHDR chunk - Image Header]
-             ^^ ^^ ^^ ^^
-             I  H  D  R
+```text
+89 50 4E 47 0D 0A 1A 0A  [PNG file signature]
+00 00 00 0D 49 48 44 52  [IHDR chunk: length 13, name 'IHDR']
 ```
 
-However, our file shows:
+In the downloaded file, offset `0x0C` contains `0x69` (lowercase `i`) instead of `0x49` (uppercase `I`):
+
+```text
+89 50 4E 47 0D 0A 1A 0A
+00 00 00 0D 69 48 44 52  [Broken: 'iHDR']
 ```
-89 50 4E 47 0D 0A 1A 0A  [PNG signature - correct]
-00 00 00 0D 69 48 44 52  [iHDR chunk - WRONG]
-             ^^
-             69 = 'i' (lowercase)
+
+Because PNG chunk names use capitalization to encode chunk properties (ancillary vs critical), an image parser strictly enforces `IHDR` as the first critical chunk. A lowercase `i` causes strict parsers to reject the file as malformed.
+
+Fixing byte `0x0C`:
+
+```python
+with open("flag1.png", "rb") as f:
+    data = bytearray(f.read())
+
+data[12] = 0x49  # replace 'i' with 'I'
+
+with open("flag1_fixed.png", "wb") as f:
+    f.write(data)
 ```
- At byte offset `0x0C`, we have `69` (lowercase 'i') instead of `49` (uppercase 'I'). This single byte corruption prevents the entire image from being recognized as valid.
 
-This could be:
-- Intentional obfuscation by David's organization
-- Transmission error
-- Anti-forensics technique
-- Simple file corruption
-
----
-
-
-
-Let's fix the corrupted byte using a hex editor (HxD, 010 Editor, or `hexedit`):
-
-1. Open `flag1.png` in your hex editor
-2. Navigate to offset `0x0C` (or byte position 12)
-3. Change `69` to `49`
-4. Save the file
-
-Now let's open the repaired image:
-
+Opening the patched image renders the first flag segment:
 
 ![flag_](https://hackmd.io/_uploads/H1P3H8XxZl.png)
 
-**Success!** The image displays the first part of our flag:
-
-```
+```text
 inctf{thi5_cH4LL3Ng3_!s_g0nn4_b3_
 ```
 
+---
 
-## Part 2: Finding the Second Flag Fragment
+## Tracking WinRAR Execution and Carving the Archive
 
-
-Remember the WinRAR.exe process we spotted earlier in our process list? Let's investigate what file it was working with. We'll use the `cmdline` plugin to see the command-line arguments:
+To locate the second half of the flag, we turn to the active WinRAR process identified earlier. We query process arguments to see what archive was opened:
 
 ```bash
 vol -f MemoryDump_Lab6.raw windows.cmdline
 ```
 
-Filtering for WinRAR:
+Looking at the entry for WinRAR:
 
-```bash
-PID: 3012
+```text
+PID: 3716
 Process: WinRAR.exe
 CommandLine: "C:\Program Files\WinRAR\WinRAR.exe" "C:\Users\Jaffa\Desktop\flag.rar"
 ```
 
-The user (username: Jaffa) opened a RAR archive called `flag.rar` from the Desktop. This archive likely contains the second part of our flag!
+The target file is `flag.rar` on user `Jaffa`'s desktop. We locate the corresponding file object in kernel pool memory:
+
+```bash
+vol -f MemoryDump_Lab6.raw windows.filescan | grep -i "flag.rar"
+```
+
+Output:
+
+```text
+0x5fcfc4b0    \Users\Jaffa\Desktop\flag.rar
+```
+
+With the virtual address of the `_FILE_OBJECT` structure confirmed, we carve the mapped file from memory:
+
+```bash
+vol -f MemoryDump_Lab6.raw -o ./extracted windows.dumpfiles --virtaddr 0x5fcfc4b0
+```
+
+This extracts `file.0x5fcfc4b0.0xfa8003668870.dat`. Running `unrar` on the carved archive triggers a password prompt:
+
+```bash
+unrar x file.0x5fcfc4b0.0xfa8003668870.dat
+# Enter password (will not be echoed):
+```
 
 ---
 
+## Extracting Process Environment Variables
 
-Let's scan memory for the RAR file:
+In Windows, process environment variables are kept in the user-mode address space within the Process Environment Block (`PEB`), specifically inside `_RTL_USER_PROCESS_PARAMETERS->Environment`. This table inherits system variables and holds process-specific configurations.
 
-```bash
-vol -f MemoryDump_Lab6.raw windows.filescan | grep -i ".rar"
-```
-```
-Offset: 0x000000005fcfc4b0
-Path: \Users\Jaffa\Desktop\flag.rar
-```
-
-Now let's extract it using dumpfiles:
+We scan the environment block using `windows.envars`:
 
 ```bash
-vol -f MemoryDump_Lab6.raw -o output_dir windows.dumpfiles --virtaddr 0x000000005fcfc4b0
+vol -f MemoryDump_Lab6.raw windows.envars --pid 3716
 ```
 
+Inside the variable list for the WinRAR process:
 
-The file is successfully dumped! Let's try to extract its contents:
+```text
+PID     Process         Variable        Value
+3716    WinRAR.exe      RAR_password    easypeasyvirus
+```
+
+The password was left directly inside an environment variable. Supplying `easypeasyvirus` to `unrar` decompresses the archive and yields `flag2.png`:
 
 ```bash
-unrar x file.0x5fcfc4b0.dat
+unrar x -peasypeasyvirus file.0x5fcfc4b0.0xfa8003668870.dat
 ```
 
-**Problem**:
-```
-Enter password (will not be echoed):
-```
-
-The RAR archive is password-protected. We need to find the password.
-
-
-Let's examine the environment variables for all processes, particularly focusing on WinRAR:
-
-```bash
-vol -f MemoryDump_Lab6.raw windows.envars
-```
-
-Filtering for WinRAR (PID 3012):
-
-Among the standard Windows environment variables, we find a custom variable:
-
-```
-PID: 3012
-Process: WinRAR.exe
-Variable: RAR_password
-Value: easypeasyvirus
-```
-
- Someone (likely David's associate, or David himself) stored the RAR password in an environment variable for easy access. This is a significant operational security failure that just gave us exactly what we need!
-
-
----
-
-
-Now let's extract the RAR archive with our newfound password:
-
-```bash
-unrar x file.0x5fcfc4b0.dat
-# Password: easypeasyvirus
-```
-
-The archive extracts a png: `flag2.png`
-
-Opening it we find our second flag!
+Opening `flag2.png`:
 
 ![flag2](https://hackmd.io/_uploads/r1NTHIme-l.png)
 
-It is ```aN_Am4zINg_!_i_gU3Ss???_}```
+The image reveals the second fragment:
 
-
-We now have both parts of the flag. Let's combine them:
-
-
+```text
+aN_Am4zINg_!_i_gU3Ss???_}
 ```
+
+---
+
+## Final Flag Assembly
+
+Concatenating both fragments produces the complete flag:
+
+```text
 inctf{thi5_cH4LL3Ng3_!s_g0nn4_b3_aN_Am4zINg_!_i_gU3Ss???_}
 ```
 
+### Artifact Summary
 
-And thus we used memory forensics to solve this!
-
----
-
-
-
----
+1. **System Profile**: Windows 7 SP1 x64 (build 7601)
+2. **Browser Artifact**: Chrome in-memory SQLite history pointed to Pastebin (`RSGSi1hk`), which redirected to Google Docs and an incomplete Mega link.
+3. **Decryption Key**: Recovered from volatile string memory (`zyWxCjCYYSEMA-hZe552qWVXiPwa5TecODbjnsscMIU`).
+4. **Header Patch**: Offset `0x0C` of `flag1.png` corrected from `0x69` (`iHDR`) to `0x49` (`IHDR`).
+5. **Carved Archive**: `\Users\Jaffa\Desktop\flag.rar` carved via kernel file object at offset `0x5fcfc4b0`.
+6. **Credential Recovery**: WinRAR environment block contained `RAR_password=easypeasyvirus`, unlocking `flag2.png`.

@@ -45,6 +45,9 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Add local npm bin to PATH
+        run: echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5

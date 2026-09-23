@@ -1,0 +1,18 @@
+<section id="achievements" class="section reveal" aria-labelledby="achievements-heading">
+  <h2 class="section__title" id="achievements-heading">Achievements</h2>
+  <div class="achievements">
+    {{ range hugo.Data.achievements }}
+    <div class="achievement-card">
+      <div class="achievement-card__badge">{{ .badge }}</div>
+      <ul class="achievement-card__list">
+        {{ range .entries }}
+        <li>
+          <span class="achievement-card__name">{{ .name }}</span>
+          <span class="achievement-card__loc">{{ .loc }}</span>
+        </li>
+        {{ end }}
+      </ul>
+    </div>
+    {{ end }}
+  </div>
+</section>

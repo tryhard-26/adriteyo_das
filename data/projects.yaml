@@ -1,0 +1,107 @@
+- title: "ParaOxidizer"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/ParaOxidizer"
+    - label: "crates.io ↗"
+      href: "https://crates.io/crates/paraoxidizer"
+  description: "Standalone Rust-native post-training quantizer & inference engine for LLMs without external Python/CUDA dependencies. Converts SafeTensors/GGUF to zero-copy memory-mapped .pox format with Apple Silicon Metal compute shaders, second-order AWQ/GPTQ calibration, INT4/INT8 SIMD, and Ed25519 cryptographic verification."
+  tags: ["Rust", "LLM Quantization", "Metal GPU", "AWQ/GPTQ", "Inference", "Crates.io"]
+
+- title: "Raya"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/raya"
+    - label: "crates.io ↗"
+      href: "https://crates.io/crates/raya"
+  description: "Rust-native static malware detection and binary pattern-matching engine. High-throughput multi-pattern Aho-Corasick scanning, recursive Pratt AST rule parser, deep PE32/PE32+ & ELF inspection, x86/x64 instruction disassembly (iced-x86), and Shannon entropy analysis with structured evidence tracing."
+  tags: ["Rust", "Malware Analysis", "Aho-Corasick", "iced-x86", "PE/ELF Parser", "Security", "Crates.io"]
+
+- title: "FeTorrent"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/FeTorrent"
+  description: "High-performance asynchronous BitTorrent engine in Rust with a distributed stack: headless daemon, REST/WebSocket API layer, and CLI/Web dashboard controllers."
+  tags: ["Rust", "BitTorrent", "Async", "WebSocket", "P2P"]
+
+- title: "MemHawk"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/Memhawk"
+  description: "AI-powered memory forensics platform integrating Volatility 3 with local LLMs (Ollama) for automated triage, anomaly detection, and interactive dump analysis."
+  tags: ["Python", "Volatility", "Ollama", "Electron", "DFIR"]
+
+- title: "Irones"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/Irones"
+  description: "Cycle-accurate Nintendo Entertainment System (NES) emulator in Rust with 6502 CPU emulation, PPU rendering, and SDL2 audiovisual output."
+  tags: ["Rust", "SDL2", "6502", "Emulation"]
+
+- title: "Xerxes"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/xerxes"
+    - label: "crates.io ↗"
+      href: "https://crates.io/crates/xerxes"
+  description: "High-performance filesystem navigation engine in Rust for macOS & Linux. Provides instant directory jumping via fuzzy pattern matching, a frecency-based ranking algorithm, interactive selection, custom path aliases, and automated shell hooks."
+  tags: ["Rust", "CLI", "Frecency", "Systems", "Crates.io", "macOS/Linux"]
+
+- title: "rpsmon"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/rpsmon"
+    - label: "crates.io ↗"
+      href: "https://crates.io/crates/rpsmon"
+  description: "Fast Rust TUI system monitor for macOS & Linux with live process insights, tree navigation, lock selection tracking, watchlists, signal dispatch, and configurable alerts."
+  tags: ["Rust", "TUI", "Systems", "Crates.io", "Linux/macOS"]
+
+- title: "ChiefWarden"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/Cryptonite-Research-and-Development/tree/main/ChiefWarden"
+  description: "Hybrid malware detection framework — Portable Executable (PE) static analysis combined with gradient boosting ML (98.89% accuracy)."
+  tags: ["PyTorch", "XGBoost", "PE Malware", "DFIR"]
+
+- title: "BlueShift"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/BlueShift"
+  description: "Native macOS dual-pane SSH and remote file manager built in Swift and SwiftUI with differential delta transfers (rsync), keychain credential store, and multi-hop bastion jump host support."
+  tags: ["Swift", "SwiftUI", "macOS", "SSH/SFTP", "rsync"]
+
+- title: "Astraeus"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/Astraeus"
+  description: "Real-time orbital collision risk prediction with interactive 3D WebGL visualization and machine learning ensemble classifier (94.2% accuracy)."
+  tags: ["Three.js", "XGBoost", "Flask", "Orbital Physics"]
+
+- title: "PassRanger"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/PassRanger"
+  description: "Android password manager in Java with encrypted local storage, optional Firebase sync, Autofill integration, and password entropy analysis using rule-based + ML scoring with HIBP k-anonymity checks."
+  tags: ["Android", "Java", "Cryptography", "Security"]
+
+- title: "DropLAN"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/DropLAN"
+  description: "Real-time local network file sharing service with zero-configuration peer discovery, streaming transfers, and QR connectivity."
+  tags: ["Flask", "Socket.IO", "Networking", "WebSockets"]
+
+- title: "SimuTrade"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/Stocksim"
+    - label: "live ↗"
+      href: "https://stocksim-dusky.vercel.app/"
+  description: "Real-time stock trading simulator and portfolio tracker with Prophet time-series price forecasting and technical charts."
+  tags: ["React", "Flask", "Docker", "Finance"]
+
+- title: "GAN_RepairNet"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/Inpainting-GAN"
+  description: "Deep convolutional generative adversarial network with U-Net architecture for reconstructing severely corrupted dashcam images."
+  tags: ["PyTorch", "U-Net", "GANs", "Computer Vision"]

@@ -1,0 +1,8 @@
+- name: "Sci-Fi"
+  icon: "book"
+- name: "RPGs"
+  icon: "controller"
+- name: "Barça"
+  icon: "football"
+- name: "McLaren"
+  icon: "flag"

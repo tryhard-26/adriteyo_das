@@ -19,5 +19,11 @@ node_modules/
 # Config files with API keys
 js/config.js
 
+# Hugo
+public/
+resources/
+hugo_stats.json
+.hugo_build.lock
+
 # Misc
 *.log

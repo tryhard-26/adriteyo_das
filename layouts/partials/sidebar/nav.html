@@ -1,0 +1,44 @@
+<button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+  <span class="mobile-nav-toggle__icon-open">{{ partial "icons/icon.html" "menu" }}</span>
+  <span class="mobile-nav-toggle__icon-close">{{ partial "icons/icon.html" "close" }}</span>
+  <span class="mobile-nav-toggle__label">Menu</span>
+</button>
+
+<div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar__scroll">
+
+    <a href="{{ "#top" | relURL }}" class="brand" id="top">
+      <span class="brand__name">{{ .Site.Params.name }}</span>
+      <span class="brand__handle">{{ .Site.Params.handle }}</span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <ul>
+        {{ range $i, $item := hugo.Data.nav }}
+        {{ $frag := "" }}
+        {{ if strings.Contains $item.href "#" }}
+          {{ $frag = strings.TrimPrefix "/#" $item.href }}
+          {{ $frag = strings.TrimPrefix "#" $frag }}
+        {{ end }}
+        <li><a href="{{ strings.TrimPrefix "/" $item.href | relURL }}"{{ if $frag }} data-scrollspy="{{ $frag }}"{{ end }}>{{ $item.label }}</a></li>
+        {{ end }}
+      </ul>
+    </nav>
+
+    <div class="sidebar__socials">
+      {{ range hugo.Data.links }}
+      <a href="{{ .href }}"{{ if hasPrefix .href "http" }} target="_blank" rel="noopener"{{ end }} class="social-link">{{ .label }}</a>
+      {{ end }}
+      <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Switch to light mode">
+        <span class="theme-toggle__icon theme-toggle__icon--sun">{{ partial "icons/icon.html" "sun" }}</span>
+        <span class="theme-toggle__icon theme-toggle__icon--moon">{{ partial "icons/icon.html" "moon" }}</span>
+      </button>
+    </div>
+
+    {{ partial "model/computer.html" . }}
+
+  </div>
+</aside>
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>

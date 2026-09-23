@@ -1,0 +1,52 @@
+baseURL = "https://tryhard-26.github.io/adriteyo_das/"
+locale = "en-US"
+title = "Adriteyo Das"
+enableRobotsTXT = true
+canonifyURLs = true
+
+[params]
+  name = "Adriteyo Das"
+  handle = "tryhard"
+  email = "das.adriteyo@gmail.com"
+  emailDisplay = "das[dot]adriteyo[at]gmail[dot]com"
+  favicon = "/assets/img/razorbill.jpeg"
+  description = "Portfolio of Adriteyo Das. Computer & Communication Engineering, MIT Manipal. Systems programming, digital forensics, and the intersection of AI and security."
+
+[outputs]
+  home = ["HTML"]
+  section = ["HTML"]
+  page = ["HTML"]
+
+[taxonomies]
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['$$', '$$']]
+          inline = [['$', '$']]
+  [markup.highlight]
+    style = "github-dark"
+    noClasses = false
+    lineNos = false
+    codeFences = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+
+[build]
+  writeStats = true
+  [build.buildStats]
+    enable = false
+
+[caches]
+  [caches.images]
+    dir = ":cacheDir/images"
+
+[minify]
+  [minify.tdewolff.html]
+    keepWhitespace = false

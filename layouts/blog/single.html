@@ -1,0 +1,34 @@
+{{ define "main" }}
+<article class="post">
+  <header class="post__head">
+    <p class="hero__eyebrow"><a href="{{ "blog/" | relURL }}">/blog</a></p>
+    <time class="post__date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
+  </header>
+
+  <div class="post__content" id="post-content">
+    {{ .Content }}
+  </div>
+
+  <footer class="post__foot">
+    <a class="text-link" href="{{ "blog/" | relURL }}">← Back to blog</a>
+    <a class="text-link" href="{{ "#top" | relURL }}">Portfolio home</a>
+  </footer>
+</article>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    options: { ignoreHtmlClass: 'mermaid|language-mermaid' },
+    svg: { fontCache: 'global' },
+    startup: { typeset: false }
+  };
+</script>
+<script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+{{ $blogJS := resources.Get "js/blog-figures.js" | js.Build (dict "targetPath" "js/blog-figures.js" "minify" hugo.IsProduction) }}
+<script src="{{ $blogJS.RelPermalink }}" defer></script>
+{{ end }}

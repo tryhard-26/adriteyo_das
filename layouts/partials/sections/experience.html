@@ -1,0 +1,21 @@
+<section id="experience" class="section reveal" aria-labelledby="experience-heading">
+  <h2 class="section__title" id="experience-heading">Experience</h2>
+  <ol class="timeline">
+    {{ range hugo.Data.experience }}
+    <li class="timeline__item">
+      <div class="timeline__row">
+        <h3 class="timeline__title">{{ .title }}</h3>
+        <span class="timeline__date">{{ .date }}</span>
+      </div>
+      <p class="timeline__org">
+        {{ if .orgHref }}<a href="{{ .orgHref }}" target="_blank" rel="noopener">{{ .org }}</a>{{ else }}{{ .org }}{{ end }} · {{ .subtitle }}
+      </p>
+      {{ if .details }}
+      <ul class="timeline__details">
+        {{ range .details }}<li>{{ . }}</li>{{ end }}
+      </ul>
+      {{ end }}
+    </li>
+    {{ end }}
+  </ol>
+</section>

@@ -1,0 +1,8 @@
+<section id="hobbies" class="section reveal" aria-labelledby="hobbies-heading">
+  <h2 class="section__title" id="hobbies-heading">Hobbies</h2>
+  <ul class="hobby-list">
+    {{ range hugo.Data.hobbies }}
+    <li class="hobby-pill">{{ .name }}</li>
+    {{ end }}
+  </ul>
+</section>

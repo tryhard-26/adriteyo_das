@@ -1,0 +1,14 @@
+<section id="projects" class="section reveal" aria-labelledby="projects-heading">
+  <h2 class="section__title" id="projects-heading">Projects</h2>
+  <div class="cards">
+    {{ range hugo.Data.projects }}
+    <article class="project-card">
+      <h3 class="project-card__title">{{ .title }}</h3>
+      <div class="project-card__links">
+        {{ range .links }}<a href="{{ .href }}" target="_blank" rel="noopener">{{ .label }}</a>{{ end }}
+      </div>
+      <p class="project-card__desc">{{ .description }}</p>
+    </article>
+    {{ end }}
+  </div>
+</section>

@@ -1,0 +1,19 @@
+.hobby-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.hobby-pill {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.95rem;
+  font-size: 0.85rem;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.hobby-pill:hover {
+  border-color: var(--accent);
+}

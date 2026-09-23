@@ -1,0 +1,19 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ if .IsHome }}{{ .Site.Params.name }} · Portfolio{{ else }}{{ .Title }} · {{ .Site.Params.name }}{{ end }}</title>
+<meta name="description" content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+<link rel="icon" type="image/jpeg" href="{{ strings.TrimPrefix "/" .Site.Params.favicon | relURL }}">
+<link rel="canonical" href="{{ .Permalink }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+{{ $scss := resources.Get "scss/main.scss" }}
+{{ $opts := dict "transpiler" "dartsass" "targetPath" "css/main.css" }}
+{{ if hugo.IsProduction }}
+  {{ $opts = merge $opts (dict "outputStyle" "compressed") }}
+{{ end }}
+{{ $css := $scss | css.Sass $opts }}
+{{ if hugo.IsProduction }}{{ $css = $css | fingerprint }}{{ end }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $css.Data.Integrity }}"{{ end }}>

@@ -1,0 +1,39 @@
+- badge: "Rank 01"
+  entries:
+    - name: "EnigmaXplore 2024"
+      loc: "IIIT Naya Raipur"
+    - name: "BITSCTF 2024"
+      loc: "BITS Goa"
+    - name: "CruXipher 2024"
+      loc: "BITS Hyderabad"
+    - name: "KashiCTF 2025"
+      loc: "IIT BHU Varanasi"
+
+- badge: "Rank 02"
+  entries:
+    - name: "TexSAW CTF 2025"
+      loc: "UT Dallas"
+    - name: "BITSCTF 2025"
+      loc: "BITS Goa"
+    - name: "CapturePoint CTF 2025"
+      loc: "IIIT Vadodara"
+    - name: "ExploitX CTF 2025"
+      loc: "Top Individual"
+
+- badge: "Rank 03"
+  entries:
+    - name: "Codefest CTF 2025"
+      loc: "IIT BHU"
+    - name: "eHax CTF 2025"
+      loc: "DTU Delhi"
+    - name: "FooBar CTF 2025"
+      loc: "NIT Durgapur"
+
+- badge: "Academic"
+  entries:
+    - name: "Achiever's Scholarship"
+      loc: "MIT Manipal"
+    - name: "Finalist"
+      loc: "JPMorgan Code for Good"
+    - name: "Paper accepted"
+      loc: "ACPR 2025"

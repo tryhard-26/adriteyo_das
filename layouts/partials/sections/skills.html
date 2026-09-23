@@ -1,0 +1,15 @@
+<section id="skills" class="section reveal" aria-labelledby="skills-heading">
+  <h2 class="section__title" id="skills-heading">Skills</h2>
+  <div class="skills">
+    {{ range hugo.Data.skills }}
+    <div class="skills__group section__card">
+      <h3 class="skills__category">{{ .category }}</h3>
+      <ul class="skills__pills">
+        {{ range .items }}
+        <li class="skill-pill" tabindex="0" data-tooltip="{{ .tooltip }}" title="{{ .tooltip }}">{{ .name }}</li>
+        {{ end }}
+      </ul>
+    </div>
+    {{ end }}
+  </div>
+</section>

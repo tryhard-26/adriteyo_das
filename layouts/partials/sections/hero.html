@@ -1,0 +1,8 @@
+<header class="hero">
+  <p class="hero__eyebrow">Portfolio · {{ now.Format "2006" }}</p>
+  <h1 class="hero__name">{{ .Site.Params.name }}</h1>
+  <div class="hero__actions">
+    <a class="hero__cta" href="{{ "assets/docs/Adriteyo_Das_Resume_JT.pdf" | relURL }}" target="_blank" rel="noopener">view résumé ↗</a>
+    <a class="hero__cta hero__cta--ghost" href="{{ "#contact" | relURL }}">get in touch</a>
+  </div>
+</header>

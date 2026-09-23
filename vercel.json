@@ -1,4 +1,6 @@
 {
   "version": 2,
-  "name": "adriteyo-portfolio"
+  "name": "adriteyo-portfolio",
+  "buildCommand": "hugo --gc --minify",
+  "outputDirectory": "public"
 }

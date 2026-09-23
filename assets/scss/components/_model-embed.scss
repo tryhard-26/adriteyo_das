@@ -1,0 +1,33 @@
+.content > .model-embed {
+  max-width: 864px;
+}
+
+.model-embed {
+  position: relative;
+  margin-bottom: clamp(1.75rem, 4vh, 2.5rem);
+}
+
+model-viewer.model-embed__viewer {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  background: var(--bg);
+  --poster-color: transparent;
+}
+
+.model-embed__credit {
+  position: absolute;
+  bottom: 0.4rem;
+  right: 0.5rem;
+  color: var(--text-faint);
+  opacity: 0;
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.model-embed:hover .model-embed__credit,
+.model-embed__credit:focus-visible {
+  opacity: 1;
+}

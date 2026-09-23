@@ -1,0 +1,15 @@
+<section id="publications" class="section reveal" aria-labelledby="publications-heading">
+  <h2 class="section__title" id="publications-heading">Publications</h2>
+  <ul class="pub-list">
+    {{ range hugo.Data.publications }}
+    <li class="pub-list__item">
+      <div class="pub-list__row">
+        <h3 class="pub-list__title">{{ .title }}</h3>
+        <span class="pub-list__date">{{ .date }}</span>
+      </div>
+      <p class="pub-list__venue">{{ .venue }}</p>
+      <a class="pub-list__link" href="{{ .href }}" target="_blank" rel="noopener">{{ .linkLabel }}</a>
+    </li>
+    {{ end }}
+  </ul>
+</section>

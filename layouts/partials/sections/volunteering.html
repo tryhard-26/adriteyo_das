@@ -1,0 +1,11 @@
+<section id="volunteering" class="section reveal" aria-labelledby="volunteering-heading">
+  <h2 class="section__title" id="volunteering-heading">Volunteering</h2>
+  <ul class="plain-list">
+    {{ range hugo.Data.volunteering }}
+    <li class="plain-list__item">
+      <span class="plain-list__title">{{ .title }}</span>
+      <span class="plain-list__subtitle">{{ .subtitle }}</span>
+    </li>
+    {{ end }}
+  </ul>
+</section>

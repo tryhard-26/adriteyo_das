@@ -1,0 +1,137 @@
+// Generated via: hugo gen chromastyles --style=github-dark
+// Background/wrapper colors overridden below to blend with the site's own
+// `.post__content pre` surface instead of GitHub's canvas.
+
+.post__content .highlight {
+  margin-bottom: 1.4rem;
+}
+
+.post__content .highlight pre.chroma {
+  margin-bottom: 0;
+}
+
+.chroma {
+  background-color: transparent !important;
+  color: var(--text) !important;
+}
+
+.chroma .lnt,
+.chroma .ln {
+  color: var(--text-faint);
+}
+
+.chroma .err {
+  color: #f85149;
+}
+
+.chroma .hl {
+  background-color: var(--surface-raised);
+}
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt,
+.chroma .o,
+.chroma .ow,
+.chroma .or {
+  color: var(--accent);
+}
+
+.chroma .nc,
+.chroma .no,
+.chroma .nd,
+.chroma .ni,
+.chroma .ne,
+.chroma .nl,
+.chroma .nn,
+.chroma .nf,
+.chroma .fm {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.chroma .nx,
+.chroma .nt,
+.chroma .py,
+.chroma .nv,
+.chroma .vc,
+.chroma .vg,
+.chroma .vi,
+.chroma .vm {
+  color: var(--secondary);
+}
+
+.chroma .l,
+.chroma .ld,
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss,
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .il,
+.chroma .mo {
+  color: var(--secondary);
+}
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.chroma .gd {
+  color: #ffa198;
+  background-color: #490202;
+}
+
+.chroma .gi {
+  color: #56d364;
+  background-color: #0f5323;
+}
+
+.chroma .ge {
+  font-style: italic;
+}
+
+.chroma .gs {
+  font-weight: bold;
+}
+
+.chroma .gu {
+  color: var(--accent);
+}
+
+.chroma .gt {
+  color: var(--danger);
+}
+
+.chroma .gl {
+  text-decoration: underline;
+}
+
+.chroma .w {
+  color: var(--text-faint);
+}

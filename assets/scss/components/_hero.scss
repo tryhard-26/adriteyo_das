@@ -1,0 +1,46 @@
+.hero {
+  margin-bottom: clamp(1.75rem, 3.5vh, 2.5rem);
+}
+
+.hero__eyebrow {
+  color: var(--text-faint);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.hero__cta {
+  display: inline-block;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 0.62rem 1.05rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--bg);
+  transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.hero__cta:hover {
+  background: var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+.hero__cta--ghost {
+  background: none;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+.hero__cta--ghost:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+}

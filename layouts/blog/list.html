@@ -1,0 +1,34 @@
+{{ define "main" }}
+<header class="blog-index__head">
+  <p class="hero__eyebrow">/blog</p>
+  <h1 class="hero__name hero__name--small">Blog</h1>
+  <p class="section__lede">My collection of blogs where I cover topics on digital forensics, AI/ML, and low-level programming.</p>
+</header>
+
+<section class="section reveal" aria-labelledby="published-heading">
+  <h2 class="section__title" id="published-heading">Published</h2>
+  <ul class="blog-list">
+    {{ range .Pages.ByDate.Reverse }}
+    <li class="blog-list__item">
+      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+      {{ if .Description }}<p>{{ .Description }}</p>{{ end }}
+      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2006" }}</time>
+    </li>
+    {{ end }}
+  </ul>
+</section>
+
+{{ $upcoming := hugo.Data.blog_upcoming }}
+{{ if gt (len $upcoming) 0 }}
+<section class="section reveal" aria-labelledby="upcoming-heading">
+  <h2 class="section__title" id="upcoming-heading">Upcoming</h2>
+  <ul class="blog-list blog-list--upcoming">
+    {{ range $upcoming }}
+    <li class="blog-list__item blog-list__item--upcoming">{{ . }}</li>
+    {{ end }}
+  </ul>
+</section>
+{{ end }}
+
+<a class="text-link" href="{{ "#top" | relURL }}">← Return to portfolio</a>
+{{ end }}

@@ -1,0 +1,52 @@
+- repo: "campus-dining"
+  status: "MERGED"
+  meta: "aaditagrawal/campus-dining · +643 −50"
+  metaHref: "https://github.com/aaditagrawal/campus-dining/pull/3"
+  metaLinkLabel: "PR #3 ↗"
+  description: "Implemented a comprehensive localStorage favorites/bookmarking system for saving content across the Campus Directory."
+  tags: ["Next.js", "TypeScript", "React"]
+
+- repo: "macos-UnifiedLogs"
+  status: "MERGED"
+  meta: "Mandiant (Google) · +36 −6"
+  metaHref: "https://github.com/mandiant/macos-UnifiedLogs/pull/97"
+  metaLinkLabel: "PR #97 ↗"
+  description: "Fixed out-of-bounds array access vulnerability in message.rs. Added proper bounds checking for unknown_uuid_index, preventing crash risk on corrupted DSC files."
+  tags: ["Rust", "Security"]
+
+- repo: "capa"
+  status: "APPROVED"
+  meta: "mandiant/capa · +25 −2"
+  metaHref: "https://github.com/mandiant/capa/pull/3176"
+  metaLinkLabel: "PR #3176 ↗"
+  description: "Fixed bug in capa's PE feature extraction where module names for extensionless DLL imports (e.g. ntdll) were stripped by rpartition(), causing qualified import rule matching to silently fail. Added regression test suite."
+  tags: ["Python", "Mandiant", "PE Format", "DFIR", "Malware Analysis"]
+
+- repo: "superhuman"
+  status: "MERGED"
+  meta: "Google DeepMind"
+  metaHref: "https://github.com/google-deepmind/superhuman/pull/5"
+  metaLinkLabel: "PR #5 ↗"
+  description: "Built a Python library for IMO Bench providing a clean API with type-safe dataclasses, filtering, and 35 passing tests."
+  tags: ["Python", "API Design"]
+
+- repo: "CppInterOp"
+  wide: true
+  status: "3 PRs MERGED"
+  tagline: "CERN & LLVM Research"
+  meta: "compiler-research/CppInterOp · Clang AST Interoperability & Build Infrastructure"
+  description: "Contributed core Clang AST processing improvements, unified symbol resolution, and macOS test invocation fixes to the C++ interoperability engine used at CERN:"
+  prs:
+    - number: "PR #842"
+      href: "https://github.com/compiler-research/CppInterOp/pull/842"
+      desc: "Replaced fragile string matching with robust Clang AST-based check in IsBuiltin()"
+      status: "MERGED"
+    - number: "PR #846"
+      href: "https://github.com/compiler-research/CppInterOp/pull/846"
+      desc: "Refactored shared symbol resolution and name handling in GetCompleteNameImpl"
+      status: "MERGED"
+    - number: "PR #829"
+      href: "https://github.com/compiler-research/CppInterOp/pull/829"
+      desc: "Fixed macOS CMake test runner invocation and target dependency discovery"
+      status: "MERGED"
+  tags: ["C++", "Clang AST", "LLVM", "CMake"]

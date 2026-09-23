@@ -1,0 +1,40 @@
+- title: "Software Engineer Program (SEP) Intern"
+  date: "June 2026 – August 2026"
+  org: "JPMorgan Chase & Co."
+  subtitle: "Corporate Technology (Firmwide Planning & Analysis) · Bengaluru, India"
+  mark: "jpmc"
+  details:
+    - "Worked as a Data Infrastructure Engineer within Corporate Technology (Firmwide Planning & Analysis)."
+    - "Engineered distributed data pipelines and analytics systems utilizing Apache Spark and AWS."
+    - "Automated cloud infrastructure provisioning and CI/CD pipelines with Terraform, Jenkins, Spinnaker, and ADK."
+
+- title: "Research Assistant"
+  date: "Aug 2026 – Present"
+  org: "Carnegie Mellon University"
+  subtitle: "Xu Lab"
+  mark: "cmu"
+  details:
+    - "Working in Embodied AI under Dr. Xiaolong Wang at Xu Lab."
+
+- title: "Head of Research & Development"
+  date: "Apr 2024 – Aug 2026"
+  org: "Cryptonite"
+  orgHref: "https://cryptonitemit.in/"
+  subtitle: "MIT Manipal's Official Cybersecurity Team"
+  mark: "cryptonite"
+  details:
+    - "Leading R&D initiatives for one of the best academic CTF teams in Asia"
+    - "Specialize in Digital Forensics, Incident Response (DFIR), and AI Security challenges"
+    - "Developed and deployed challenges for niteCTF 2024 and 2025 — 3rd highest rated Indian CTF globally"
+    - "Mentoring junior members in forensics, research, ML/DL, and malware analysis"
+    - "Part of core research team exploring intersection of AI and cybersecurity"
+
+- title: "Research Intern"
+  date: "Jan 2025 – Aug 2025"
+  org: "Indian Statistical Institute, Kolkata"
+  subtitle: "CVPR Research Group"
+  mark: "isi"
+  details:
+    - "Worked under Dr Umapada Pal with collaboration from University of Salford and Chinese Institute of Information Science"
+    - "Implemented novel Deepfake Detection algorithm that outperformed SOTA methods"
+    - "Paper accepted at ACPR-2025 (Asian Conference on Pattern Recognition)"

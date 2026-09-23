@@ -1,0 +1,59 @@
+:root {
+  // Dark theme — pure black & white, no color.
+  --bg: #050505;
+  --surface: #0f0f0f;
+  --surface-raised: #161616;
+  --border: #272727;
+  --border-strong: #3d3d3d;
+  --text: #f4f4f2;
+  --text-muted: #9a9a96;
+  --text-faint: #636360;
+  --accent: #ffffff;
+  --accent-strong: #ffffff;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --secondary: #b7b7b3;
+  --secondary-soft: rgba(255, 255, 255, 0.06);
+  --danger: #d1483a;
+  --shadow: rgba(0, 0, 0, 0.5);
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --sidebar-w: 300px;
+  --rail-w: 280px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --measure: 70ch;
+
+  --radius: 0px;
+  --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --dur: 0.2s;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #fbfbfa;
+  --surface: #f0f0ee;
+  --surface-raised: #f4f4f2;
+  --border: #dcdcd8;
+  --border-strong: #bcbcb6;
+  --text: #111110;
+  --text-muted: #55554f;
+  --text-faint: #8a8a83;
+  --accent: #000000;
+  --accent-strong: #000000;
+  --accent-soft: rgba(0, 0, 0, 0.06);
+  --secondary: #434340;
+  --secondary-soft: rgba(0, 0, 0, 0.06);
+  --danger: #a5341f;
+  --shadow: rgba(20, 20, 15, 0.1);
+
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
+}

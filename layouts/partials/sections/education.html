@@ -1,0 +1,19 @@
+<section id="education" class="section reveal" aria-labelledby="education-heading">
+  <h2 class="section__title" id="education-heading">Education</h2>
+  <ol class="timeline">
+    {{ range hugo.Data.education }}
+    <li class="timeline__item">
+      <div class="timeline__row">
+        <h3 class="timeline__title">{{ .title }}</h3>
+        <span class="timeline__date">{{ .date }}</span>
+      </div>
+      <p class="timeline__org">{{ .subtitle }}</p>
+      {{ if .details }}
+      <ul class="timeline__details">
+        {{ range .details }}<li>{{ . }}</li>{{ end }}
+      </ul>
+      {{ end }}
+    </li>
+    {{ end }}
+  </ol>
+</section>

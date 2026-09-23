@@ -1,0 +1,14 @@
+{{ $posts := where site.RegularPages "Section" "blog" }}
+<section id="blog" class="section reveal" aria-labelledby="blog-heading">
+  <h2 class="section__title" id="blog-heading">Blog</h2>
+  <p class="section__lede">My collection of blogs covering digital forensics, deep learning, and systems programming.</p>
+  <ul class="blog-teaser-list">
+    {{ range first 3 $posts.ByDate.Reverse }}
+    <li class="section__card">
+      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2006" }}</time>
+    </li>
+    {{ end }}
+  </ul>
+  <a class="text-link" href="{{ "blog/" | relURL }}">open the blog index ↗</a>
+</section>

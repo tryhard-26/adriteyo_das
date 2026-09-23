@@ -1,0 +1,33 @@
+<section id="contact" class="section reveal" aria-labelledby="contact-heading">
+  <h2 class="section__title" id="contact-heading">Contact</h2>
+  <p class="section__lede">Open to research opportunities and internships.</p>
+
+  <div class="section__card">
+    <form class="contact-form" onsubmit="event.preventDefault();">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" placeholder="John Doe" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="john@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="4" placeholder="Hello…"></textarea>
+      </div>
+      <button type="submit" class="hero__cta">send →</button>
+    </form>
+
+    <div class="contact-footer">
+      <p>Mail directly to <a href="mailto:{{ .Site.Params.email }}">{{ .Site.Params.emailDisplay }}</a>. You may also use my <a href="{{ "assets/docs/pgp.txt" | relURL }}" target="_blank" rel="noopener">PGP key</a>.</p>
+      <p class="contact-footer__resume">
+        <a href="{{ "assets/docs/Adriteyo_Das_Resume_JT.pdf" | relURL }}" target="_blank" rel="noopener">view résumé ↗</a>
+        <span aria-hidden="true">·</span>
+        <a href="{{ "assets/docs/Adriteyo_Das_Resume_JT.pdf" | relURL }}" download>download ↓</a>
+      </p>
+    </div>
+  </div>
+
+  <p class="whoami">~/{{ .Site.Params.handle }}</p>
+</section>

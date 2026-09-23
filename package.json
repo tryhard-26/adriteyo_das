@@ -1,6 +1,9 @@
 {
   "name": "adriteyo-portfolio",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Personal portfolio website",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "sass": "^1.105.0"
+  }
 }

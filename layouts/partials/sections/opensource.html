@@ -1,0 +1,32 @@
+<section id="opensource" class="section reveal" aria-labelledby="opensource-heading">
+  <h2 class="section__title" id="opensource-heading">Open Source</h2>
+  <div class="cards cards--oss">
+    {{ range hugo.Data.opensource }}
+    <article class="oss-card{{ if .wide }} oss-card--wide{{ end }}">
+      <div class="oss-card__head">
+        <div class="oss-card__name">
+          <span class="oss-card__repo">{{ .repo }}</span>
+          {{ if .tagline }}<span class="oss-card__tagline">{{ .tagline }}</span>{{ end }}
+        </div>
+        <span class="oss-card__status oss-card__status--{{ if in .status "MERGED" }}merged{{ else }}approved{{ end }}">{{ .status }}</span>
+      </div>
+      <p class="oss-card__meta">
+        {{ if .metaHref }}<a href="{{ .metaHref }}" target="_blank" rel="noopener">{{ .meta }}{{ if .metaLinkLabel }} · {{ .metaLinkLabel }}{{ end }}</a>{{ else }}{{ .meta }}{{ end }}
+      </p>
+      <p class="oss-card__desc">{{ .description }}</p>
+
+      {{ if .prs }}
+      <ul class="pr-list">
+        {{ range .prs }}
+        <li class="pr-list__row">
+          <a class="pr-list__tag" href="{{ .href }}" target="_blank" rel="noopener">{{ .number }} ↗</a>
+          <span class="pr-list__desc">{{ .desc }}</span>
+          <span class="pr-list__status">{{ .status }}</span>
+        </li>
+        {{ end }}
+      </ul>
+      {{ end }}
+    </article>
+    {{ end }}
+  </div>
+</section>

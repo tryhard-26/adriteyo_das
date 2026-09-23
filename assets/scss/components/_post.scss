@@ -134,7 +134,24 @@
   text-align: center;
 }
 
+// Math styling
+.katex-display {
+  display: block;
+  margin: 1.5rem auto;
+  padding: 0.6rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  text-align: center;
+}
+
+.katex {
+  font-size: 1.05em;
+  color: var(--text);
+}
+
 mjx-container {
+  display: inline-block !important;
   color: var(--text) !important;
   outline: none;
 }
@@ -150,8 +167,10 @@ mjx-container[display="true"] {
 }
 
 mjx-container svg {
-  max-width: 100%;
-  height: auto;
+  display: inline-block !important;
+  max-width: none !important;
+  width: auto !important;
+  height: auto !important;
 }
 
 // Diagrams
@@ -167,8 +186,11 @@ mjx-container svg {
 }
 
 .diagram-svg {
-  max-width: 100%;
+  display: block;
+  width: 100%;
+  max-width: 760px;
   height: auto;
+  margin: 0 auto;
 }
 
 // Interactive figures

@@ -15,23 +15,18 @@
   </footer>
 </article>
 
-<script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      displayMath: [['$$', '$$'], ['\\[', '\\]']],
-      processEscapes: true,
-      processEnvironments: true
-    },
-    options: {
-      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-    },
-    svg: {
-      fontCache: 'global'
-    }
-  };
-</script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+  onload="const r = () => renderMathInElement(document.getElementById('post-content') || document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '\\[', right: '\\]', display: true},
+      {left: '$', right: '$', display: false},
+      {left: '\\(', right: '\\)', display: false}
+    ],
+    throwOnError: false
+  }); document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', r) : r();"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 {{ $blogJS := resources.Get "js/blog-figures.js" | js.Build (dict "targetPath" "js/blog-figures.js" "minify" hugo.IsProduction) }}
 <script src="{{ $blogJS.RelPermalink }}" defer></script>

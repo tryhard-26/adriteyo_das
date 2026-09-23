@@ -100,7 +100,8 @@ First, choose patch size $P=2$:
 * The projection matrix $\mathbf{E}$ has shape $(12 \times 6)$.
 * Multiplying the 4 flattened patches by $\mathbf{E}$ yields a token sequence of shape $(4 \times 6)$.
 * FLOPs per attention layer:
-  $$8 N D^2 + 4 N^2 D = 8(4)(36) + 4(16)(6) = 1152 + 384 = 1536 \text{ FLOPs}$$
+
+$$8 N D^2 + 4 N^2 D = 8(4)(36) + 4(16)(6) = 1152 + 384 = 1536 \text{ FLOPs}$$
 
 Now cut the patch size in half to $P=1$:
 
@@ -108,8 +109,10 @@ Now cut the patch size in half to $P=1$:
 * Each patch is $1 \times 1 \times 3 = 3$ pixels.
 * The attention matrix $\mathbf{Q}\mathbf{K}^\top$ is now $(16 \times 16) = 256$ entries instead of $(4 \times 4) = 16$ entries.
 * The attention FLOP cost jumps:
-  $$4 N^2 D = 4(16^2)(6) = 4(256)(6) = 6144 \text{ FLOPs}$$
-  Notice that $6144 / 384 = 16$. The attention computation scaled by an exact factor of 16.
+
+$$4 N^2 D = 4(16^2)(6) = 4(256)(6) = 6144 \text{ FLOPs}$$
+
+Notice that $6144 / 384 = 16$. The attention computation scaled by an exact factor of 16.
 
 <figure class="interactive-fig" id="fig-patch-scaling">
   <div class="fig-card">
@@ -441,12 +444,14 @@ $$\mathbf{g}_t = [4.0, \ 1.0, \ 1.0]$$
 The running mean center vector is currently:
 $$\mathbf{c} = [2.0, \ 0.5, \ 0.5]$$
 
-Step 1: Centering
+#### Step 1: Centering
+
 Subtract $\mathbf{c}$ from $\mathbf{g}_t$:
 $$\mathbf{g}_t - \mathbf{c} = [4.0 - 2.0, \ 1.0 - 0.5, \ 1.0 - 0.5] = [2.0, \ 0.5, \ 0.5]$$
 The first dimension fired strongly, so $c_1=2.0$ subtracted more from it than from the other dimensions.
 
-Step 2: Sharpening with temperature
+#### Step 2: Sharpening with temperature
+
 Apply teacher temperature $\tau_t = 0.5$:
 $$\frac{\mathbf{g}_t - \mathbf{c}}{\tau_t} = [4.0, \ 1.0, \ 1.0]$$
 Exponentiating gives $[e^4, e^1, e^1] \approx [54.6, 2.7, 2.7]$.
@@ -454,7 +459,7 @@ The teacher probability distribution is:
 $$P_t = [0.91, \ 0.045, \ 0.045]$$
 If we had used the student temperature $\tau_s = 1.0$ without sharpening, the distribution would be $[0.67, 0.16, 0.16]$. The low temperature sharpened the target into a confident prediction.
 
-Step 3: KoLeo repulsive gradient
+#### Step 3: KoLeo repulsive gradient
 Take two 2D unit vectors on a circle:
 $$\mathbf{z}_1 = [1.0, \ 0.0], \quad \mathbf{z}_2 = [0.96, \ 0.28]$$
 The difference vector is:
@@ -680,23 +685,33 @@ Consider a small batch of $B=2$ image-text pairs:
 * Cross pairs: similarity $s_{12} = 0.2$ and $s_{21} = 0.1$.
 Let temperature scale $t = 2.0$.
 
-Calculation 1: InfoNCE Softmax
+#### Calculation 1: InfoNCE Softmax
+
 For Image 1:
 * Positive exp: $e^{2.0 \times 0.8} = e^{1.6} \approx 4.953$
 * Negative exp: $e^{2.0 \times 0.2} = e^{0.4} \approx 1.492$
 * Softmax denominator: $4.953 + 1.492 = 6.445$
 * Loss for image 1: $- \log\left(\frac{4.953}{6.445}\right) = - \log(0.768) \approx 0.264$
+
 Notice that if Image 2 were located on another GPU, GPU 1 could not compute the denominator $6.445$ without receiving Image 2 text embeddings over the network.
 
-Calculation 2: SigLIP Independent Sigmoids
+#### Calculation 2: SigLIP Independent Sigmoids
+
 Let temperature $t = 2.0$ and learned bias $b = -0.5$.
+
 * Positive pair $(1, 1)$:
-  $$\text{logit} = t \cdot s_{11} + b = 2(0.8) - 0.5 = 1.1$$
-  $$\text{Loss}_{11} = - \log \sigma(1.1) = - \log(0.750) \approx 0.287$$
+
+$$\text{logit} = t \cdot s_{11} + b = 2(0.8) - 0.5 = 1.1$$
+
+$$\text{Loss}_{11} = - \log \sigma(1.1) = - \log(0.750) \approx 0.287$$
+
 * Negative pair $(1, 2)$:
-  $$\text{logit} = t \cdot s_{12} + b = 2(0.2) - 0.5 = -0.1$$
-  $$\text{Target } z_{12} = -1 \implies \text{argument} = -(-0.1) = +0.1$$
-  $$\text{Loss}_{12} = - \log \sigma(-0.1) = \log(1 + e^{-0.1}) = \log(1 + 0.904) = \log(1.904) \approx 0.644$$
+
+$$\text{logit} = t \cdot s_{12} + b = 2(0.2) - 0.5 = -0.1$$
+
+$$\text{Target } z_{12} = -1 \implies \text{argument} = -(-0.1) = +0.1$$
+
+$$\text{Loss}_{12} = - \log \sigma(-0.1) = \log(1 + e^{-0.1}) = \log(1 + 0.904) = \log(1.904) \approx 0.644$$
 
 Pair $(1, 1)$ and pair $(1, 2)$ evaluate completely independently. Neither calculation requires a global sum, allowing GPU 1 to stream through tiles of negative captions stored in local memory.
 

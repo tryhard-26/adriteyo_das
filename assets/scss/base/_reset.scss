@@ -40,13 +40,16 @@ body {
 }
 
 img,
-picture,
-svg {
+picture {
   display: block;
   max-width: 100%;
 }
 
-svg {
+.icon svg,
+.theme-toggle svg,
+.mobile-nav-toggle svg {
+  display: inline-block;
+  vertical-align: middle;
   width: 1em;
   height: 1em;
 }

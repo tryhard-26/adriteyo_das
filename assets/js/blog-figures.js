@@ -34,14 +34,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   initInteractiveFigures();
 
-  if (window.MathJax) {
-    if (window.MathJax.startup && window.MathJax.startup.promise) {
-      window.MathJax.startup.promise.then(() => {
-        if (window.MathJax.typesetPromise) {
-          window.MathJax.typesetPromise([contentElem]).catch(() => {});
-        }
-      }).catch(() => {});
-    }
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(contentElem, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\(", right: "\\)", display: false }
+      ],
+      throwOnError: false
+    });
+  } else if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+    window.MathJax.startup.promise.then(() => {
+      if (window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([contentElem]).catch(() => {});
+      }
+    }).catch(() => {});
   }
 
   function initInteractiveFigures() {

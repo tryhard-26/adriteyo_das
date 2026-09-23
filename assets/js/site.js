@@ -4,6 +4,7 @@ import { initScrollspy } from "./scrollspy.js";
 import { initReveal } from "./reveal.js";
 import { initFactOfTheDay } from "./fact-of-the-day.js";
 import { initApod } from "./apod.js";
+import { initCopyButtons } from "./copy-connect.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
@@ -12,4 +13,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initReveal();
   initFactOfTheDay();
   initApod();
+  initCopyButtons();
 });

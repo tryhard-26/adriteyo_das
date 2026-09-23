@@ -9,6 +9,10 @@ canonifyURLs = true
   handle = "tryhard"
   email = "das.adriteyo@gmail.com"
   emailDisplay = "das[dot]adriteyo[at]gmail[dot]com"
+  secondaryEmail = "das.adriteyo26@gmail.com"
+  discord = "thenecromancer2607"
+  linkedin = "https://www.linkedin.com/in/adriteyo-das/"
+  instagram = "https://www.instagram.com/addyction__/"
   favicon = "/assets/img/razorbill.jpeg"
   description = "Portfolio of Adriteyo Das. Computer & Communication Engineering, MIT Manipal. Systems programming, digital forensics, and the intersection of AI and security."
 

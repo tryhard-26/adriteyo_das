@@ -2,8 +2,5 @@
   "name": "adriteyo-portfolio",
   "version": "2.0.0",
   "description": "Personal portfolio website",
-  "private": true,
-  "devDependencies": {
-    "sass-embedded": "^1.105.0"
-  }
+  "private": true
 }

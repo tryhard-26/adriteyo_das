@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HUGO_VERSION: 0.166.0
+      DART_SASS_VERSION: 1.105.0
     steps:
       - name: Install Hugo CLI
         run: |
@@ -30,23 +31,18 @@ jobs:
             -o /tmp/hugo.deb
           sudo dpkg -i /tmp/hugo.deb
 
+      - name: Install Dart Sass
+        run: |
+          curl -sSL "https://github.com/sass/dart-sass/releases/download/${DART_SASS_VERSION}/dart-sass-${DART_SASS_VERSION}-linux-x64.tar.gz" \
+            -o /tmp/dart-sass.tar.gz
+          sudo tar -xzf /tmp/dart-sass.tar.gz -C /usr/local/lib
+          sudo ln -sf /usr/local/lib/dart-sass/sass /usr/local/bin/sass
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Add local npm bin to PATH
-        run: echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Setup Pages
         id: pages

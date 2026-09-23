@@ -7,13 +7,25 @@ export async function initApod() {
   const desc = document.getElementById("apod-desc");
   if (!link || !title) return;
 
+  const apiKey = "63XVlWsjpTsBQWnbpwpmWzNP64UVxc7t2IMv0zVw";
+
   try {
-    const response = await fetch("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY");
+    const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}&thumbs=true`);
+    if (!response.ok) {
+      if (response.status === 429) {
+        title.textContent = "Rate limited";
+        if (desc) desc.textContent = "NASA APOD API rate limit reached. Try again shortly.";
+        return;
+      }
+      throw new Error(`HTTP ${response.status}`);
+    }
+
     const data = await response.json();
 
-    if (data && data.url) {
-      if (img) {
-        img.src = data.url;
+    if (data && (data.url || data.thumbnail_url)) {
+      const displayUrl = data.thumbnail_url || data.url;
+      if (img && displayUrl) {
+        img.src = displayUrl;
         img.alt = data.title || "NASA Astronomy Picture of the Day";
         img.hidden = false;
         if (placeholder) placeholder.hidden = true;
@@ -24,10 +36,10 @@ export async function initApod() {
         const explanation = data.explanation || "";
         desc.textContent = explanation.length > 110 ? explanation.slice(0, 110) + "…" : explanation;
       }
-      link.href = data.hdurl || data.url;
+      link.href = data.hdurl || data.url || "#";
     } else {
-      title.textContent = "Rate limited";
-      if (desc) desc.textContent = "NASA's public demo key is temporarily rate-limited. Try again shortly.";
+      title.textContent = "Unavailable";
+      if (desc) desc.textContent = data.error?.message || "APOD data temporarily unavailable.";
     }
   } catch (err) {
     title.textContent = "Offline";

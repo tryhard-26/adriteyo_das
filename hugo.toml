@@ -30,7 +30,7 @@ canonifyURLs = true
           block = [['$$', '$$']]
           inline = [['$', '$']]
   [markup.highlight]
-    style = "github-dark"
+    style = "onedark"
     noClasses = false
     lineNos = false
     codeFences = true

@@ -35,15 +35,12 @@ document.addEventListener("DOMContentLoaded", function () {
   initInteractiveFigures();
 
   if (window.MathJax) {
-    const typeset = () => {
-      if (window.MathJax.typesetPromise) {
-        window.MathJax.typesetPromise([contentElem]).catch(() => {});
-      }
-    };
     if (window.MathJax.startup && window.MathJax.startup.promise) {
-      window.MathJax.startup.promise.then(typeset).catch(() => {});
-    } else {
-      typeset();
+      window.MathJax.startup.promise.then(() => {
+        if (window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise([contentElem]).catch(() => {});
+        }
+      }).catch(() => {});
     }
   }
 

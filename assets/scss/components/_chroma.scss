@@ -1,72 +1,85 @@
-// Generated via: hugo gen chromastyles --style=github-dark
-// Background/wrapper colors overridden below to blend with the site's own
-// `.post__content pre` surface instead of GitHub's canvas.
+// Atom One Dark Chroma Syntax Highlighting
 
 .post__content .highlight {
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background-color: #282c34;
 }
 
 .post__content .highlight pre.chroma {
   margin-bottom: 0;
+  padding: 1.1rem 1.25rem;
+  background-color: #282c34 !important;
+  color: #abb2bf !important;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  overflow-x: auto;
 }
 
+.post__content pre code {
+  background: none !important;
+  padding: 0 !important;
+  border: none !important;
+  color: inherit !important;
+  font-size: inherit;
+  font-family: var(--font-mono);
+}
+
+// Atom One Dark Tokens
 .chroma {
-  background-color: transparent !important;
-  color: var(--text) !important;
+  color: #abb2bf;
+  background-color: #282c34;
 }
 
+.chroma .lnlinks { outline: none; text-decoration: none; color: inherit; }
+.chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+.chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; width: 100%; }
+.chroma .hl { background-color: #3d4148; display: block; width: 100%; }
 .chroma .lnt,
 .chroma .ln {
-  color: var(--text-faint);
+  white-space: pre;
+  user-select: none;
+  margin-right: 0.8em;
+  padding: 0 0.4em;
+  color: #55595f;
 }
+.chroma .line { display: flex; }
 
-.chroma .err {
-  color: #f85149;
-}
-
-.chroma .hl {
-  background-color: var(--surface-raised);
-}
-
+// Keywords (Purple)
 .chroma .k,
-.chroma .kc,
 .chroma .kd,
 .chroma .kn,
 .chroma .kp,
-.chroma .kr,
-.chroma .kt,
-.chroma .o,
-.chroma .ow,
-.chroma .or {
-  color: var(--accent);
+.chroma .kr {
+  color: #c678dd;
 }
 
-.chroma .nc,
-.chroma .no,
-.chroma .nd,
-.chroma .ni,
-.chroma .ne,
-.chroma .nl,
-.chroma .nn,
-.chroma .nf,
-.chroma .fm {
-  color: var(--accent-strong);
+// Keyword Constants & Types & Builtins (Yellow / Gold)
+.chroma .kc,
+.chroma .kt,
+.chroma .nb,
+.chroma .bp,
+.chroma .nc {
+  color: #e5c07b;
+}
+
+// Functions & Methods (Blue)
+.chroma .nf {
+  color: #61afef;
   font-weight: 600;
 }
-
-.chroma .nx,
-.chroma .nt,
-.chroma .py,
-.chroma .nv,
-.chroma .vc,
-.chroma .vg,
-.chroma .vi,
-.chroma .vm {
-  color: var(--secondary);
+.chroma .fm {
+  color: #56b6c2;
+  font-weight: 600;
+}
+.chroma .nd {
+  color: #61afef;
 }
 
-.chroma .l,
-.chroma .ld,
+// Strings (Green)
 .chroma .s,
 .chroma .sa,
 .chroma .sb,
@@ -80,7 +93,11 @@
 .chroma .sx,
 .chroma .sr,
 .chroma .s1,
-.chroma .ss,
+.chroma .ss {
+  color: #98c379;
+}
+
+// Numbers (Orange)
 .chroma .m,
 .chroma .mb,
 .chroma .mf,
@@ -88,9 +105,41 @@
 .chroma .mi,
 .chroma .il,
 .chroma .mo {
-  color: var(--secondary);
+  color: #d19a66;
 }
 
+// Operators (Cyan)
+.chroma .o,
+.chroma .ow,
+.chroma .or {
+  color: #56b6c2;
+}
+
+// Names & Variables & Properties (Coral Red)
+.chroma .n,
+.chroma .na,
+.chroma .no,
+.chroma .ni,
+.chroma .ne,
+.chroma .nl,
+.chroma .nn,
+.chroma .nx,
+.chroma .py,
+.chroma .nt,
+.chroma .nv,
+.chroma .vc,
+.chroma .vg,
+.chroma .vi,
+.chroma .vm {
+  color: #e06c75;
+}
+
+// Punctuation (Light Gray)
+.chroma .p {
+  color: #abb2bf;
+}
+
+// Comments (Muted Gray, Italic)
 .chroma .c,
 .chroma .ch,
 .chroma .cm,
@@ -98,40 +147,24 @@
 .chroma .cs,
 .chroma .cp,
 .chroma .cpf {
-  color: var(--text-faint);
+  color: #7f848e;
   font-style: italic;
 }
 
+// Diff / Git
 .chroma .gd {
-  color: #ffa198;
-  background-color: #490202;
+  color: #e06c75;
+  background-color: rgba(224, 108, 117, 0.15);
 }
-
 .chroma .gi {
-  color: #56d364;
-  background-color: #0f5323;
+  color: #98c379;
+  background-color: rgba(152, 195, 121, 0.15);
+  font-weight: 600;
 }
-
-.chroma .ge {
-  font-style: italic;
-}
-
-.chroma .gs {
-  font-weight: bold;
-}
-
-.chroma .gu {
-  color: var(--accent);
-}
-
-.chroma .gt {
-  color: var(--danger);
-}
-
-.chroma .gl {
-  text-decoration: underline;
-}
-
-.chroma .w {
-  color: var(--text-faint);
-}
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: bold; }
+.chroma .gu { color: #c678dd; }
+.chroma .gt { color: #e06c75; }
+.chroma .gl { text-decoration: underline; }
+.chroma .w { color: #55595f; }
+.chroma .err { color: #e06c75; }

@@ -130,12 +130,28 @@
 .math-block {
   overflow-x: auto;
   padding: 0.75rem 0;
-  margin: 1.2rem 0;
+  margin: 1.4rem 0;
   text-align: center;
 }
 
 mjx-container {
   color: var(--text) !important;
+  outline: none;
+}
+
+mjx-container[display="true"] {
+  display: block !important;
+  text-align: center;
+  margin: 1.4rem auto !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.5rem 0;
+}
+
+mjx-container svg {
+  max-width: 100%;
+  height: auto;
 }
 
 // Diagrams

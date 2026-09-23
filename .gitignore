@@ -27,3 +27,4 @@ hugo_stats.json
 
 # Misc
 *.log
+.env*

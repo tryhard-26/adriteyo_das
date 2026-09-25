@@ -82,5 +82,8 @@ if [ "${VERCEL_ENV:-}" = "preview" ] && [ -n "${VERCEL_URL:-}" ]; then
   BASE_URL="https://${VERCEL_URL}/"
 fi
 
+echo "Generating/refreshing GitHub contributions graph..."
+python3 scripts/generate_github_graph.py || true
+
 echo "Building site with baseURL: $BASE_URL"
 hugo --gc --minify --baseURL "$BASE_URL"

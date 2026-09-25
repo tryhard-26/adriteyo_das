@@ -5,6 +5,7 @@ import { initReveal } from "./reveal.js";
 import { initFactOfTheDay } from "./fact-of-the-day.js";
 import { initApod } from "./apod.js";
 import { initCopyButtons } from "./copy-connect.js";
+import { initGithubGraph } from "./github-graph.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
@@ -14,4 +15,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initFactOfTheDay();
   initApod();
   initCopyButtons();
+  initGithubGraph();
 });

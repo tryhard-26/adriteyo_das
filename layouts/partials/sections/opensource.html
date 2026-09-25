@@ -1,5 +1,8 @@
 <section id="opensource" class="section reveal" aria-labelledby="opensource-heading">
   <h2 class="section__title" id="opensource-heading">Open Source</h2>
+
+  {{ partial "widgets/github-graph.html" . }}
+
   <div class="cards cards--oss">
     {{ range hugo.Data.opensource }}
     <article class="oss-card{{ if .wide }} oss-card--wide{{ end }}">

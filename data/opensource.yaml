@@ -1,10 +1,31 @@
-- repo: "campus-dining"
+- repo: "z3"
   status: "MERGED"
-  meta: "aaditagrawal/campus-dining · +643 −50"
-  metaHref: "https://github.com/aaditagrawal/campus-dining/pull/3"
-  metaLinkLabel: "PR #3 ↗"
-  description: "Implemented a comprehensive localStorage favorites/bookmarking system for saving content across the Campus Directory."
-  tags: ["Next.js", "TypeScript", "React"]
+  tagline: "Microsoft Research SMT Solver"
+  meta: "Z3Prover/z3 · +16 −0"
+  metaHref: "https://github.com/Z3Prover/z3/pull/9500"
+  metaLinkLabel: "PR #9500 ↗"
+  description: "Fixed FPA/BV model-validation soundness bug for Array + Datatype theories (Fixes #9488). Aligned model generation logic and synchronized Floating-Point values with bit-blasted Bit-Vector representatives to prevent split-brain validation failures."
+  tags: ["C++", "Formal Verification", "SMT Solver", "Z3"]
+
+- repo: "CppInterOp"
+  status: "3 PRs MERGED"
+  tagline: "CERN & LLVM Research"
+  meta: "compiler-research/CppInterOp · Clang AST Interoperability & Build Infrastructure"
+  description: "Contributed core Clang AST processing improvements, unified symbol resolution, and macOS test invocation fixes to the C++ interoperability engine used at CERN:"
+  prs:
+    - number: "PR #842"
+      href: "https://github.com/compiler-research/CppInterOp/pull/842"
+      desc: "Replaced fragile string matching with robust Clang AST-based check in IsBuiltin()"
+      status: "MERGED"
+    - number: "PR #846"
+      href: "https://github.com/compiler-research/CppInterOp/pull/846"
+      desc: "Refactored shared symbol resolution and name handling in GetCompleteNameImpl"
+      status: "MERGED"
+    - number: "PR #829"
+      href: "https://github.com/compiler-research/CppInterOp/pull/829"
+      desc: "Fixed macOS CMake test runner invocation and target dependency discovery"
+      status: "MERGED"
+  tags: ["C++", "Clang AST", "LLVM", "CMake"]
 
 - repo: "macos-UnifiedLogs"
   status: "MERGED"
@@ -30,23 +51,10 @@
   description: "Built a Python library for IMO Bench providing a clean API with type-safe dataclasses, filtering, and 35 passing tests."
   tags: ["Python", "API Design"]
 
-- repo: "CppInterOp"
-  wide: true
-  status: "3 PRs MERGED"
-  tagline: "CERN & LLVM Research"
-  meta: "compiler-research/CppInterOp · Clang AST Interoperability & Build Infrastructure"
-  description: "Contributed core Clang AST processing improvements, unified symbol resolution, and macOS test invocation fixes to the C++ interoperability engine used at CERN:"
-  prs:
-    - number: "PR #842"
-      href: "https://github.com/compiler-research/CppInterOp/pull/842"
-      desc: "Replaced fragile string matching with robust Clang AST-based check in IsBuiltin()"
-      status: "MERGED"
-    - number: "PR #846"
-      href: "https://github.com/compiler-research/CppInterOp/pull/846"
-      desc: "Refactored shared symbol resolution and name handling in GetCompleteNameImpl"
-      status: "MERGED"
-    - number: "PR #829"
-      href: "https://github.com/compiler-research/CppInterOp/pull/829"
-      desc: "Fixed macOS CMake test runner invocation and target dependency discovery"
-      status: "MERGED"
-  tags: ["C++", "Clang AST", "LLVM", "CMake"]
+- repo: "campus-dining"
+  status: "MERGED"
+  meta: "aaditagrawal/campus-dining · +643 −50"
+  metaHref: "https://github.com/aaditagrawal/campus-dining/pull/3"
+  metaLinkLabel: "PR #3 ↗"
+  description: "Implemented a comprehensive localStorage favorites/bookmarking system for saving content across the Campus Directory."
+  tags: ["Next.js", "TypeScript", "React"]

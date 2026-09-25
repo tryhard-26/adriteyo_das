@@ -162,3 +162,171 @@
   color: var(--secondary);
   white-space: nowrap;
 }
+
+// GitHub Activity Graph
+.github-graph-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.3rem;
+  margin-bottom: 1.5rem;
+  background: var(--surface);
+  position: relative;
+  transition: border-color var(--dur) var(--ease);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+}
+
+.github-graph__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.github-graph__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.github-graph__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  flex-shrink: 0;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+.github-graph__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.github-graph__subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+
+  .gh-total-count {
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
+.github-graph__profile-link {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-soft);
+  padding-bottom: 0.1rem;
+  transition: border-color var(--dur) var(--ease);
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+.github-graph__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.35rem 0;
+  margin: 0 -0.2rem;
+}
+
+.github-graph__svg {
+  display: block;
+  min-width: 720px;
+  width: 100%;
+  height: auto;
+}
+
+.gh-day {
+  shape-rendering: geometricPrecision;
+  cursor: pointer;
+  transition: stroke var(--dur) var(--ease), opacity var(--dur) var(--ease);
+
+  &:hover {
+    stroke: var(--text);
+    stroke-width: 1px;
+    opacity: 0.9;
+  }
+}
+
+.gh-day--level-0 { fill: var(--gh-level-0); }
+.gh-day--level-1 { fill: var(--gh-level-1); }
+.gh-day--level-2 { fill: var(--gh-level-2); }
+.gh-day--level-3 { fill: var(--gh-level-3); }
+.gh-day--level-4 { fill: var(--gh-level-4); }
+
+.gh-text {
+  fill: var(--gh-label);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  user-select: none;
+}
+
+.github-graph__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  flex-wrap: wrap;
+}
+
+.github-graph__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+
+  .legend-box {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+}
+
+.github-graph__tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--surface-raised);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -100%) translateY(-6px);
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+  z-index: 10;
+  box-shadow: 0 4px 12px var(--shadow);
+
+  &.is-visible {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-8px);
+  }
+}

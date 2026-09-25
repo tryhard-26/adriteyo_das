@@ -163,6 +163,36 @@
   white-space: nowrap;
 }
 
+.oss-card__pr-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+.pr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.28rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all var(--dur) var(--ease);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+}
+
 // GitHub Activity Graph
 .github-graph-card {
   border: 1px solid var(--border);

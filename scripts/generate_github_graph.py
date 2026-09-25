@@ -3,30 +3,128 @@ import json
 import datetime
 import os
 import sys
+import subprocess
 
 DATA_FILE = "data/github_contributions.json"
 PARTIAL_FILE = "layouts/partials/widgets/github-graph.html"
 USERNAME = "tryhard-26"
 
 def fetch_data():
-    url = f"https://github-contributions-api.jogruber.de/v4/{USERNAME}?y=last"
+    # 1. Try gh CLI authenticated GraphQL query (captures all public + private contributions)
     try:
+        query = f'''query {{
+          user(login: "{USERNAME}") {{
+            contributionsCollection {{
+              contributionCalendar {{
+                totalContributions
+                weeks {{
+                  contributionDays {{
+                    contributionCount
+                    date
+                    contributionLevel
+                    weekday
+                  }}
+                }}
+              }}
+            }}
+          }}
+        }}'''
+        cmd = ['gh', 'api', 'graphql', '-f', f'query={query}']
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=8)
+        if res.returncode == 0:
+            resp_json = json.loads(res.stdout)
+            calendar = resp_json['data']['user']['contributionsCollection']['contributionCalendar']
+            total = calendar['totalContributions']
+            weeks = calendar['weeks']
+            level_map = {
+                'NONE': 0,
+                'FIRST_QUARTILE': 1,
+                'SECOND_QUARTILE': 2,
+                'THIRD_QUARTILE': 3,
+                'FOURTH_QUARTILE': 4
+            }
+            days = []
+            for w in weeks:
+                for d in w['contributionDays']:
+                    days.append({
+                        'date': d['date'],
+                        'count': d['contributionCount'],
+                        'level': level_map.get(d['contributionLevel'], 0)
+                    })
+            data = {
+                'total': {'lastYear': total},
+                'contributions': days
+            }
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            print(f"Successfully fetched {total} contributions via GitHub GraphQL CLI for {USERNAME}")
+            return data
+    except Exception as e:
+        print(f"Notice: gh CLI query unavailable ({e})", file=sys.stderr)
+
+    # 2. Try GITHUB_TOKEN / GH_TOKEN environment variable with official GraphQL API
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token:
+        try:
+            req_body = json.dumps({"query": f'query {{ user(login: "{USERNAME}") {{ contributionsCollection {{ contributionCalendar {{ totalContributions weeks {{ contributionDays {{ contributionCount date contributionLevel weekday }} }} }} }} }} }}'}).encode("utf-8")
+            req = urllib.request.Request("https://api.github.com/graphql", data=req_body, headers={
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "Portfolio-Build-Script",
+                "Content-Type": "application/json"
+            })
+            with urllib.request.urlopen(req, timeout=6) as response:
+                if response.status == 200:
+                    resp_json = json.loads(response.read().decode("utf-8"))
+                    calendar = resp_json['data']['user']['contributionsCollection']['contributionCalendar']
+                    total = calendar['totalContributions']
+                    weeks = calendar['weeks']
+                    level_map = {
+                        'NONE': 0,
+                        'FIRST_QUARTILE': 1,
+                        'SECOND_QUARTILE': 2,
+                        'THIRD_QUARTILE': 3,
+                        'FOURTH_QUARTILE': 4
+                    }
+                    days = []
+                    for w in weeks:
+                        for d in w['contributionDays']:
+                            days.append({
+                                'date': d['date'],
+                                'count': d['contributionCount'],
+                                'level': level_map.get(d['contributionLevel'], 0)
+                            })
+                    data = {
+                        'total': {'lastYear': total},
+                        'contributions': days
+                    }
+                    with open(DATA_FILE, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2)
+                    print(f"Successfully fetched {total} contributions via GitHub GraphQL API for {USERNAME}")
+                    return data
+        except Exception as e:
+            print(f"Notice: GitHub API query with token unavailable ({e})", file=sys.stderr)
+
+    # 3. Fallback to cached data if it exists
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            print(f"Using cached contribution data ({data.get('total', {}).get('lastYear', 0)} contributions)")
+            return data
+
+    # 4. Fallback to public jogruber proxy if cache does not exist
+    try:
+        url = f"https://github-contributions-api.jogruber.de/v4/{USERNAME}?y=last"
         req = urllib.request.Request(url, headers={"User-Agent": "Portfolio-Build-Script"})
         with urllib.request.urlopen(req, timeout=6) as response:
             if response.status == 200:
                 data = json.loads(response.read().decode('utf-8'))
                 with open(DATA_FILE, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2)
-                print(f"Successfully fetched fresh GitHub contributions for {USERNAME}")
                 return data
     except Exception as e:
-        print(f"Notice: Could not fetch fresh contributions ({e}). Using cached data.", file=sys.stderr)
-    
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    else:
-        raise RuntimeError("No cached contribution data found.")
+        print(f"Error fetching from jogruber ({e})", file=sys.stderr)
+
+    raise RuntimeError("No contribution data could be loaded.")
 
 def get_gh_day(dt):
     # Sunday = 0, Monday = 1, ..., Saturday = 6

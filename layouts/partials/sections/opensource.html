@@ -18,7 +18,13 @@
       </p>
       <p class="oss-card__desc">{{ .description }}</p>
 
-      {{ if .prs }}
+      {{ if .prLinks }}
+      <div class="oss-card__pr-row">
+        {{ range .prLinks }}
+        <a class="pr-pill" href="{{ .href }}" target="_blank" rel="noopener">{{ .number }}</a>
+        {{ end }}
+      </div>
+      {{ else if .prs }}
       <ul class="pr-list">
         {{ range .prs }}
         <li class="pr-list__row">

@@ -10,21 +10,15 @@
 - repo: "CppInterOp"
   status: "3 PRs MERGED"
   tagline: "CERN & LLVM Research"
-  meta: "compiler-research/CppInterOp · Clang AST Interoperability & Build Infrastructure"
-  description: "Contributed core Clang AST processing improvements, unified symbol resolution, and macOS test invocation fixes to the C++ interoperability engine used at CERN:"
-  prs:
-    - number: "PR #842"
+  meta: "compiler-research/CppInterOp · Clang AST & Build Infrastructure"
+  description: "Contributed core Clang AST processing improvements, unified symbol resolution, and macOS test invocation fixes to the C++ interoperability engine used at CERN."
+  prLinks:
+    - number: "PR #842 ↗"
       href: "https://github.com/compiler-research/CppInterOp/pull/842"
-      desc: "Replaced fragile string matching with robust Clang AST-based check in IsBuiltin()"
-      status: "MERGED"
-    - number: "PR #846"
+    - number: "PR #846 ↗"
       href: "https://github.com/compiler-research/CppInterOp/pull/846"
-      desc: "Refactored shared symbol resolution and name handling in GetCompleteNameImpl"
-      status: "MERGED"
-    - number: "PR #829"
+    - number: "PR #829 ↗"
       href: "https://github.com/compiler-research/CppInterOp/pull/829"
-      desc: "Fixed macOS CMake test runner invocation and target dependency discovery"
-      status: "MERGED"
   tags: ["C++", "Clang AST", "LLVM", "CMake"]
 
 - repo: "macos-UnifiedLogs"

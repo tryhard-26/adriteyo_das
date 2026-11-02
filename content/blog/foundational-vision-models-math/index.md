@@ -11,28 +11,28 @@ This guide walks through the core mathematical machinery, physical intuition, an
 
 ## 1. Spatial tokenization: patch projection geometry
 
-A standard 2D convolution assumes that nearby pixels have stronger statistical dependencies than distant pixels (locality) and that patterns appear identically across spatial shifts (translation equivariance). Vision Transformers drop both structural constraints from the layer definition. The network learns spatial correlations directly from training data.
+A standard 2D convolution assumes that nearby pixels have stronger statistical dependencies than distant ones (locality), and that patterns look the same regardless of where they sit in the frame (translation equivariance). Vision Transformers drop both assumptions from the layer definition entirely, letting the network learn whatever spatial correlations the data actually supports.
 
 <div class="svg-diagram">
 <svg viewBox="0 0 760 210" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="15" y="45" width="110" height="110" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="2"/>
-  <text x="70" y="95" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">RAW IMAGE</text>
-  <text x="70" y="115" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">H x W x C</text>
-  <path d="M 130 100 L 165 100" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="170" y="45" width="130" height="110" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="2"/>
-  <text x="235" y="90" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">PATCH GRID</text>
-  <text x="235" y="110" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">N = (H·W)/P²</text>
-  <text x="235" y="128" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">P x P x C</text>
-  <path d="M 305 100 L 340 100" stroke="#fbbf24" stroke-width="2"/>
-  <rect x="345" y="45" width="145" height="110" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="2"/>
-  <text x="417" y="90" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">LINEAR PROJECTION</text>
-  <text x="417" y="110" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Matrix E: (P²·C) -> D</text>
-  <text x="417" y="128" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">stride P conv</text>
-  <path d="M 495 100 L 530 100" stroke="#f43f5e" stroke-width="2"/>
-  <rect x="535" y="45" width="190" height="110" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="2"/>
-  <text x="630" y="85" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">TRANSFORMER TOKENS</text>
-  <text x="630" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">z₀ = [CLS; x_p E] + E_pos</text>
-  <text x="630" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Shape: (N + 1) x D</text>
+  <rect x="15" y="45" width="110" height="110" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="2"/>
+  <text x="70" y="95" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">RAW IMAGE</text>
+  <text x="70" y="115" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">H x W x C</text>
+  <path d="M 130 100 L 165 100" stroke="#b7b7b3" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="170" y="45" width="130" height="110" rx="8" fill="#141414" stroke="#b7b7b3" stroke-width="2"/>
+  <text x="235" y="90" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">PATCH GRID</text>
+  <text x="235" y="110" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">N = (H·W)/P²</text>
+  <text x="235" y="128" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">P x P x C</text>
+  <path d="M 305 100 L 340 100" stroke="#9a9a96" stroke-width="2"/>
+  <rect x="345" y="45" width="145" height="110" rx="8" fill="#141414" stroke="#9a9a96" stroke-width="2"/>
+  <text x="417" y="90" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">LINEAR PROJECTION</text>
+  <text x="417" y="110" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Matrix E: (P²·C) -> D</text>
+  <text x="417" y="128" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">stride P conv</text>
+  <path d="M 495 100 L 530 100" stroke="#636360" stroke-width="2"/>
+  <rect x="535" y="45" width="190" height="110" rx="8" fill="#141414" stroke="#636360" stroke-width="2"/>
+  <text x="630" y="85" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">TRANSFORMER TOKENS</text>
+  <text x="630" y="105" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">z₀ = [CLS; x_p E] + E_pos</text>
+  <text x="630" y="125" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Shape: (N + 1) x D</text>
 </svg>
 </div>
 
@@ -55,7 +55,7 @@ $$\mathbf{z}_0 = \left[ \mathbf{x}_{\text{class}}; \ \mathbf{x}_p^{(1)}\mathbf{E
 
 Here $\mathbf{x}_{\text{class}} \in \mathbb{R}^D$ is the prepended learnable `[CLS]` token, and $\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N + 1) \times D}$ is the positional encoding matrix.
 
-Mathematically, this linear projection is equivalent to a single 2D convolutional layer where kernel size is $P \times P$, stride is $P$, and output channel count is $D$. It discretizes continuous spatial pixels into an ordered sequence of vector embeddings.
+Mathematically, this linear projection is equivalent to a single 2D convolutional layer with kernel size $P \times P$, stride $P$, and output channel count $D$, which is just a formal way of saying it discretizes continuous spatial pixels into an ordered sequence of vector embeddings.
 
 ### Computational complexity and the quadratic bottleneck
 
@@ -87,7 +87,7 @@ The quadratic term $4 N^2 D$ scales as:
 
 $$4(4N)^2 D = 16 \cdot (4 N^2 D)$$
 
-A $2\times$ reduction in patch granularity increases attention computation and intermediate activation memory by a factor of 16. That is why backbones like ViT-H, SAM, and SigLIP pre-train at $P=14$ or $P=16$, using $P=8$ only for dense fine-tuning.
+So a $2\times$ reduction in patch granularity costs a $16\times$ increase in attention computation and intermediate activation memory, which is why backbones like ViT-H, SAM, and SigLIP pre-train at $P=14$ or $P=16$ and only drop to $P=8$ for dense fine-tuning.
 
 ### Stepping through the numbers: how patch size blows up FLOPs
 
@@ -112,7 +112,7 @@ Now cut the patch size in half to $P=1$:
 
 $$4 N^2 D = 4(16^2)(6) = 4(256)(6) = 6144 \text{ FLOPs}$$
 
-Notice that $6144 / 384 = 16$. The attention computation scaled by an exact factor of 16.
+Notice that $6144 / 384 = 16$: the attention computation scaled by an exact factor of 16, right in line with the theory above.
 
 <figure class="interactive-fig" id="fig-patch-scaling">
   <div class="fig-card">
@@ -143,10 +143,9 @@ Notice that $6144 / 384 = 16$. The attention computation scaled by an exact fact
       </div>
     </div>
   </div>
-  <figcaption class="fig-caption">Fig 1.1: Halving patch size quadruples sequence length N and scales pairwise self-attention memory by sixteen-fold.</figcaption>
 </figure>
 
-This 16-fold scaling explosion explains why training Vision Transformers on high-resolution images is computationally brutal. Suppose an autonomous driving camera upgrades from 1080p ($1920 \times 1080 \approx 2.1\text{M}$ pixels) to 4K ($3840 \times 2160 \approx 8.3\text{M}$ pixels). The raw pixel count quadruples ($4\times$). But because patch size $P$ stays fixed at $14 \times 14$, the token count also quadruples ($N \to 4N$). Because standard self-attention evaluates pairwise affinities between every token and every other token, the attention matrix scales quadratically: $(4N)^2 = 16N^2$. Compute and intermediate activation memory do not increase four-fold; they explode sixteen-fold. This is the physical reason why architectures like ViT, SAM, and SigLIP keep patch sizes relatively large during pre-training, or rely on windowed local attention.
+This 16-fold scaling explosion is why training Vision Transformers on high-resolution images is computationally brutal. Suppose an autonomous driving camera upgrades from 1080p ($1920 \times 1080 \approx 2.1\text{M}$ pixels) to 4K ($3840 \times 2160 \approx 8.3\text{M}$ pixels): the raw pixel count quadruples, and since patch size $P$ stays fixed at $14 \times 14$, the token count quadruples right along with it ($N \to 4N$). But because standard self-attention evaluates pairwise affinities between every token and every other token, the attention matrix scales quadratically rather than linearly: $(4N)^2 = 16N^2$. Compute and intermediate activation memory don't just grow four-fold with the resolution, they explode sixteen-fold, which is the physical reason architectures like ViT, SAM, and SigLIP keep patch sizes relatively large during pre-training, or fall back on windowed local attention.
 
 ## 2. 2D positional geometry: learned embeddings vs 2D-RoPE
 
@@ -168,25 +167,25 @@ Modern backbones adapt Rotary Position Embeddings (RoPE) to two dimensions. Inst
 
 <div class="svg-diagram">
 <svg viewBox="0 0 720 180" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="40" width="130" height="95" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="2"/>
-  <text x="85" y="80" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">QUERY q ∈ ℝᵈ</text>
-  <text x="85" y="100" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">dim d per head</text>
-  <path d="M 155 87 L 195 87" stroke="#06b6d4" stroke-width="2"/>
-  <rect x="200" y="25" width="140" height="55" rx="6" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
-  <text x="270" y="55" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">X-Subspace (d/2)</text>
-  <text x="270" y="70" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Rotate by R_x(m_x)</text>
-  <rect x="200" y="95" width="140" height="55" rx="6" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
-  <text x="270" y="125" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">Y-Subspace (d/2)</text>
-  <text x="270" y="140" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Rotate by R_y(m_y)</text>
-  <path d="M 345 52 L 385 75" stroke="#10b981" stroke-width="1.5"/>
-  <path d="M 345 122 L 385 95" stroke="#fbbf24" stroke-width="1.5"/>
-  <rect x="390" y="40" width="140" height="95" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="2"/>
-  <text x="460" y="80" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">ROTATED q</text>
-  <text x="460" y="100" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">[q_x rot; q_y rot]</text>
-  <path d="M 535 87 L 575 87" stroke="#f43f5e" stroke-width="2"/>
-  <rect x="580" y="40" width="125" height="95" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="2"/>
-  <text x="642" y="80" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">INNER PRODUCT</text>
-  <text x="642" y="100" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">depends on Δp</text>
+  <rect x="20" y="40" width="130" height="95" rx="8" fill="#141414" stroke="#b7b7b3" stroke-width="2"/>
+  <text x="85" y="80" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">QUERY q ∈ ℝᵈ</text>
+  <text x="85" y="100" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">dim d per head</text>
+  <path d="M 155 87 L 195 87" stroke="#b7b7b3" stroke-width="2"/>
+  <rect x="200" y="25" width="140" height="55" rx="6" fill="#141414" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="270" y="55" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">X-Subspace (d/2)</text>
+  <text x="270" y="70" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Rotate by R_x(m_x)</text>
+  <rect x="200" y="95" width="140" height="55" rx="6" fill="#141414" stroke="#9a9a96" stroke-width="1.5"/>
+  <text x="270" y="125" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">Y-Subspace (d/2)</text>
+  <text x="270" y="140" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Rotate by R_y(m_y)</text>
+  <path d="M 345 52 L 385 75" stroke="#f4f4f2" stroke-width="1.5"/>
+  <path d="M 345 122 L 385 95" stroke="#9a9a96" stroke-width="1.5"/>
+  <rect x="390" y="40" width="140" height="95" rx="8" fill="#141414" stroke="#636360" stroke-width="2"/>
+  <text x="460" y="80" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">ROTATED q</text>
+  <text x="460" y="100" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">[q_x rot; q_y rot]</text>
+  <path d="M 535 87 L 575 87" stroke="#636360" stroke-width="2"/>
+  <rect x="580" y="40" width="125" height="95" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="2"/>
+  <text x="642" y="80" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">INNER PRODUCT</text>
+  <text x="642" y="100" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">depends on Δp</text>
 </svg>
 </div>
 
@@ -267,10 +266,9 @@ Even if both patches shift by 100 pixels along the image (say to $(100, 101)$ an
       </div>
     </div>
   </div>
-  <figcaption class="fig-caption">Fig 2.1: In 2D-RoPE, rotating query and key vectors in complex planes cancels absolute coordinates out completely, making attention strictly dependent on relative offset Δp.</figcaption>
 </figure>
 
-This cancellation is what gives 2D-RoPE its translation invariance. Why can we not simply flatten the 2D grid into a 1D sequence and use standard language-model 1D RoPE? In a 2D image of width $W$, vertically adjacent patches at $(x, y)$ and $(x, y+1)$ end up separated by $W/P$ steps in sequence order. Standard 1D RoPE measures scalar distance along the token index, so it views vertically neighboring patches as distant tokens, destroying 2D spatial locality. 2D-RoPE decomposes each head's channels into independent $x$ and $y$ rotational sub-planes. Because complex multiplication subtracts angles, the attention logit between two patches depends purely on their 2D displacement vector $\Delta \mathbf{p} = (u_x - v_x, u_y - v_y)$, preserving true Euclidean geometry regardless of aspect ratio or resolution.
+This cancellation is what gives 2D-RoPE its translation invariance, and it's worth asking why we can't just flatten the 2D grid into a 1D sequence and reuse standard language-model RoPE. The problem is that in a 2D image of width $W$, vertically adjacent patches at $(x, y)$ and $(x, y+1)$ end up separated by $W/P$ steps in sequence order, and because 1D RoPE only measures scalar distance along the token index, it sees those vertically neighboring patches as distant tokens, destroying 2D spatial locality. 2D-RoPE avoids this by decomposing each head's channels into independent $x$ and $y$ rotational sub-planes, so that because complex multiplication subtracts angles, the attention logit between two patches depends purely on their 2D displacement vector $\Delta \mathbf{p} = (u_x - v_x, u_y - v_y)$ — preserving true Euclidean geometry regardless of aspect ratio or resolution.
 
 ## 3. Google's NaViT: Patch 'n' Pack and arbitrary aspect ratios
 
@@ -280,24 +278,24 @@ Google Research designed NaViT (Native Resolution ViT) around an approach called
 
 <div class="svg-diagram">
 <svg viewBox="0 0 740 210" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="25" width="310" height="165" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
-  <text x="175" y="50" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">STANDARD ViT (PADDING WASTE)</text>
-  <rect x="40" y="65" width="60" height="40" rx="4" fill="#1a1a24" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="70" y="90" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 1</text>
-  <rect x="110" y="65" width="70" height="70" rx="4" fill="#0c0a15" stroke="#88888e" stroke-dasharray="3 3"/>
-  <text x="145" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9" text-anchor="middle">Pad (0s)</text>
-  <text x="175" y="165" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Up to 40% wasted attention FLOPs</text>
+  <rect x="20" y="25" width="310" height="165" rx="8" fill="#141414" stroke="#636360" stroke-width="1.5"/>
+  <text x="175" y="50" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">STANDARD ViT (PADDING WASTE)</text>
+  <rect x="40" y="65" width="60" height="40" rx="4" fill="#1c1c1c" stroke="#b7b7b3" stroke-width="1.5"/>
+  <text x="70" y="90" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 1</text>
+  <rect x="110" y="65" width="70" height="70" rx="4" fill="#141414" stroke="#9a9a96" stroke-dasharray="3 3"/>
+  <text x="145" y="105" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9" text-anchor="middle">Pad (0s)</text>
+  <text x="175" y="165" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Up to 40% wasted attention FLOPs</text>
 
-  <rect x="370" y="25" width="350" height="165" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
-  <text x="545" y="50" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">GOOGLE NaViT (PATCH 'N' PACK)</text>
-  <rect x="390" y="70" width="80" height="35" rx="4" fill="#1a1a24" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="430" y="92" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 1 (n₁)</text>
-  <rect x="480" y="70" width="110" height="35" rx="4" fill="#1a1a24" stroke="#fbbf24" stroke-width="1.5"/>
-  <text x="535" y="92" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 2 (n₂)</text>
-  <rect x="600" y="70" width="100" height="35" rx="4" fill="#1a1a24" stroke="#10b981" stroke-width="1.5"/>
-  <text x="650" y="92" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 3 (n₃)</text>
-  <text x="545" y="135" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Continuous Buffer: Length L = Σ n_k</text>
-  <text x="545" y="165" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Block-diagonal attention mask: 0% padding</text>
+  <rect x="370" y="25" width="350" height="165" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="545" y="50" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">GOOGLE NaViT (PATCH 'N' PACK)</text>
+  <rect x="390" y="70" width="80" height="35" rx="4" fill="#1c1c1c" stroke="#b7b7b3" stroke-width="1.5"/>
+  <text x="430" y="92" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 1 (n₁)</text>
+  <rect x="480" y="70" width="110" height="35" rx="4" fill="#1c1c1c" stroke="#9a9a96" stroke-width="1.5"/>
+  <text x="535" y="92" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 2 (n₂)</text>
+  <rect x="600" y="70" width="100" height="35" rx="4" fill="#1c1c1c" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="650" y="92" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Img 3 (n₃)</text>
+  <text x="545" y="135" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Continuous Buffer: Length L = Σ n_k</text>
+  <text x="545" y="165" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Block-diagonal attention mask: 0% padding</text>
 </svg>
 </div>
 
@@ -338,32 +336,32 @@ s_{21} & s_{22} & -\infty & -\infty & -\infty \\
 
 When computing softmax along row 1:
 $$\text{softmax}([s_{11}, s_{12}, -\infty, -\infty, -\infty]) = [p_{11}, p_{12}, 0, 0, 0]$$
-Because $e^{-\infty} = 0$, attention weights for tokens from Image 2 evaluate to zero. Both images process inside the exact same matrix multiplication with zero padding tokens.
+Because $e^{-\infty} = 0$, attention weights for tokens from Image 2 evaluate to zero, so both images process inside the exact same matrix multiplication with zero padding tokens between them.
 
 This packing mechanism directly eliminates GPU idle bubbles during pre-training. Standard vision architectures force every image into a uniform batch shape, which either distorts rectangular frames into squashed squares or wastes up to 40% of the training compute budget calculating attention over useless zero-padding tokens. By packing patch tokens from variable-sized images into continuous fixed-length sequence buffers using first-fit bin packing, NaViT ensures that GPU tensor cores operate at maximum saturation. With FlashAttention-style variable-length masking, the $-\infty$ mask ensures that attention never leaks across image boundaries, giving the network full multi-aspect native resolution with zero padding overhead.
 
 ## 4. Self-supervised distillation: DINO and DINOv2
 
-Supervised training optimizes for discrete class labels, which discards fine spatial details. Self-supervised distillation learns dense visual representations directly from data without human annotation. DINO and DINOv2 use student-teacher distillation with explicit mechanisms to prevent representation collapse.
+Supervised training optimizes for discrete class labels, which throws away fine spatial detail along the way. Self-supervised distillation sidesteps that by learning dense visual representations directly from the data, with no human annotation involved — and DINO and DINOv2 do it through student-teacher distillation, with explicit mechanisms built in to stop the representations from collapsing.
 
 <div class="svg-diagram">
 <svg viewBox="0 0 740 220" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="70" width="120" height="75" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="2"/>
-  <text x="80" y="105" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">IMAGE x</text>
-  <text x="80" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Global/Local</text>
-  <path d="M 145 95 L 205 60" stroke="#10b981" stroke-width="1.5"/>
-  <path d="M 145 120 L 205 155" stroke="#fbbf24" stroke-width="1.5"/>
-  <rect x="210" y="25" width="165" height="70" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
-  <text x="292" y="55" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STUDENT g_θs</text>
-  <text x="292" y="75" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Temp τ_s = 0.1</text>
-  <rect x="210" y="125" width="165" height="70" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
-  <text x="292" y="155" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">TEACHER g_θt (EMA)</text>
-  <text x="292" y="175" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Center c + Sharpen τ_t = 0.04</text>
-  <path d="M 380 60 L 465 95" stroke="#10b981" stroke-width="1.5"/>
-  <path d="M 380 160 L 465 125" stroke="#fbbf24" stroke-width="1.5"/>
-  <rect x="470" y="70" width="240" height="75" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="2"/>
-  <text x="590" y="102" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">CROSS-ENTROPY LOSS</text>
-  <text x="590" y="125" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">L = - Σ P_t(x) log P_s(x)</text>
+  <rect x="20" y="70" width="120" height="75" rx="8" fill="#141414" stroke="#b7b7b3" stroke-width="2"/>
+  <text x="80" y="105" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">IMAGE x</text>
+  <text x="80" y="125" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Global/Local</text>
+  <path d="M 145 95 L 205 60" stroke="#f4f4f2" stroke-width="1.5"/>
+  <path d="M 145 120 L 205 155" stroke="#9a9a96" stroke-width="1.5"/>
+  <rect x="210" y="25" width="165" height="70" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="292" y="55" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STUDENT g_θs</text>
+  <text x="292" y="75" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Temp τ_s = 0.1</text>
+  <rect x="210" y="125" width="165" height="70" rx="8" fill="#141414" stroke="#9a9a96" stroke-width="1.5"/>
+  <text x="292" y="155" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">TEACHER g_θt (EMA)</text>
+  <text x="292" y="175" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Center c + Sharpen τ_t = 0.04</text>
+  <path d="M 380 60 L 465 95" stroke="#f4f4f2" stroke-width="1.5"/>
+  <path d="M 380 160 L 465 125" stroke="#9a9a96" stroke-width="1.5"/>
+  <rect x="470" y="70" width="240" height="75" rx="8" fill="#141414" stroke="#636360" stroke-width="2"/>
+  <text x="590" y="102" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">CROSS-ENTROPY LOSS</text>
+  <text x="590" y="125" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">L = - Σ P_t(x) log P_s(x)</text>
 </svg>
 </div>
 
@@ -376,7 +374,7 @@ DINO feeds different augmented views of an image to two networks:
 
 The intuition of multi-crop distillation is local-to-global matching: the student sees only a small crop (for example, a bird's beak) and must predict the distribution produced by the teacher looking at the full image (the whole bird).
 
-Teacher weights do not receive gradients. They update using an Exponential Moving Average (EMA) of the student weights:
+Teacher weights never receive gradients directly; instead, they update through an Exponential Moving Average (EMA) of the student weights:
 
 $$\theta_t \leftarrow \lambda \theta_t + (1 - \lambda) \theta_s, \quad \lambda \in [0.996, 1.0]$$
 
@@ -405,7 +403,7 @@ Subtracting the running mean $\mathbf{c}$ prevents any single coordinate from do
 
 $$\mathbf{c} \leftarrow m \mathbf{c} + (1 - m) \frac{1}{B} \sum_{i=1}^B g_{\theta_t}(x_i)$$
 
-The mathematical intuition: if dimension $k$ activates frequently across a batch, $c^{(k)}$ increases, subtracting value from that logit in subsequent iterations. This acts like a repulsive negative feedback loop.
+The intuition is straightforward: if dimension $k$ activates frequently across a batch, $c^{(k)}$ increases and subtracts more value from that logit on the next round, functioning as a repulsive negative feedback loop.
 
 Setting $\tau_t < \tau_s$ (for example, $\tau_t = 0.04$ and $\tau_s = 0.1$) sharpens the teacher output distribution, preventing the logits from decaying toward a uniform vector.
 
@@ -457,7 +455,7 @@ $$\frac{\mathbf{g}_t - \mathbf{c}}{\tau_t} = [4.0, \ 1.0, \ 1.0]$$
 Exponentiating gives $[e^4, e^1, e^1] \approx [54.6, 2.7, 2.7]$.
 The teacher probability distribution is:
 $$P_t = [0.91, \ 0.045, \ 0.045]$$
-If we had used the student temperature $\tau_s = 1.0$ without sharpening, the distribution would be $[0.67, 0.16, 0.16]$. The low temperature sharpened the target into a confident prediction.
+For comparison, using the student temperature $\tau_s = 1.0$ without sharpening would give $[0.67, 0.16, 0.16]$ instead — the low temperature is what sharpens the target into a confident prediction.
 
 #### Step 3: KoLeo repulsive gradient
 Take two 2D unit vectors on a circle:
@@ -493,11 +491,10 @@ The gradient pushes $\mathbf{z}_1$ in direction $[-0.5, 3.5]$, repelling it dire
       </div>
     </div>
   </div>
-  <figcaption class="fig-caption">Fig 4.1: Subtracting running center vector c prevents mode collapse to a single dominant class, while low teacher temperature sharpens the target probabilities.</figcaption>
 </figure>
 
 This balance between centering and sharpening solves the fundamental failure modes of self-supervised learning without contrastive pairs. Without negative samples to push divergent views apart, the student and teacher naturally collapse into one of two dead ends: uniform collapse, where all logits decay into flat zero entropy, or one-hot collapse, where a single arbitrary dimension fires strongly once and enters a self-reinforcing loop until every image in the universe outputs the exact same class index.
-Centering acts as an automatic brake on logit monopolization. By tracking the running average $\mathbf{c}$ and subtracting it from teacher activations, any logit that fires too frequently gets penalized in subsequent iterations. Meanwhile, sharpening ($\tau_t < \tau_s$) acts as an accelerator, cooling the softmax distribution into sharp, confident probability targets. When DINOv2 adds the KoLeo regularizer, it enforces an explicit electrostatic repulsive gradient proportional to $1 / d^2$ between nearest neighbors, ensuring that feature vectors spread out and tile the unit hypersphere uniformly rather than collapsing into low-dimensional subspaces.
+Centering acts as an automatic brake on logit monopolization: by tracking the running average $\mathbf{c}$ and subtracting it from teacher activations, any logit that fires too frequently gets penalized on the next round. Meanwhile, sharpening ($\tau_t < \tau_s$) acts as an accelerator, cooling the softmax distribution into sharp, confident probability targets. When DINOv2 adds the KoLeo regularizer, it enforces an explicit electrostatic repulsive gradient proportional to $1 / d^2$ between nearest neighbors, ensuring that feature vectors spread out and tile the unit hypersphere uniformly rather than collapsing into low-dimensional subspaces.
 
 ## 5. Meta's Segment Anything Model (SAM)
 
@@ -505,23 +502,23 @@ Meta AI introduced SAM to solve promptable visual segmentation. Unlike tradition
 
 <div class="svg-diagram">
 <svg viewBox="0 0 740 220" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="30" width="150" height="155" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
-  <text x="95" y="65" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">IMAGE ENCODER</text>
-  <text x="95" y="85" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">ViT (MAE pre-trained)</text>
-  <text x="95" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">1024x1024 -> 64x64x256</text>
-  <text x="95" y="145" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Run once per image</text>
+  <rect x="20" y="30" width="150" height="155" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="95" y="65" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">IMAGE ENCODER</text>
+  <text x="95" y="85" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">ViT (MAE pre-trained)</text>
+  <text x="95" y="105" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">1024x1024 -> 64x64x256</text>
+  <text x="95" y="145" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Run once per image</text>
 
-  <rect x="200" y="30" width="165" height="155" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
-  <text x="282" y="65" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">PROMPT ENCODER</text>
-  <text x="282" y="90" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Points / Boxes / Masks</text>
-  <text x="282" y="115" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Fourier Positional Feat</text>
-  <text x="282" y="145" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Run in &lt;10ms</text>
+  <rect x="200" y="30" width="165" height="155" rx="8" fill="#141414" stroke="#9a9a96" stroke-width="1.5"/>
+  <text x="282" y="65" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">PROMPT ENCODER</text>
+  <text x="282" y="90" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Points / Boxes / Masks</text>
+  <text x="282" y="115" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Fourier Positional Feat</text>
+  <text x="282" y="145" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Run in &lt;10ms</text>
 
-  <rect x="395" y="30" width="325" height="155" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
-  <text x="557" y="65" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">TWO-WAY MASK DECODER</text>
-  <text x="557" y="90" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Tokens ↔ Image Features cross-attention</text>
-  <text x="557" y="115" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">MLP -> dynamic classifier weights w_mask</text>
-  <text x="557" y="145" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Output: 3 Mask Hypotheses + IoU Score</text>
+  <rect x="395" y="30" width="325" height="155" rx="8" fill="#141414" stroke="#636360" stroke-width="1.5"/>
+  <text x="557" y="65" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">TWO-WAY MASK DECODER</text>
+  <text x="557" y="90" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Tokens ↔ Image Features cross-attention</text>
+  <text x="557" y="115" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">MLP -> dynamic classifier weights w_mask</text>
+  <text x="557" y="145" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Output: 3 Mask Hypotheses + IoU Score</text>
 </svg>
 </div>
 
@@ -604,7 +601,7 @@ $$\mathcal{L}_{\text{focal}} = - (1 - 0.984)^2 \log(0.984) = - (0.016)^2 (-0.016
 Because the prediction was confident and correct, the focal loss term $(1 - p_t)^2 = 0.000256$ shrunk the gradient by nearly 4000 times.
 
 This dynamic dot-product architecture is the secret behind SAM's real-time interactive speed. How can a model with a massive 632M parameter ViT-H backbone segment objects in under 50 milliseconds directly in a web browser?
-The computational workload is strictly decoupled. The expensive ViT-H encoder processes the high-resolution $1024 \times 1024$ image exactly once on the backend, generating a downsampled $64 \times 64 \times 256$ spatial feature tensor that is cached in client or server RAM.
+The trick is that the workload is strictly decoupled: the expensive ViT-H encoder processes the high-resolution $1024 \times 1024$ image exactly once on the backend, generating a downsampled $64 \times 64 \times 256$ spatial feature tensor that then just sits cached in client or server RAM.
 When a user interactively clicks a point, moves their cursor, or drags a bounding box, only the tiny prompt encoder and lightweight mask decoder run. Because the mask decoder contains fewer than 4 million parameters and only performs two transformer layers followed by the dynamic dot product, it finishes in milliseconds even on a laptop CPU or browser WebGPU runtime, giving users instantaneous, fluid mask feedback.
 
 ## 6. Contrastive foundations: classic CLIP vs Google SigLIP
@@ -613,19 +610,19 @@ Contrastive pre-training maps image and text representations into a shared vecto
 
 <div class="svg-diagram">
 <svg viewBox="0 0 740 210" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="25" width="330" height="165" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
-  <text x="185" y="50" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">CLASSIC CLIP (SOFTMAX)</text>
-  <text x="185" y="80" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Denominator: Σ_j exp(t · x_i^T y_j)</text>
-  <text x="185" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Requires AllGather across all GPUs</text>
-  <text x="185" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">O(B²) memory bottleneck</text>
-  <text x="185" y="160" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Caps batch size around 32k - 65k</text>
+  <rect x="20" y="25" width="330" height="165" rx="8" fill="#141414" stroke="#636360" stroke-width="1.5"/>
+  <text x="185" y="50" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">CLASSIC CLIP (SOFTMAX)</text>
+  <text x="185" y="80" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Denominator: Σ_j exp(t · x_i^T y_j)</text>
+  <text x="185" y="105" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Requires AllGather across all GPUs</text>
+  <text x="185" y="125" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">O(B²) memory bottleneck</text>
+  <text x="185" y="160" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Caps batch size around 32k - 65k</text>
 
-  <rect x="390" y="25" width="330" height="165" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
-  <text x="555" y="50" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">GOOGLE SigLIP (PAIRWISE SIGMOID)</text>
-  <text x="555" y="80" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Loss: - log σ(z_ij · (t · x_i^T y_j + b))</text>
-  <text x="555" y="105" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Zero cross-GPU AllGather synchronization</text>
-  <text x="555" y="125" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Tiled streaming O(B_local · B_chunk)</text>
-  <text x="555" y="160" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Scales past 1,000,000+ batches</text>
+  <rect x="390" y="25" width="330" height="165" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="555" y="50" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">GOOGLE SigLIP (PAIRWISE SIGMOID)</text>
+  <text x="555" y="80" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" text-anchor="middle">Loss: - log σ(z_ij · (t · x_i^T y_j + b))</text>
+  <text x="555" y="105" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Zero cross-GPU AllGather synchronization</text>
+  <text x="555" y="125" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Tiled streaming O(B_local · B_chunk)</text>
+  <text x="555" y="160" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">Scales past 1,000,000+ batches</text>
 </svg>
 </div>
 
@@ -740,50 +737,49 @@ Pair $(1, 1)$ and pair $(1, 2)$ evaluate completely independently. Neither calcu
       </div>
     </div>
   </div>
-  <figcaption class="fig-caption">Fig 6.1: Classic CLIP requires an AllGather collective across all GPUs to evaluate the global softmax denominator, causing an O(B²) barrier. SigLIP's pairwise sigmoid loss allows linear chunked streaming without inter-GPU communication.</figcaption>
 </figure>
 
 This independence is the architectural breakthrough that broke the batch size barrier. Classic CLIP's InfoNCE loss is bound by its global partition function: the denominator $\sum_{j=1}^B \exp(t \mathbf{x}_i^\top \mathbf{y}_j)$ sums over all samples in the entire global batch. When pre-training across a cluster of 512 or 1,024 GPUs, each worker GPU is physically blocked from computing its loss until it executes a synchronous `AllGather` collective, transmitting its local text embeddings to every other GPU and receiving thousands of remote vectors in return.
 At batch sizes of 32,768 or 65,536, network interconnect bandwidth saturates, and storing the full cross-similarity matrix triggers an $O(B^2)$ memory explosion.
-SigLIP completely removes the global denominator. Because every pair $(i, j)$ is formulated as an independent binary classification, each worker GPU can load its local image embeddings and stream through chunks of negative text embeddings in small local tiles. No worker ever needs to pause for a cluster-wide `AllGather`. This allows distributed vision-language pre-training to scale gracefully to batches of 1,000,000+ image-text pairs with constant local memory overhead.
+SigLIP removes the global denominator entirely. Because every pair $(i, j)$ is formulated as an independent binary classification, each worker GPU can load its local image embeddings and stream through chunks of negative text embeddings in small local tiles, with no worker ever needing to pause for a cluster-wide `AllGather`. That's what lets distributed vision-language pre-training scale gracefully to batches of 1,000,000+ image-text pairs with constant local memory overhead.
 
 ## 7. How Vision-Language Models (VLMs) came about
 
-Vision-Language Models did not appear all at once. They evolved across four distinct architectural stages as researchers resolved the interface between continuous visual patches and discrete autoregressive language tokens.
+Vision-Language Models didn't appear all at once; they evolved across four distinct architectural stages as researchers worked out the interface between continuous visual patches and discrete autoregressive language tokens.
 
 <div class="svg-diagram">
 <svg viewBox="0 0 740 250" class="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#f43f5e" stroke-width="1.5"/>
-  <text x="100" y="45" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 1: DUAL ENCODER</text>
-  <text x="100" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">CLIP, ALIGN (2021)</text>
-  <rect x="35" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
-  <text x="100" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Global Pool: 1D Vector</text>
-  <text x="100" y="155" fill="#f43f5e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Zero spatial tokens survive</text>
-  <text x="100" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Good for retrieval only</text>
+  <rect x="20" y="20" width="160" height="210" rx="8" fill="#141414" stroke="#636360" stroke-width="1.5"/>
+  <text x="100" y="45" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 1: DUAL ENCODER</text>
+  <text x="100" y="65" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">CLIP, ALIGN (2021)</text>
+  <rect x="35" y="85" width="130" height="40" rx="4" fill="#1c1c1c" stroke="#9a9a96" stroke-width="1"/>
+  <text x="100" y="105" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Global Pool: 1D Vector</text>
+  <text x="100" y="155" fill="#636360" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Zero spatial tokens survive</text>
+  <text x="100" y="185" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Good for retrieval only</text>
 
-  <rect x="200" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#fbbf24" stroke-width="1.5"/>
-  <text x="280" y="45" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 2: CROSS-ATTN</text>
-  <text x="280" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Flamingo, PaLI (2022)</text>
-  <rect x="215" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
-  <text x="280" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Perceiver Resampler</text>
-  <text x="280" y="155" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Frozen LLM + Gated Cross-Attn</text>
-  <text x="280" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Compresses N -> M tokens</text>
+  <rect x="200" y="20" width="160" height="210" rx="8" fill="#141414" stroke="#9a9a96" stroke-width="1.5"/>
+  <text x="280" y="45" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 2: CROSS-ATTN</text>
+  <text x="280" y="65" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Flamingo, PaLI (2022)</text>
+  <rect x="215" y="85" width="130" height="40" rx="4" fill="#1c1c1c" stroke="#9a9a96" stroke-width="1"/>
+  <text x="280" y="105" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Perceiver Resampler</text>
+  <text x="280" y="155" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Frozen LLM + Gated Cross-Attn</text>
+  <text x="280" y="185" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Compresses N -> M tokens</text>
 
-  <rect x="380" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="460" y="45" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 3: TOKEN INJECTION</text>
-  <text x="460" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">LLaVA (2023)</text>
-  <rect x="395" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
-  <text x="460" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Linear / MLP Adapter</text>
-  <text x="460" y="155" fill="#06b6d4" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Patches as pseudo-words</text>
-  <text x="460" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Direct LLM causal attention</text>
+  <rect x="380" y="20" width="160" height="210" rx="8" fill="#141414" stroke="#b7b7b3" stroke-width="1.5"/>
+  <text x="460" y="45" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 3: TOKEN INJECTION</text>
+  <text x="460" y="65" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">LLaVA (2023)</text>
+  <rect x="395" y="85" width="130" height="40" rx="4" fill="#1c1c1c" stroke="#9a9a96" stroke-width="1"/>
+  <text x="460" y="105" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Linear / MLP Adapter</text>
+  <text x="460" y="155" fill="#b7b7b3" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Patches as pseudo-words</text>
+  <text x="460" y="185" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">Direct LLM causal attention</text>
 
-  <rect x="560" y="20" width="160" height="210" rx="8" fill="#0c0a15" stroke="#10b981" stroke-width="1.5"/>
-  <text x="640" y="45" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 4: UNIFIED VLM</text>
-  <text x="640" y="65" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">PaliGemma 2 (2024)</text>
-  <rect x="575" y="85" width="130" height="40" rx="4" fill="#1a1a24" stroke="#88888e" stroke-width="1"/>
-  <text x="640" y="105" fill="#f1f5f9" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">SigLIP + Gemma</text>
-  <text x="640" y="155" fill="#10b981" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Native Patch 'n' Pack</text>
-  <text x="640" y="185" fill="#88888e" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">End-to-end autoregressive</text>
+  <rect x="560" y="20" width="160" height="210" rx="8" fill="#141414" stroke="#f4f4f2" stroke-width="1.5"/>
+  <text x="640" y="45" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">STAGE 4: UNIFIED VLM</text>
+  <text x="640" y="65" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">PaliGemma 2 (2024)</text>
+  <rect x="575" y="85" width="130" height="40" rx="4" fill="#1c1c1c" stroke="#9a9a96" stroke-width="1"/>
+  <text x="640" y="105" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">SigLIP + Gemma</text>
+  <text x="640" y="155" fill="#f4f4f2" font-family="'IBM Plex Mono', monospace" font-size="10" text-anchor="middle">Native Patch 'n' Pack</text>
+  <text x="640" y="185" fill="#9a9a96" font-family="'IBM Plex Mono', monospace" font-size="9.5" text-anchor="middle">End-to-end autoregressive</text>
 </svg>
 </div>
 
@@ -845,7 +841,7 @@ where $\mathbf{u}_i$ is the language decoder hidden state at token position $i$,
 
 This transition from gated cross-attention to unified token sequences explains why the modern VLM ecosystem consolidated so rapidly around autoregressive decoders.
 In early VLMs like Flamingo, incorporating vision required splicing custom gated cross-attention layers into every single transformer layer of the pre-trained language model. While this left the pre-trained weights frozen, it created an awkward hybrid architecture that broke standard high-throughput serving stacks, complicated KV cache management, and required customized kernel backends.
-Direct sequence injection (pioneered by LLaVA and unified end-to-end in PaliGemma and PaliGemma 2) realized that vision patches do not need special attention pathways. Once a lightweight linear projector or two-layer MLP maps visual patch features into the LLM's text embedding dimension, they are simply tokens. Standard autoregressive causal decoders process them alongside text using standard causal attention. Existing production LLM serving frameworks (like vLLM, TensorRT-LLM, and SGLang) can execute high-throughput multimodal inference out of the box with zero architectural changes.
+Direct sequence injection — pioneered by LLaVA and unified end-to-end in PaliGemma and PaliGemma 2 — realized that vision patches don't need special attention pathways at all. Once a lightweight linear projector or two-layer MLP maps visual patch features into the LLM's text embedding dimension, they're simply tokens, and standard autoregressive causal decoders can process them alongside text using ordinary causal attention. That's also why existing production LLM serving frameworks like vLLM, TensorRT-LLM, and SGLang can run high-throughput multimodal inference out of the box, with zero architectural changes needed.
 
 ## 8. Architecture comparison
 

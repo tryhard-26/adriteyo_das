@@ -7,39 +7,33 @@ export async function initApod() {
   const desc = document.getElementById("apod-desc");
   if (!link || !title) return;
 
-  const apiKey = "63XVlWsjpTsBQWnbpwpmWzNP64UVxc7t2IMv0zVw";
-
   try {
-    const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}&thumbs=true`);
-    if (!response.ok) {
-      if (response.status === 429) {
-        title.textContent = "Rate limited";
-        if (desc) desc.textContent = "NASA APOD API rate limit reached. Try again shortly.";
-        return;
-      }
-      throw new Error(`HTTP ${response.status}`);
-    }
+    const response = await fetch("https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    const data = await response.json();
+    const [data] = await response.json();
+    const isImage = data?.media_type === "image" && data.hdurl;
 
-    if (data && (data.url || data.thumbnail_url)) {
-      const displayUrl = data.thumbnail_url || data.url;
-      if (img && displayUrl) {
-        img.src = displayUrl;
-        img.alt = data.title || "NASA Astronomy Picture of the Day";
+    if (data) {
+      if (img && isImage) {
+        img.src = data.hdurl;
+        img.alt = data.alt || data.title || "NASA Astronomy Picture of the Day";
         img.hidden = false;
         if (placeholder) placeholder.hidden = true;
       }
       title.textContent = data.title || "Untitled";
       if (date) date.textContent = data.date || "";
       if (desc) {
-        const explanation = data.explanation || "";
+        const explanation = (data.explanation || "")
+          .replace(/<[^>]*>/g, "")
+          .replace(/^Explanation:\s*/, "")
+          .trim();
         desc.textContent = explanation.length > 110 ? explanation.slice(0, 110) + "…" : explanation;
       }
-      link.href = data.hdurl || data.url || "#";
+      link.href = (isImage ? data.hdurl : data.url || data.permalink) || "#";
     } else {
       title.textContent = "Unavailable";
-      if (desc) desc.textContent = data.error?.message || "APOD data temporarily unavailable.";
+      if (desc) desc.textContent = "APOD data temporarily unavailable.";
     }
   } catch (err) {
     title.textContent = "Offline";

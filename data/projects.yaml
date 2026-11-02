@@ -105,3 +105,17 @@
       href: "https://github.com/tryhard-26/Inpainting-GAN"
   description: "Deep convolutional generative adversarial network with U-Net architecture for reconstructing severely corrupted dashcam images."
   tags: ["PyTorch", "U-Net", "GANs", "Computer Vision"]
+
+- title: "evil-qwen"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/evil-qwen"
+  description: "Interpretability research steering Qwen3.5-4B's behavior by editing just two neurons' activations, run locally on Apple Silicon."
+  tags: ["Python", "Interpretability", "Activation Steering", "AI Safety", "Qwen"]
+
+- title: "PowerWarden"
+  links:
+    - label: "github ↗"
+      href: "https://github.com/tryhard-26/powerwarden"
+  description: "Per-app CPU and energy budget enforcer for macOS."
+  tags: ["Objective-C++", "macOS", "Systems"]
